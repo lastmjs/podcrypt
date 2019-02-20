@@ -6,7 +6,10 @@ import { Store } from '../services/store';
 window.addEventListener('popstate', () => {
     Store.dispatch({
         type: 'CHANGE_CURRENT_ROUTE',
-        currentRoute: window.location.pathname
+        currentRoute: {
+            pathname: window.location.pathname,
+            search: window.location.search
+        }
     });
 });
 
@@ -16,7 +19,10 @@ window.addEventListener('click', (e) => {
 
         Store.dispatch({
             type: 'CHANGE_CURRENT_ROUTE',
-            currentRoute: e.target.pathname
+            currentRoute: {
+                pathname: e.target.pathname,
+                search: e.target.search
+            }
         });
     }
 });
@@ -29,7 +35,7 @@ customElement('pc-router', ({ constructing, props, update }) => {
 
             if (pastRoute !== currentRoute) {
                 pastRoute = currentRoute;
-                history.pushState({}, '', currentRoute);
+                history.pushState({}, '', `${currentRoute.pathname}${currentRoute.search ? `${currentRoute.search}` : ''}`);
                 update();
             }
         });
@@ -63,8 +69,12 @@ async function getRouteResult(currentRoute: string): Promise<TemplateResult> {
         '/wallet': async () => {
             await import('./pc-wallet.ts');
             return html`<pc-wallet></pc-wallet>`;
+        },
+        '/podcast-overview': async () => {
+            await import('./pc-podcast-overview.ts');
+            return html`<pc-podcast-overview></pc-podcast-overview>`;            
         }
     };
 
-    return routes[Store.getState().currentRoute]();
+    return routes[Store.getState().currentRoute.pathname]();
 }

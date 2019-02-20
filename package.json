@@ -2,6 +2,9 @@
   "name": "podcrypt",
   "version": "0.0.0",
   "description": "Progressive Web DApp for podcasts",
+  "engines": {
+    "node": "10.7.0"
+  },
   "scripts": {
     "start": "zwitterion",
     "build": "zwitterion --build-static --exclude node_modules --include functional-element,redux/es"
@@ -24,6 +27,7 @@
   },
   "dependencies": {
     "functional-element": "0.0.10",
-    "redux": "4.0.1"
+    "redux": "4.0.1",
+    "rss-parser": "^3.6.2"
   }
 }
