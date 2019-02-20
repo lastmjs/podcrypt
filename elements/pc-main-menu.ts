@@ -1,7 +1,25 @@
 import { customElement, html } from 'functional-element';
 import { Store } from '../services/store';
 
-customElement('pc-menu', () => {
+window.addEventListener('click', (e) => {
+    if (Store.getState().showMainMenu) {
+        const cameFromMenu = e.path.reduce((result, element) => {
+            if (element.nodeName === 'PC-MAIN-MENU') {
+                return true;
+            }
+            
+            return result;
+        }, false);
+    
+        if (!cameFromMenu) {
+            Store.dispatch({
+                type: 'TOGGLE_SHOW_MAIN_MENU'
+            });
+        }    
+    }
+});
+
+customElement('pc-main-menu', () => {
     return html`
         <style>
             .pc-menu-container {
