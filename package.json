@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "description": "Progressive Web DApp for podcasts",
   "scripts": {
-    "start": "zwitterion"
+    "start": "zwitterion",
+    "build": "zwitterion --build-static --exclude node_modules --include functional-element,redux/es"
   },
   "repository": {
     "type": "git",
@@ -18,6 +19,7 @@
     "Jordan Last <jordan.michael.last@gmail.com>"
   ],
   "devDependencies": {
+    "jsverify-es-module": "0.0.2",
     "zwitterion": "0.28.1"
   },
   "dependencies": {
