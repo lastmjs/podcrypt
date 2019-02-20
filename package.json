@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "functional-element": "0.0.10",
-    "redux": "4.0.1"
+    "redux": "4.0.1",
+    "rss-parser": "^3.6.2"
   }
 }

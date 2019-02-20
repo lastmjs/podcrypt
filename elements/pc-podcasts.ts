@@ -26,8 +26,10 @@ customElement('pc-podcasts', ({ constructing, element, update, props }) => {
 
             ${props.searchResults.map((searchResult) => {
                 return html`
-                    <div>${searchResult.trackName}</div>
-                    <img src="${searchResult.artworkUrl30}">
+                    <div>
+                        <a href="podcast-overview?feedUrl=${encodeURIComponent(searchResult.feedUrl)}">${searchResult.trackName}</a>
+                        <img src="${searchResult.artworkUrl30}">
+                    </div>
                 `;
             })}
         </div>

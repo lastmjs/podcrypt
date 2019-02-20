@@ -1,7 +1,10 @@
 import { createStore } from 'redux';
 
 const InitialState = {
-    currentRoute: '/',
+    currentRoute: {
+        pathname: '/',
+        search: '',
+    },
     showMainMenu: false
 };
 
