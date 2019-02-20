@@ -1,18 +1,27 @@
 {
   "name": "podcrypt",
   "version": "0.0.0",
-  "description": "Progressive web dapp for podcasts",
+  "description": "Progressive Web DApp for podcasts",
   "scripts": {
-    "build": "echo \"Error: no test specified\" && exit 1"
+    "start": "zwitterion"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/lastmjs/podcrypt.git"
   },
-  "author": "",
-  "license": "All Rights Reserved",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/lastmjs/podcrypt/issues"
   },
-  "homepage": "https://github.com/lastmjs/podcrypt#readme"
+  "homepage": "https://github.com/lastmjs/podcrypt#readme",
+  "contributors": [
+    "Jordan Last <jordan.michael.last@gmail.com>"
+  ],
+  "devDependencies": {
+    "zwitterion": "0.28.1"
+  },
+  "dependencies": {
+    "functional-element": "0.0.10",
+    "redux": "4.0.1"
+  }
 }

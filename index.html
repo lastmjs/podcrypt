@@ -2,27 +2,27 @@
 
 <html>
     <head>
-        <!-- Global site tag (gtag.js) - Google Analytics -->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-61431139-2"></script>
-        <script>
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', 'UA-61431139-2', { 'anonymize_ip': true });
-        </script>
-
         <title>Podcrypt</title>
-        <link rel="icon" type="image/png" href="podcrypt-logo-transparent.png">
+
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <script src="services/process-polyfill.js"></script>
+        <script type="module" src="elements/pc-app.ts"></script>
     </head>
 
-    <body style="color: white; background-color: grey; background-image: url('podcrypt-logo-transparent.png'); background-size: 150vh; background-repeat: no-repeat; background-position: top right -25vw">
-        <h1>Podcrypt</h1>
-        <h2>Automatic, fair, peer-to-peer podcast donations with Ether</h2>
+    <body>
+        <style>
+            html {
+                height: 100%;
+            }
 
-        <p>Join <a href="https://t.me/podcrypt" target="_blank">the Telegram group</a>! Once we've reached 100 members the MVP will commence.</p>
+            body {
+                height: 100%;
+                margin: 0;
+            }
+        </style>
 
-        <p>Read the <a href="https://hackernoon.com/podcrypt-automatic-fair-peer-to-peer-podcast-donations-with-ether-f0a638111410" target="_blank">introductory article</a> to get a gist of the idea.</p>
-        
-        <a style="position: fixed; bottom: 25px" target="_blank" href="privacy.html">Privacy Policy</a>
+        <pc-app></pc-app>
     </body>
 </html>
