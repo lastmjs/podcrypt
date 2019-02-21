@@ -26,8 +26,8 @@
     "zwitterion": "0.28.1"
   },
   "dependencies": {
-    "functional-element": "0.0.11",
+    "functional-element": "0.0.12",
     "redux": "4.0.1",
-    "rss-parser": "^3.6.2"
+    "rss-parser": "3.6.2"
   }
 }
