@@ -13,6 +13,7 @@ const InitialState = persistedState || {
     previousEpisodeGuid: null, // TODO I might not need this at all
     playlist: [],
     currentPlaylistIndex: 0,
+    podcasts: {},
     episodes: {}
 };
 
@@ -46,6 +47,20 @@ function RootReducer(state=InitialState, action: any) {
     //     };
     // }
 
+    // TODO when adding new episodes and podcasts, we might overwrite important data...use more intelligent defaults
+    if (action.type === 'SUBSCRIBE_TO_PODCAST') {
+        return {
+            ...state,
+            podcasts: {
+                ...state.podcasts,
+                [action.podcast.feedUrl]: {
+                    ...state.podcasts[action.podcast.feedUrl],
+                    ...action.podcast
+                }
+            }
+        };
+    }
+
     if (action.type === 'ADD_EPISODE_TO_PLAYLIST') {
         return {
             ...state,
@@ -56,6 +71,14 @@ function RootReducer(state=InitialState, action: any) {
                     ...state.episodes[action.episode.guid],
                     ...action.episode
                 }
+            },
+            podcasts: {
+                ...state.podcasts,
+                [action.podcast.feedUrl]: {
+                    ...state.podcasts[action.podcast.feedUrl],
+                    ...action.podcast,
+                    episodes: [...(state.podcasts[action.podcast.feedUrl] ? state.podcasts[action.podcast.feedUrl].episodes : []), action.episode.guid]
+                }
             }
         };
     }
@@ -63,13 +86,25 @@ function RootReducer(state=InitialState, action: any) {
     if (action.type === 'PLAY_EPISODE_FROM_PLAYLIST') {
         const currentPlaylistIndex = action.playlistIndex;
         const currentEpisodeGuid = state.playlist[currentPlaylistIndex];
+        const currentEpisode = state.episodes[currentEpisodeGuid];
         const previousEpisodeGuid = state.currentPlaylistIndex === action.playlistIndex ? state.previousEpisodeGuid : state.currentEpisodeGuid;
 
         return {
             ...state,
             currentEpisodeGuid,
             previousEpisodeGuid,
-            currentPlaylistIndex
+            currentPlaylistIndex,
+            episodes: {
+                ...state.episodes,
+                [state.currentEpisodeGuid]: {
+                    ...state.episodes[state.currentEpisodeGuid],
+                    timestamps: [...(state.episodes[state.currentEpisodeGuid] ? state.episodes[state.currentEpisodeGuid].timestamps : []), ...((state.episodes[state.currentEpisodeGuid] ? state.episodes[state.currentEpisodeGuid].playing: false) && action.playlistIndex !== state.currentPlaylistIndex ? [{
+                        type: 'STOP',
+                        actionType: 'PLAY_EPISODE_FROM_PLAYLIST',
+                        timestamp: new Date().toISOString()
+                    }] : [])]
+                }
+            }
         };
     }
 
@@ -127,7 +162,12 @@ function RootReducer(state=InitialState, action: any) {
                 ...state.episodes,
                 [state.currentEpisodeGuid]: {
                     ...state.episodes[state.currentEpisodeGuid],
-                    playing: true
+                    playing: true,
+                    timestamps: [...state.episodes[state.currentEpisodeGuid].timestamps, {
+                        type: 'START',
+                        actionType: 'CURRENT_EPISODE_PLAYED',
+                        timestamp: new Date().toISOString()
+                    }]
                 }
             }
         };
@@ -140,7 +180,12 @@ function RootReducer(state=InitialState, action: any) {
                 ...state.episodes,
                 [state.currentEpisodeGuid]: {
                     ...state.episodes[state.currentEpisodeGuid],
-                    playing: false
+                    playing: false,
+                    timestamps: [...state.episodes[state.currentEpisodeGuid].timestamps, {
+                        type: 'STOP',
+                        actionType: 'CURRENT_EPISODE_PAUSED',
+                        timestamp: new Date().toISOString()
+                    }]
                 }
             }
         };
