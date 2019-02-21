@@ -2,21 +2,13 @@ import { customElement, html } from 'functional-element';
 import { Store } from '../services/store';
 
 customElement('pc-player', ({ constructing, update, element }) => {
+    
     if (constructing) {
         Store.subscribe(update);
     }
-
+    
     const state = Store.getState();
-    const currentEpisode = state.episodes[state.currentEpisodeGuid] || {};
-
-    // TODO working on picking up where we left off on audio tracks
-    // if (currentEpisode.playing === false) {
-    //     const audioElement = element.querySelector('audio');
-
-    //     if (audioElement) {
-    //         audioElement.currentTime = Math.floor(currentEpisode.progress / 1000);
-    //     }
-    // }
+    const currentEpisode = state.episodes[state.currentEpisodeGuid];
 
     return html`
         <style>
@@ -33,11 +25,12 @@ customElement('pc-player', ({ constructing, update, element }) => {
 
         <div class="pc-player-container">
             <audio
-                src="${currentEpisode.src}"
+                src="${currentEpisode ? currentEpisode.src : ''}"
                 @ended=${audioEnded}
                 @timeupdate=${timeUpdated}
                 @play=${played}
                 @pause=${paused}
+                @loadstart=${() => loadStarted(currentEpisode, element)}
                 controls
                 autoplay
             ></audio>
@@ -52,7 +45,12 @@ function audioEnded() {
 }
 
 function timeUpdated(e) {
-    const progress = e.timeStamp
+    const progress = e.target.currentTime;
+
+    if (progress === 0) {
+        return;
+    }
+
     Store.dispatch({
         type: 'UPDATE_CURRENT_EPISODE_PROGRESS',
         progress
@@ -69,4 +67,9 @@ function paused() {
     Store.dispatch({
         type: 'CURRENT_EPISODE_PAUSED'
     });
+}
+
+function loadStarted(currentEpisode, element) {
+    const audioElement = element.querySelector('audio');
+    audioElement.currentTime = currentEpisode.progress;
 }
