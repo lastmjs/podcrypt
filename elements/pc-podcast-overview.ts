@@ -1,11 +1,10 @@
 import { customElement, html } from 'functional-element';
 import '../node_modules/rss-parser/dist/rss-parser.min.js';
 import { until } from 'lit-html/directives/until.js'; // TODO perhaps functional-element should export everything from lit-html so that I can grab it all from functional-element instead of here
+import { Store } from '../services/store';
 
 customElement('pc-podcast-overview', ({ constructing, element, update, props }) => {
     
-    console.log('props', props)
-
     if (constructing) {
         return {
             feedUrl: null
@@ -43,9 +42,35 @@ async function getFeed(feedUrl) {
         <h3>Episodes</h3>
         ${feed.items.map((item) => {
             return html`
-                <div>${item.title}</div>
-                <audio src="${item.enclosure.url}" controls></audio>
+                <div>
+                    ${item.title}
+                    <button @click=${() => playEpisode(item)}>Play</button>
+                    <button @click=${() => addEpisodeToPlaylist(item)}>Add to playlist</button>
+                    <button>Subscribe</button>
+                </div>
+                <br>
             `;
         })}
     `;
+}
+
+// TODO really this should add to the playlist and start the playlist
+function playEpisode(item) {
+    Store.dispatch({
+        type: 'SET_CURRENT_PODCAST',
+        currentEpisode: {
+            title: item.title,
+            src: item.enclosure.url
+        }
+    });
+}
+
+function addEpisodeToPlaylist(item) {
+    Store.dispatch({
+        type: 'ADD_EPISODE_TO_PLAYLIST',
+        episode: {
+            title: item.title,
+            src: item.enclosure.url
+        }
+    });
 }

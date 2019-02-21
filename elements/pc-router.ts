@@ -42,7 +42,6 @@ window.addEventListener('load', () => {
 
 import './pc-podcasts.ts';
 import './pc-playlist';
-import './pc-player';
 import './pc-wallet';
 import './pc-podcast-overview';
 
@@ -55,12 +54,9 @@ customElement('pc-router', async ({ constructing, update }) => {
     const currentRoute = Store.getState().currentRoute;
     // await loadRouteModules(Store.getState().currentRoute);
 
-    console.log(decodeURIComponent(Store.getState().currentRoute.query.feedUrl));
-
     return html`
         <pc-podcasts ?hidden=${currentRoute.pathname !== '/' && currentRoute.pathname !== '/podcasts'}></pc-podcasts>
         <pc-playlist ?hidden=${currentRoute.pathname !== '/playlist'}></pc-playlist>
-        <pc-player ?hidden=${currentRoute.pathname !== '/player'}></pc-player>
         <pc-wallet ?hidden=${currentRoute.pathname !== '/wallet'}></pc-wallet>
         <pc-podcast-overview
             ?hidden=${currentRoute.pathname !== '/podcast-overview'}
