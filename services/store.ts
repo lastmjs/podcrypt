@@ -84,7 +84,8 @@ function RootReducer(state=InitialState, action: any) {
                     ...state.episodes,
                     [state.currentEpisodeGuid]: {
                         ...state.episodes[state.currentEpisodeGuid],
-                        finishedListening: true
+                        finishedListening: true,
+                        progress: 0
                     }
                 }
             };
@@ -99,7 +100,8 @@ function RootReducer(state=InitialState, action: any) {
                 ...state.episodes,
                 [state.currentEpisodeGuid]: {
                     ...state.episodes[state.currentEpisodeGuid],
-                    finishedListening: true
+                    finishedListening: true,
+                    progress: 0
                 }
             }
         };

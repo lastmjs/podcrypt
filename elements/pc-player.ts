@@ -17,8 +17,7 @@ customElement('pc-player', ({ constructing, update, element }) => {
                 flex-direction: row;
                 justify-content: center;
                 position: fixed;
-                bottom: 0;
-                background-color: grey;
+                bottom: 2%;
                 width: 100%;
             }
         </style>
