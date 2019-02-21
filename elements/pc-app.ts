@@ -3,6 +3,7 @@ import { Store } from '../services/store';
 import './pc-router';
 import './pc-main-menu';
 import './pc-player';
+import './pc-hamburger';
 
 customElement('pc-app', ({ constructing, update }) => {
 
@@ -14,10 +15,12 @@ customElement('pc-app', ({ constructing, update }) => {
         <style>
             .pc-app-main-menu-toggle {
                 position: absolute;
+                top: 1%;
+                left: 1%;
             }
         </style>
 
-        <button class="pc-app-main-menu-toggle" @click=${mainMenuToggle}>Menu</button>
+        <pc-hamburger class="pc-app-main-menu-toggle" @click=${mainMenuToggle}></pc-hamburger>
         <pc-main-menu ?hidden=${!Store.getState().showMainMenu}></pc-main-menu>
         <pc-router></pc-router>
         <pc-player></pc-player>
