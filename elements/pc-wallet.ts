@@ -20,7 +20,7 @@ customElement('pc-wallet', ({ constructing, update }) => {
 
         <div class="pc-wallet-container">
             <h3>
-                Payout amount: ~$10
+                Payout amount: ~$${Store.getState().payoutAmountDollars}
             </h3>
 
             <h3>
@@ -34,11 +34,11 @@ customElement('pc-wallet', ({ constructing, update }) => {
                     <div class="pc-wallet-podcast-item">
                         <div>${podcast.title}</div>
                         <br>
-                        <div>Time listened: ${Math.floor(calculateTotalTime(podcast) / 1000)} seconds</div>
+                        <div>Time listened: ${Math.floor(calculateTotalTimeForPodcast(Store.getState(), podcast) / 1000)} seconds</div>
                         <br>
-                        <div>Percentage of total time listened: </div>
+                        <div>Percentage of total time listened: ${Math.floor(calculatePercentageOfTotalTimeForPodcast(Store.getState(), podcast) * 100)}%</div>
                         <br>
-                        <div>Payout: </div>
+                        <div>Payout: $${calculatePayoutAmountForPodcast(Store.getState(), podcast).toFixed(2)}</div>
                     </div>
 
                     <hr>
@@ -48,9 +48,27 @@ customElement('pc-wallet', ({ constructing, update }) => {
     `;
 })
 
-function calculateTotalTime(podcast) {
+function calculatePayoutAmountForPodcast(state, podcast) {
+    const percentageOfTotalTimeForPodcast = calculatePercentageOfTotalTimeForPodcast(state, podcast);
+    return state.payoutAmountDollars * percentageOfTotalTimeForPodcast;
+}
+
+function calculatePercentageOfTotalTimeForPodcast(state, podcast) {
+    const totalTime = calculateTotalTime(state);
+    const totalTimeForPodcast = calculateTotalTimeForPodcast(state, podcast);
+
+    return totalTimeForPodcast / totalTime;
+}
+
+function calculateTotalTime(state) {
+    return Object.values(state.podcasts).reduce((result, podcast) => {
+        return result + calculateTotalTimeForPodcast(state, podcast);
+    }, 0);
+}
+
+function calculateTotalTimeForPodcast(state, podcast) {
     return podcast.episodes.reduce((result, episodeGuid) => {
-        const episode = Store.getState().episodes[episodeGuid];
+        const episode = state.episodes[episodeGuid];
 
         return result + episode.timestamps.reduce((result, timestamp, index) => {
             const nextTimestamp = episode.timestamps[index + 1];

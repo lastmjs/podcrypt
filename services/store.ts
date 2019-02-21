@@ -14,7 +14,8 @@ const InitialState = persistedState || {
     playlist: [],
     currentPlaylistIndex: 0,
     podcasts: {},
-    episodes: {}
+    episodes: {},
+    payoutAmountDollars: 10
 };
 
 function RootReducer(state=InitialState, action: any) {
