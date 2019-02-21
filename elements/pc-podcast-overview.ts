@@ -4,7 +4,20 @@ import { until } from 'lit-html/directives/until.js'; // TODO perhaps functional
 
 customElement('pc-podcast-overview', ({ constructing, element, update, props }) => {
     return html`
-        ${until(getFeed(), 'Loading...')}
+        <style>
+            .pc-podcast-overview-container {
+                height: 100%;
+                padding-left: 2%;
+                padding-right: 2%;
+                padding-top: 5%;
+                padding-bottom: 5%;
+                overflow-y: auto;
+            }
+        </style>
+
+        <div class="pc-podcast-overview-container">
+            ${until(getFeed(), 'Loading...')}
+        </div>
     `;
 });
 
@@ -25,8 +38,6 @@ async function getFeed() {
     const queryStringProperties = parseQueryString(queryString);
     const feedUrl = decodeURIComponent(queryStringProperties.feedUrl);
     const feed = await new RSSParser().parseURL(`https://cors-anywhere.herokuapp.com/${feedUrl}`);
-    
-    console.log(feed);
 
     return html`
         <h1>${feed.title}</h1>

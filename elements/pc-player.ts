@@ -1,6 +1,6 @@
 import { customElement, html } from 'functional-element';
 
-customElement('pc-player', () => {
+customElement('pc-player', ({ constructing }) => {
     return html`
         <style>
             .pc-player-container {

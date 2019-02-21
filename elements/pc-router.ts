@@ -1,9 +1,8 @@
 import { customElement, html } from 'functional-element';
-import { until } from 'lit-html/directives/until.js'; // TODO perhaps functional-element should export everything from lit-html so that I can grab it all from functional-element instead of here
 import { TemplateResult } from 'lit-html';
 import { Store } from '../services/store';
 
-window.addEventListener('popstate', () => {
+window.addEventListener('popstate', (e) => {
     Store.dispatch({
         type: 'CHANGE_CURRENT_ROUTE',
         currentRoute: {
@@ -27,26 +26,46 @@ window.addEventListener('click', (e) => {
     }
 });
 
-customElement('pc-router', ({ constructing, props, update }) => {
+window.addEventListener('load', () => {
+    Store.dispatch({
+        type: 'CHANGE_CURRENT_ROUTE',
+        currentRoute: {
+            pathname: window.location.pathname,
+            search: window.location.search
+        }
+    });
+});
+
+customElement('pc-router', async ({ constructing, props, update }) => {
     if (constructing) {
-        let pastRoute = null;
+        let previousRoute = null;
         Store.subscribe(() => {
             const currentRoute = Store.getState().currentRoute;
 
-            if (pastRoute !== currentRoute) {
-                pastRoute = currentRoute;
+            if (previousRoute === null || previousRoute.pathname !== currentRoute.pathname) {
+                previousRoute = currentRoute;
                 history.pushState({}, '', `${currentRoute.pathname}${currentRoute.search ? `${currentRoute.search}` : ''}`);
                 update();
             }
         });
     }
 
+    const currentRoute = Store.getState().currentRoute;
+    const routeResult = await getRouteResult(Store.getState().currentRoute);
+
     return html`
-        ${until(getRouteResult(Store.getState().currentRoute), 'Loading...')}
+        <pc-podcasts ?hidden=${currentRoute.pathname !== '/' && currentRoute.pathname !== '/podcasts'}></pc-podcasts>
+        <pc-playlist ?hidden=${currentRoute.pathname !== '/playlist'}></pc-playlist>
+        <pc-player ?hidden=${currentRoute.pathname !== '/player'}></pc-player>
+        <pc-wallet ?hidden=${currentRoute.pathname !== '/wallet'}></pc-wallet>
+        <pc-podcast-overview
+            ?hidden=${currentRoute.pathname !== '/podcast-overview'}
+            .feedUrl=${Store.getState().query.feedUrl}
+        ></pc-podcast-overview>
     `;
 });
 
-async function getRouteResult(currentRoute: string): Promise<TemplateResult> {
+async function getRouteResult(currentRoute): Promise<TemplateResult> {
     const routes: {
         [key: string]: () => Promise<TemplateResult>
     } = {

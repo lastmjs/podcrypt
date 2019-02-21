@@ -1,6 +1,6 @@
 import { customElement, html } from 'functional-element';
 
-customElement('pc-playlist', () => {
+customElement('pc-playlist', ({ update }) => {
     return html`
         <style>
             .pc-playlist-container {
@@ -13,4 +13,4 @@ customElement('pc-playlist', () => {
             pc-playlist
         </div>
     `;
-})
+});
