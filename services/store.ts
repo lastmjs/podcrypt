@@ -70,13 +70,8 @@ function RootReducer(state=InitialState, action: any) {
     }
 
     if (action.type === 'CURRENT_EPISODE_COMPLETED') {
-        const updatedEpisode = {
-            ...state.currentEpisode,
-            finishedListening: true
-        };
         const nextPlaylistIndex = state.currentPlaylistIndex + 1;
         const nextEpisodeGuid = state.playlist[nextPlaylistIndex];
-        const nextEpisode = state.episodes[nextEpisodeGuid];
 
         if (!nextEpisodeGuid) {
             return state;
@@ -84,11 +79,53 @@ function RootReducer(state=InitialState, action: any) {
 
         return {
             ...state,
-            currentEpisode: nextEpisode,
+            currentEpisodeGuid: nextEpisodeGuid,
             currentPlaylistIndex: nextPlaylistIndex,
             episodes: {
                 ...state.episodes,
-                [state.currentEpisode.guid]: updatedEpisode
+                [state.currentEpisodeGuid]: {
+                    ...state.episodes[state.currentEpisodeGuid],
+                    finishedListening: true
+                }
+            }
+        };
+    }
+
+    if (action.type === 'UPDATE_CURRENT_EPISODE_PROGRESS') {
+        return {
+            ...state,
+            episodes: {
+                ...state.episodes,
+                [state.currentEpisodeGuid]: {
+                    ...state.episodes[state.currentEpisodeGuid],
+                    progress: action.progress
+                }
+            }
+        };
+    }
+
+    if (action.type === 'CURRENT_EPISODE_PLAYED') {
+        return {
+            ...state,
+            episodes: {
+                ...state.episodes,
+                [state.currentEpisodeGuid]: {
+                    ...state.episodes[state.currentEpisodeGuid],
+                    playing: true
+                }
+            }
+        };
+    }
+
+    if (action.type === 'CURRENT_EPISODE_PAUSED') {
+        return {
+            ...state,
+            episodes: {
+                ...state.episodes,
+                [state.currentEpisodeGuid]: {
+                    ...state.episodes[state.currentEpisodeGuid],
+                    playing: false
+                }
             }
         };
     }
@@ -97,11 +134,16 @@ function RootReducer(state=InitialState, action: any) {
 }
 
 export const Store = createStore((state, action) => {
-    console.log('action', action);
+
+    if (action.type !== 'UPDATE_CURRENT_EPISODE_PROGRESS') {
+        console.log('action', action);
+    }
 
     const newState = RootReducer(state, action);
 
-    console.log('state', newState);
+    if (action.type !== 'UPDATE_CURRENT_EPISODE_PROGRESS') {
+        console.log('state', state);
+    }
 
     window.localStorage.setItem('state', JSON.stringify(newState));
 
