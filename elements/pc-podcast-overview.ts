@@ -1,32 +1,40 @@
 import { customElement, html } from 'functional-element';
 import '../node_modules/rss-parser/dist/rss-parser.min.js';
 import { until } from 'lit-html/directives/until.js'; // TODO perhaps functional-element should export everything from lit-html so that I can grab it all from functional-element instead of here
+import { Store } from '../services/store';
 
 customElement('pc-podcast-overview', ({ constructing, element, update, props }) => {
+    
+    if (constructing) {
+        return {
+            feedUrl: null
+        };
+    }
+
     return html`
-        ${until(getFeed(), 'Loading...')}
+        <style>
+            .pc-podcast-overview-container {
+                height: 100%;
+                padding-left: 2%;
+                padding-right: 2%;
+                padding-top: 5%;
+                padding-bottom: 5%;
+                overflow-y: auto;
+            }
+        </style>
+
+        <div class="pc-podcast-overview-container">
+            ${until(getFeed(props.feedUrl), 'Loading...')}
+        </div>
     `;
 });
 
-function parseQueryString(queryString) {
-    return queryString.split('&').reduce((result, keyAndValue) => {
-        const keyAndValueArray = keyAndValue.split('=');
-        const key = keyAndValueArray[0];
-        const value = keyAndValueArray[1];
-        return {
-            ...result,
-            [key]: value
-        };
-    }, {});
-}
+async function getFeed(feedUrl) {
+    if (feedUrl === null || feedUrl === undefined || feedUrl === 'undefined') {
+        return html`No podcast selected`;
+    }
 
-async function getFeed() {
-    const queryString = window.location.search.slice(1);
-    const queryStringProperties = parseQueryString(queryString);
-    const feedUrl = decodeURIComponent(queryStringProperties.feedUrl);
     const feed = await new RSSParser().parseURL(`https://cors-anywhere.herokuapp.com/${feedUrl}`);
-    
-    console.log(feed);
 
     return html`
         <h1>${feed.title}</h1>
@@ -34,9 +42,35 @@ async function getFeed() {
         <h3>Episodes</h3>
         ${feed.items.map((item) => {
             return html`
-                <div>${item.title}</div>
-                <audio src="${item.enclosure.url}" controls></audio>
+                <div>
+                    ${item.title}
+                    <button @click=${() => playEpisode(item)}>Play</button>
+                    <button @click=${() => addEpisodeToPlaylist(item)}>Add to playlist</button>
+                    <button>Subscribe</button>
+                </div>
+                <br>
             `;
         })}
     `;
+}
+
+// TODO really this should add to the playlist and start the playlist
+function playEpisode(item) {
+    Store.dispatch({
+        type: 'SET_CURRENT_PODCAST',
+        currentEpisode: {
+            title: item.title,
+            src: item.enclosure.url
+        }
+    });
+}
+
+function addEpisodeToPlaylist(item) {
+    Store.dispatch({
+        type: 'ADD_EPISODE_TO_PLAYLIST',
+        episode: {
+            title: item.title,
+            src: item.enclosure.url
+        }
+    });
 }

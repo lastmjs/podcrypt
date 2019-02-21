@@ -1,6 +1,9 @@
 import { customElement, html } from 'functional-element';
+import { Store } from '../services/store';
 
-customElement('pc-playlist', () => {
+customElement('pc-playlist', ({ update }) => {
+    Store.subscribe(update);
+
     return html`
         <style>
             .pc-playlist-container {
@@ -10,7 +13,9 @@ customElement('pc-playlist', () => {
         </style>
 
         <div class="pc-playlist-container">
-            pc-playlist
+            ${Store.getState().playlist.map((episode) => {
+                return html`<div>${episode.title}</div>`;
+            })}
         </div>
     `;
-})
+});

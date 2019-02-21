@@ -1,16 +1,24 @@
 import { customElement, html } from 'functional-element';
+import { Store } from '../services/store';
 
-customElement('pc-player', () => {
+customElement('pc-player', ({ update }) => {
+    Store.subscribe(update);
+
     return html`
         <style>
             .pc-player-container {
-                height: 100%;
-                background-color: green;
+                display: flex;
+                flex-direction: row;
+                justify-content: center;
+                position: fixed;
+                bottom: 0;
+                background-color: grey;
+                width: 100%;
             }
         </style>
 
         <div class="pc-player-container">
-            pc-player
+            <audio src="${Store.getState().currentEpisode.src}" controls autoplay></audio>
         </div>
     `;
 })

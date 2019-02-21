@@ -2,6 +2,7 @@ import { customElement, html } from 'functional-element';
 import { Store } from '../services/store';
 import './pc-router';
 import './pc-main-menu';
+import './pc-player';
 
 customElement('pc-app', ({ constructing, update }) => {
 
@@ -19,6 +20,7 @@ customElement('pc-app', ({ constructing, update }) => {
         <button class="pc-app-main-menu-toggle" @click=${mainMenuToggle}>Menu</button>
         <pc-main-menu ?hidden=${!Store.getState().showMainMenu}></pc-main-menu>
         <pc-router></pc-router>
+        <pc-player></pc-player>
     `;
 });
 

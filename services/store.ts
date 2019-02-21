@@ -4,8 +4,13 @@ const InitialState = {
     currentRoute: {
         pathname: '/',
         search: '',
+        query: {}
     },
-    showMainMenu: false
+    showMainMenu: false,
+    currentEpisode: {
+        src: ''
+    },
+    playlist: []
 };
 
 function RootReducer(state=InitialState, action: any) {
@@ -21,6 +26,20 @@ function RootReducer(state=InitialState, action: any) {
             ...state,
             showMainMenu: !state.showMainMenu
         }
+    }
+
+    if (action.type === 'SET_CURRENT_EPISODE') {
+        return {
+            ...state,
+            currentEpisode: action.currentEpisode
+        };
+    }
+
+    if (action.type === 'ADD_EPISODE_TO_PLAYLIST') {
+        return {
+            ...state,
+            playlist: [...state.playlist, action.episode]
+        };
     }
 
     return state;
