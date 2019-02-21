@@ -6,7 +6,6 @@ const InitialState = {
         search: '',
         query: {}
     },
-    previousRoute: null,
     showMainMenu: false
 };
 
@@ -14,8 +13,7 @@ function RootReducer(state=InitialState, action: any) {
     if (action.type === 'CHANGE_CURRENT_ROUTE') {
         return {
             ...state,
-            currentRoute: action.currentRoute,
-            previousRoute: state.currentRoute
+            currentRoute: action.currentRoute
         };
     }
 

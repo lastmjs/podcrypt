@@ -40,13 +40,22 @@ window.addEventListener('load', () => {
     });
 });
 
-customElement('pc-router', async ({ constructing, props, update }) => {
+import './pc-podcasts.ts';
+import './pc-playlist';
+import './pc-player';
+import './pc-wallet';
+import './pc-podcast-overview';
+
+customElement('pc-router', async ({ constructing, update }) => {
+
     if (constructing) {
         Store.subscribe(update);
     }
 
     const currentRoute = Store.getState().currentRoute;
-    await loadRouteModules(Store.getState().currentRoute);
+    // await loadRouteModules(Store.getState().currentRoute);
+
+    console.log(decodeURIComponent(Store.getState().currentRoute.query.feedUrl));
 
     return html`
         <pc-podcasts ?hidden=${currentRoute.pathname !== '/' && currentRoute.pathname !== '/podcasts'}></pc-podcasts>
@@ -60,6 +69,8 @@ customElement('pc-router', async ({ constructing, props, update }) => {
     `;
 });
 
+// TODO figure out lazy loading later...perhaps we should not do our own router in that case
+// TODO I am having issues with property settings when lazy loading
 async function loadRouteModules(currentRoute): Promise<void> {
     const routes = {
         '/': async () => {
@@ -81,6 +92,8 @@ async function loadRouteModules(currentRoute): Promise<void> {
             await import('./pc-podcast-overview.ts');
         }
     };
+
+    await routes[currentRoute.pathname]();
 }
 
 function parseQueryString(queryString: string) {

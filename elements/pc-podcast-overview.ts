@@ -4,6 +4,8 @@ import { until } from 'lit-html/directives/until.js'; // TODO perhaps functional
 
 customElement('pc-podcast-overview', ({ constructing, element, update, props }) => {
     
+    console.log('props', props)
+
     if (constructing) {
         return {
             feedUrl: null
