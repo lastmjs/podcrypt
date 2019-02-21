@@ -1,16 +1,18 @@
 import { createStore } from 'redux';
 
-const InitialState = {
+const persistedState = JSON.parse(window.localStorage.getItem('state'));
+
+const InitialState = persistedState || {
     currentRoute: {
         pathname: '/',
         search: '',
         query: {}
     },
     showMainMenu: false,
-    currentEpisode: {
-        src: ''
-    },
-    playlist: []
+    currentEpisodeGuid: '',
+    playlist: [],
+    currentPlaylistIndex: 0,
+    episodes: {}
 };
 
 function RootReducer(state=InitialState, action: any) {
@@ -28,21 +30,122 @@ function RootReducer(state=InitialState, action: any) {
         }
     }
 
-    if (action.type === 'SET_CURRENT_EPISODE') {
+    if (action.type === 'PLAY_EPISODE') {
         return {
             ...state,
-            currentEpisode: action.currentEpisode
+            currentEpisodeGuid: action.episode.guid,
+            episodes: {
+                ...state.episodes,
+                [action.episode.guid]: {
+                    ...state.episodes[action.episode.guid],
+                    ...action.episode
+                }
+            }
         };
     }
 
     if (action.type === 'ADD_EPISODE_TO_PLAYLIST') {
         return {
             ...state,
-            playlist: [...state.playlist, action.episode]
+            playlist: [...state.playlist, action.episode.guid],
+            episodes: {
+                ...state.episodes,
+                [action.episode.guid]: {
+                    ...state.episodes[action.episode.guid],
+                    ...action.episode
+                }
+            }
+        };
+    }
+
+    if (action.type === 'PLAY_EPISODE_FROM_PLAYLIST') {
+        const currentPlaylistIndex = action.playlistIndex;
+        const currentEpisodeGuid = state.playlist[currentPlaylistIndex];
+
+        return {
+            ...state,
+            currentEpisodeGuid,
+            currentPlaylistIndex
+        };
+    }
+
+    if (action.type === 'CURRENT_EPISODE_COMPLETED') {
+        const nextPlaylistIndex = state.currentPlaylistIndex + 1;
+        const nextEpisodeGuid = state.playlist[nextPlaylistIndex];
+
+        if (!nextEpisodeGuid) {
+            return state;
+        }
+
+        return {
+            ...state,
+            currentEpisodeGuid: nextEpisodeGuid,
+            currentPlaylistIndex: nextPlaylistIndex,
+            episodes: {
+                ...state.episodes,
+                [state.currentEpisodeGuid]: {
+                    ...state.episodes[state.currentEpisodeGuid],
+                    finishedListening: true
+                }
+            }
+        };
+    }
+
+    if (action.type === 'UPDATE_CURRENT_EPISODE_PROGRESS') {
+        return {
+            ...state,
+            episodes: {
+                ...state.episodes,
+                [state.currentEpisodeGuid]: {
+                    ...state.episodes[state.currentEpisodeGuid],
+                    progress: action.progress
+                }
+            }
+        };
+    }
+
+    if (action.type === 'CURRENT_EPISODE_PLAYED') {
+        return {
+            ...state,
+            episodes: {
+                ...state.episodes,
+                [state.currentEpisodeGuid]: {
+                    ...state.episodes[state.currentEpisodeGuid],
+                    playing: true
+                }
+            }
+        };
+    }
+
+    if (action.type === 'CURRENT_EPISODE_PAUSED') {
+        return {
+            ...state,
+            episodes: {
+                ...state.episodes,
+                [state.currentEpisodeGuid]: {
+                    ...state.episodes[state.currentEpisodeGuid],
+                    playing: false
+                }
+            }
         };
     }
 
     return state;
 }
 
-export const Store = createStore(RootReducer);
+export const Store = createStore((state, action) => {
+
+    if (action.type !== 'UPDATE_CURRENT_EPISODE_PROGRESS') {
+        console.log('action', action);
+    }
+
+    const newState = RootReducer(state, action);
+
+    if (action.type !== 'UPDATE_CURRENT_EPISODE_PROGRESS') {
+        console.log('state', state);
+    }
+
+    window.localStorage.setItem('state', JSON.stringify(newState));
+
+    return newState;
+});
