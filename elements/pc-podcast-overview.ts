@@ -3,6 +3,13 @@ import '../node_modules/rss-parser/dist/rss-parser.min.js';
 import { until } from 'lit-html/directives/until.js'; // TODO perhaps functional-element should export everything from lit-html so that I can grab it all from functional-element instead of here
 
 customElement('pc-podcast-overview', ({ constructing, element, update, props }) => {
+    
+    if (constructing) {
+        return {
+            feedUrl: null
+        };
+    }
+
     return html`
         <style>
             .pc-podcast-overview-container {
@@ -16,27 +23,16 @@ customElement('pc-podcast-overview', ({ constructing, element, update, props }) 
         </style>
 
         <div class="pc-podcast-overview-container">
-            ${until(getFeed(), 'Loading...')}
+            ${until(getFeed(props.feedUrl), 'Loading...')}
         </div>
     `;
 });
 
-function parseQueryString(queryString) {
-    return queryString.split('&').reduce((result, keyAndValue) => {
-        const keyAndValueArray = keyAndValue.split('=');
-        const key = keyAndValueArray[0];
-        const value = keyAndValueArray[1];
-        return {
-            ...result,
-            [key]: value
-        };
-    }, {});
-}
+async function getFeed(feedUrl) {
+    if (feedUrl === null || feedUrl === undefined || feedUrl === 'undefined') {
+        return html`No podcast selected`;
+    }
 
-async function getFeed() {
-    const queryString = window.location.search.slice(1);
-    const queryStringProperties = parseQueryString(queryString);
-    const feedUrl = decodeURIComponent(queryStringProperties.feedUrl);
     const feed = await new RSSParser().parseURL(`https://cors-anywhere.herokuapp.com/${feedUrl}`);
 
     return html`

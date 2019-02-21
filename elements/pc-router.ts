@@ -1,5 +1,4 @@
 import { customElement, html } from 'functional-element';
-import { TemplateResult } from 'lit-html';
 import { Store } from '../services/store';
 
 window.addEventListener('popstate', (e) => {
@@ -7,7 +6,8 @@ window.addEventListener('popstate', (e) => {
         type: 'CHANGE_CURRENT_ROUTE',
         currentRoute: {
             pathname: window.location.pathname,
-            search: window.location.search
+            search: window.location.search,
+            query: parseQueryString(window.location.search.slice(1))
         }
     });
 });
@@ -20,9 +20,12 @@ window.addEventListener('click', (e) => {
             type: 'CHANGE_CURRENT_ROUTE',
             currentRoute: {
                 pathname: e.target.pathname,
-                search: e.target.search
+                search: e.target.search,
+                query: parseQueryString(e.target.search.slice(1))
             }
         });
+
+        history.pushState({}, '', `${Store.getState().currentRoute.pathname}${Store.getState().currentRoute.search ? `${Store.getState().currentRoute.search}` : ''}`);
     }
 });
 
@@ -31,27 +34,19 @@ window.addEventListener('load', () => {
         type: 'CHANGE_CURRENT_ROUTE',
         currentRoute: {
             pathname: window.location.pathname,
-            search: window.location.search
+            search: window.location.search,
+            query: parseQueryString(window.location.search.slice(1))
         }
     });
 });
 
 customElement('pc-router', async ({ constructing, props, update }) => {
     if (constructing) {
-        let previousRoute = null;
-        Store.subscribe(() => {
-            const currentRoute = Store.getState().currentRoute;
-
-            if (previousRoute === null || previousRoute.pathname !== currentRoute.pathname) {
-                previousRoute = currentRoute;
-                history.pushState({}, '', `${currentRoute.pathname}${currentRoute.search ? `${currentRoute.search}` : ''}`);
-                update();
-            }
-        });
+        Store.subscribe(update);
     }
 
     const currentRoute = Store.getState().currentRoute;
-    const routeResult = await getRouteResult(Store.getState().currentRoute);
+    await loadRouteModules(Store.getState().currentRoute);
 
     return html`
         <pc-podcasts ?hidden=${currentRoute.pathname !== '/' && currentRoute.pathname !== '/podcasts'}></pc-podcasts>
@@ -60,40 +55,42 @@ customElement('pc-router', async ({ constructing, props, update }) => {
         <pc-wallet ?hidden=${currentRoute.pathname !== '/wallet'}></pc-wallet>
         <pc-podcast-overview
             ?hidden=${currentRoute.pathname !== '/podcast-overview'}
-            .feedUrl=${Store.getState().query.feedUrl}
+            .feedUrl=${decodeURIComponent(Store.getState().currentRoute.query.feedUrl)}
         ></pc-podcast-overview>
     `;
 });
 
-async function getRouteResult(currentRoute): Promise<TemplateResult> {
-    const routes: {
-        [key: string]: () => Promise<TemplateResult>
-    } = {
+async function loadRouteModules(currentRoute): Promise<void> {
+    const routes = {
         '/': async () => {
             await import('./pc-podcasts.ts');
-            return html`<pc-podcasts></pc-podcasts>`;
         },
         '/podcasts': async () => {
             await import('./pc-podcasts.ts');
-            return html`<pc-podcasts></pc-podcasts>`;
         },
         '/playlist': async () => {
             await import('./pc-playlist.ts');
-            return html`<pc-playlist></pc-playlist>`;
         },
         '/player': async () => {
             await import('./pc-player.ts');
-            return html`<pc-player></pc-player>`;
         },
         '/wallet': async () => {
             await import('./pc-wallet.ts');
-            return html`<pc-wallet></pc-wallet>`;
         },
         '/podcast-overview': async () => {
             await import('./pc-podcast-overview.ts');
-            return html`<pc-podcast-overview></pc-podcast-overview>`;            
         }
     };
+}
 
-    return routes[Store.getState().currentRoute.pathname]();
+function parseQueryString(queryString: string) {
+    return queryString.split('&').reduce((result, keyAndValue) => {
+        const keyAndValueArray = keyAndValue.split('=');
+        const key = keyAndValueArray[0];
+        const value = keyAndValueArray[1];
+        return {
+            ...result,
+            [key]: value
+        };
+    }, {});
 }
