@@ -31,6 +31,9 @@ async function getFeed(feedUrl) {
     }
 
     const feed = await new RSSParser().parseURL(`https://cors-anywhere.herokuapp.com/${feedUrl}`);
+    // const feed = await new RSSParser().parseURL(`${feedUrl}`);
+
+    console.log(feed);
 
     return html`
         <h2>${feed.title}</h2>

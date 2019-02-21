@@ -9,7 +9,8 @@ const InitialState = persistedState || {
         query: {}
     },
     showMainMenu: false,
-    currentEpisodeGuid: '',
+    currentEpisodeGuid: null,
+    previousEpisodeGuid: null, // TODO I might not need this at all
     playlist: [],
     currentPlaylistIndex: 0,
     episodes: {}
@@ -30,19 +31,20 @@ function RootReducer(state=InitialState, action: any) {
         }
     }
 
-    if (action.type === 'PLAY_EPISODE') {
-        return {
-            ...state,
-            currentEpisodeGuid: action.episode.guid,
-            episodes: {
-                ...state.episodes,
-                [action.episode.guid]: {
-                    ...state.episodes[action.episode.guid],
-                    ...action.episode
-                }
-            }
-        };
-    }
+    // if (action.type === 'PLAY_EPISODE') {
+    //     return {
+    //         ...state,
+    //         currentEpisodeGuid: action.episode.guid,
+    //         previousEpisodeGuid: state.episode.guid,
+    //         episodes: {
+    //             ...state.episodes,
+    //             [action.episode.guid]: {
+    //                 ...state.episodes[action.episode.guid],
+    //                 ...action.episode
+    //             }
+    //         }
+    //     };
+    // }
 
     if (action.type === 'ADD_EPISODE_TO_PLAYLIST') {
         return {
@@ -61,10 +63,12 @@ function RootReducer(state=InitialState, action: any) {
     if (action.type === 'PLAY_EPISODE_FROM_PLAYLIST') {
         const currentPlaylistIndex = action.playlistIndex;
         const currentEpisodeGuid = state.playlist[currentPlaylistIndex];
+        const previousEpisodeGuid = state.currentPlaylistIndex === action.playlistIndex ? state.previousEpisodeGuid : state.currentEpisodeGuid;
 
         return {
             ...state,
             currentEpisodeGuid,
+            previousEpisodeGuid,
             currentPlaylistIndex
         };
     }
@@ -74,18 +78,30 @@ function RootReducer(state=InitialState, action: any) {
         const nextEpisodeGuid = state.playlist[nextPlaylistIndex];
 
         if (!nextEpisodeGuid) {
-            return state;
+            return {
+                ...state,
+                episodes: {
+                    ...state.episodes,
+                    [state.currentEpisodeGuid]: {
+                        ...state.episodes[state.currentEpisodeGuid],
+                        finishedListening: true,
+                        progress: 0
+                    }
+                }
+            };
         }
 
         return {
             ...state,
             currentEpisodeGuid: nextEpisodeGuid,
+            previousEpisodeGuid: state.currentEpisodeGuid,
             currentPlaylistIndex: nextPlaylistIndex,
             episodes: {
                 ...state.episodes,
                 [state.currentEpisodeGuid]: {
                     ...state.episodes[state.currentEpisodeGuid],
-                    finishedListening: true
+                    finishedListening: true,
+                    progress: 0
                 }
             }
         };
@@ -142,7 +158,7 @@ export const Store = createStore((state, action) => {
     const newState = RootReducer(state, action);
 
     if (action.type !== 'UPDATE_CURRENT_EPISODE_PROGRESS') {
-        console.log('state', state);
+        console.log('state', newState);
     }
 
     window.localStorage.setItem('state', JSON.stringify(newState));
