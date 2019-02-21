@@ -27,18 +27,11 @@ customElement('pc-wallet', ({ constructing, update }) => {
                 Payout interval: 30 days
             </h3>
 
-            <h4>Podcasts</h4>
-
             ${Object.values(Store.getState().podcasts).map((podcast) => {
                 return html`
                     <div class="pc-wallet-podcast-item">
-                        <div>${podcast.title}</div>
-                        <br>
-                        <div>Time listened: ${Math.floor(calculateTotalTimeForPodcast(Store.getState(), podcast) / 1000)} seconds</div>
-                        <br>
-                        <div>Percentage of total time listened: ${Math.floor(calculatePercentageOfTotalTimeForPodcast(Store.getState(), podcast) * 100)}%</div>
-                        <br>
-                        <div>Payout: $${calculatePayoutAmountForPodcast(Store.getState(), podcast).toFixed(2)}</div>
+                        <h4>${podcast.title}</h4>
+                        $${calculatePayoutAmountForPodcast(Store.getState(), podcast).toFixed(2)}, ${Math.floor(calculatePercentageOfTotalTimeForPodcast(Store.getState(), podcast) * 100)}%, ${Math.floor(calculateTotalTimeForPodcast(Store.getState(), podcast) / 1000)} seconds
                     </div>
 
                     <hr>
