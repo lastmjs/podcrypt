@@ -13,6 +13,7 @@ const InitialState = persistedState || {
     previousEpisodeGuid: null, // TODO I might not need this at all
     playlist: [],
     currentPlaylistIndex: 0,
+    podcasts: {},
     episodes: {}
 };
 
@@ -45,6 +46,20 @@ function RootReducer(state=InitialState, action: any) {
     //         }
     //     };
     // }
+
+    // TODO when adding new episodes and podcasts, we might overwrite important data...use more intelligent defaults
+    if (action.type === 'SUBSCRIBE_TO_PODCAST') {
+        return {
+            ...state,
+            podcasts: {
+                ...state.podcasts,
+                [action.podcast.feedUrl]: {
+                    ...state.podcasts[action.podcast.feedUrl],
+                    ...action.podcast
+                }
+            }
+        };
+    }
 
     if (action.type === 'ADD_EPISODE_TO_PLAYLIST') {
         return {

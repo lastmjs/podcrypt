@@ -44,7 +44,6 @@ async function getFeed(feedUrl) {
                 <div>
                     <div>${new Date(item.isoDate).toLocaleString()} - ${item.title}</div>
                     <button @click=${() => addEpisodeToPlaylist(item)}>Add to playlist</button>
-                    <button>Subscribe</button>
                 </div>
                 <br>
             `;
