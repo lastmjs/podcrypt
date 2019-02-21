@@ -58,9 +58,9 @@ customElement('pc-main-menu', () => {
                 <a href="/playlist">Playlist</a>
             </div>
 
-            <div class="pc-menu-item">
+            <!-- <div class="pc-menu-item">
                 <a href="/player">Player</a>
-            </div>
+            </div> -->
 
             <div class="pc-menu-item">
                 <a href="/wallet">Wallet</a>
