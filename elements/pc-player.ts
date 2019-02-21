@@ -4,6 +4,9 @@ import { Store } from '../services/store';
 customElement('pc-player', ({ update }) => {
     Store.subscribe(update);
 
+    const state = Store.getState();
+    const currentEpisode = state.episodes[state.currentEpisodeGuid] || {};
+
     return html`
         <style>
             .pc-player-container {
@@ -18,7 +21,13 @@ customElement('pc-player', ({ update }) => {
         </style>
 
         <div class="pc-player-container">
-            <audio src="${Store.getState().currentEpisode.src}" controls autoplay></audio>
+            <audio src="${currentEpisode.src}" @ended=${audioEnded} controls autoplay></audio>
         </div>
     `;
 })
+
+function audioEnded(e) {
+    Store.dispatch({
+        type: 'CURRENT_EPISODE_COMPLETED'
+    });
+}

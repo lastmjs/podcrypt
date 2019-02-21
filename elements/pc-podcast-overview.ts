@@ -36,6 +36,8 @@ async function getFeed(feedUrl) {
 
     const feed = await new RSSParser().parseURL(`https://cors-anywhere.herokuapp.com/${feedUrl}`);
 
+    console.log('feed', feed);
+
     return html`
         <h1>${feed.title}</h1>
         <h2>${feed.description}</h2>
@@ -57,10 +59,12 @@ async function getFeed(feedUrl) {
 // TODO really this should add to the playlist and start the playlist
 function playEpisode(item) {
     Store.dispatch({
-        type: 'SET_CURRENT_PODCAST',
-        currentEpisode: {
+        type: 'PLAY_EPISODE',
+        episode: {
+            guid: item.guid,
             title: item.title,
-            src: item.enclosure.url
+            src: item.enclosure.url,
+            finishedListening: false
         }
     });
 }
@@ -69,8 +73,10 @@ function addEpisodeToPlaylist(item) {
     Store.dispatch({
         type: 'ADD_EPISODE_TO_PLAYLIST',
         episode: {
+            guid: item.guid,
             title: item.title,
-            src: item.enclosure.url
+            src: item.enclosure.url,
+            finishedListening: false
         }
     });
 }
