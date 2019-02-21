@@ -66,7 +66,7 @@ customElement('pc-podcasts', ({ constructing, connecting, element, update, props
                                 <img src="${podcast.imageUrl}">
                             </div>
                             <div>
-                                <a href="podcast-overview?feedUrl=${encodeURIComponent(podcast.feedUrl)}">${podcast.title}</a>
+                                <a href="podcast-overview?podcast=${encodeURIComponent(JSON.stringify(podcast))}">${podcast.title}</a>
                             </div>
                         </div>
                     `;
@@ -74,18 +74,25 @@ customElement('pc-podcasts', ({ constructing, connecting, element, update, props
             </div>
 
             ${props.searchResults.map((searchResult) => {
+                const podcast = {
+                    feedUrl: searchResult.feedUrl,
+                    title: searchResult.trackName,
+                    imageUrl: searchResult.artworkUrl60,
+                    episodes: []
+                };
+
                 return html`
                     <div class="pc-podcasts-search-item">
                         <img src="${searchResult.artworkUrl60}">
                         <div class="pc-podcasts-search-item-text">
                             <div>
-                                <a href="podcast-overview?feedUrl=${encodeURIComponent(searchResult.feedUrl)}">${searchResult.trackName}</a>
+                                <a href="podcast-overview?podcast=${encodeURIComponent(JSON.stringify(podcast))}">${searchResult.trackName}</a>
                             </div>
 
                             <br>
 
                             <div>
-                                <button @click=${() => subscribeToPodcast(searchResult)}>Subscribe</button>
+                                <button @click=${() => subscribeToPodcast(podcast)}>Subscribe</button>
                             </div>
                         </div>
                     </div>
@@ -114,14 +121,12 @@ function searchInputKeyDown(e, element, update) {
     }
 }
 
-function subscribeToPodcast(searchResult) {
+// TODO defend against adding podcasts multiple times
+// TODO only send the dynamic information that we need from here
+// TODO put all of the defaults into the redux reducer
+function subscribeToPodcast(podcast) {
     Store.dispatch({
         type: 'SUBSCRIBE_TO_PODCAST',
-        podcast: {
-            feedUrl: searchResult.feedUrl,
-            title: searchResult.trackName,
-            imageUrl: searchResult.artworkUrl60,
-            episodes: {}
-        }
+        podcast
     });
 }

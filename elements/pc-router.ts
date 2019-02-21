@@ -60,7 +60,7 @@ customElement('pc-router', async ({ constructing, update }) => {
         <pc-wallet ?hidden=${currentRoute.pathname !== '/wallet'}></pc-wallet>
         <pc-podcast-overview
             ?hidden=${currentRoute.pathname !== '/podcast-overview'}
-            .feedUrl=${decodeURIComponent(Store.getState().currentRoute.query.feedUrl)}
+            .podcast=${decodeURIComponent(Store.getState().currentRoute.query.podcast)}
         ></pc-podcast-overview>
     `;
 });

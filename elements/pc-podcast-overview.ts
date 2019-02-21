@@ -8,7 +8,7 @@ customElement('pc-podcast-overview', ({ constructing, element, update, props }) 
     
     if (constructing) {
         return {
-            feedUrl: null
+            podcast: null
         };
     }
 
@@ -20,17 +20,19 @@ customElement('pc-podcast-overview', ({ constructing, element, update, props }) 
         </style>
 
         <div class="pc-podcast-overview-container">
-            ${until(getFeed(props.feedUrl), 'Loading...')}
+            ${until(getFeed(props.podcast), 'Loading...')}
         </div>
     `;
 });
 
-async function getFeed(feedUrl) {
-    if (feedUrl === null || feedUrl === undefined || feedUrl === 'undefined') {
-        return html`No podcast selected`;
+async function getFeed(podcastRaw) {
+    if (podcastRaw === 'undefined') {
+        return;
     }
 
-    const feed = await new RSSParser().parseURL(`https://cors-anywhere.herokuapp.com/${feedUrl}`);
+    const podcast = JSON.parse(podcastRaw);
+
+    const feed = await new RSSParser().parseURL(`https://cors-anywhere.herokuapp.com/${podcast.feedUrl}`);
     // const feed = await new RSSParser().parseURL(`${feedUrl}`);
 
     console.log(feed);
@@ -43,7 +45,7 @@ async function getFeed(feedUrl) {
             return html`
                 <div>
                     <div>${new Date(item.isoDate).toLocaleString()} - ${item.title}</div>
-                    <button @click=${() => addEpisodeToPlaylist(item)}>Add to playlist</button>
+                    <button @click=${() => addEpisodeToPlaylist(podcast, item)}>Add to playlist</button>
                 </div>
                 <br>
             `;
@@ -67,7 +69,8 @@ async function getFeed(feedUrl) {
 //     });
 // }
 
-function addEpisodeToPlaylist(item) {
+function addEpisodeToPlaylist(podcast, item) {
+    console.log(item)
     Store.dispatch({
         type: 'ADD_EPISODE_TO_PLAYLIST',
         episode: {
@@ -77,7 +80,11 @@ function addEpisodeToPlaylist(item) {
             finishedListening: false,
             playing: false,
             progress: 0,
-            isoDate: item.isoDate
+            isoDate: item.isoDate,
+            timestamps: []
+        },
+        podcast: {
+            ...podcast
         }
     });
 }

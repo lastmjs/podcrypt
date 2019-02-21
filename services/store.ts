@@ -71,6 +71,14 @@ function RootReducer(state=InitialState, action: any) {
                     ...state.episodes[action.episode.guid],
                     ...action.episode
                 }
+            },
+            podcasts: {
+                ...state.podcasts,
+                [action.podcast.feedUrl]: {
+                    ...state.podcasts[action.podcast.feedUrl],
+                    ...action.podcast,
+                    episodes: [...(state.podcasts[action.podcast.feedUrl] ? state.podcasts[action.podcast.feedUrl].episodes : []), action.episode.guid]
+                }
             }
         };
     }
@@ -78,13 +86,25 @@ function RootReducer(state=InitialState, action: any) {
     if (action.type === 'PLAY_EPISODE_FROM_PLAYLIST') {
         const currentPlaylistIndex = action.playlistIndex;
         const currentEpisodeGuid = state.playlist[currentPlaylistIndex];
+        const currentEpisode = state.episodes[currentEpisodeGuid];
         const previousEpisodeGuid = state.currentPlaylistIndex === action.playlistIndex ? state.previousEpisodeGuid : state.currentEpisodeGuid;
 
         return {
             ...state,
             currentEpisodeGuid,
             previousEpisodeGuid,
-            currentPlaylistIndex
+            currentPlaylistIndex,
+            episodes: {
+                ...state.episodes,
+                [state.currentEpisodeGuid]: {
+                    ...state.episodes[state.currentEpisodeGuid],
+                    timestamps: [...(state.episodes[state.currentEpisodeGuid] ? state.episodes[state.currentEpisodeGuid].timestamps : []), ...((state.episodes[state.currentEpisodeGuid] ? state.episodes[state.currentEpisodeGuid].playing: false) && action.playlistIndex !== state.currentPlaylistIndex ? [{
+                        type: 'STOP',
+                        actionType: 'PLAY_EPISODE_FROM_PLAYLIST',
+                        timestamp: new Date().toISOString()
+                    }] : [])]
+                }
+            }
         };
     }
 
@@ -142,7 +162,12 @@ function RootReducer(state=InitialState, action: any) {
                 ...state.episodes,
                 [state.currentEpisodeGuid]: {
                     ...state.episodes[state.currentEpisodeGuid],
-                    playing: true
+                    playing: true,
+                    timestamps: [...state.episodes[state.currentEpisodeGuid].timestamps, {
+                        type: 'START',
+                        actionType: 'CURRENT_EPISODE_PLAYED',
+                        timestamp: new Date().toISOString()
+                    }]
                 }
             }
         };
@@ -155,7 +180,12 @@ function RootReducer(state=InitialState, action: any) {
                 ...state.episodes,
                 [state.currentEpisodeGuid]: {
                     ...state.episodes[state.currentEpisodeGuid],
-                    playing: false
+                    playing: false,
+                    timestamps: [...state.episodes[state.currentEpisodeGuid].timestamps, {
+                        type: 'STOP',
+                        actionType: 'CURRENT_EPISODE_PAUSED',
+                        timestamp: new Date().toISOString()
+                    }]
                 }
             }
         };
