@@ -15,11 +15,12 @@ customElement('pc-app', ({ constructing, update }) => {
         <style>
             .pc-app-top-bar {
                 position: fixed;
-                padding-top: 2%;
-                padding-left: 2%;
-                padding-bottom: 2%;
+                padding-top: 3%;
+                padding-left: 3%;
+                padding-bottom: 3%;
                 width: 100%;
                 background-color: white;
+                box-shadow: -5px 5px 5px -5px grey;
             }
         </style>
 
