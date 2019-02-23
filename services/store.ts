@@ -204,6 +204,7 @@ function RootReducer(state=InitialState, action: any) {
     if (action.type === 'MOVE_EPISODE_UP') {
         return {
             ...state,
+            currentPlaylistIndex: getCurrentPlaylistIndexAfterMoveUp(state, action),
             playlist: state.playlist.map((episodeGuid: string, index: number) => {
                 if (action.playlistIndex === 0) {
                     return episodeGuid;
@@ -225,6 +226,7 @@ function RootReducer(state=InitialState, action: any) {
     if (action.type === 'MOVE_EPISODE_DOWN') {
         return {
             ...state,
+            currentPlaylistIndex: getCurrentPlaylistIndexAfterMoveDown(state, action),
             playlist: state.playlist.map((episodeGuid: string, index: number) => {
                 if (action.playlistIndex === state.playlist.length - 1) {
                     return episodeGuid;
@@ -262,3 +264,39 @@ export const Store = createStore((state, action) => {
 
     return newState;
 });
+
+function getCurrentPlaylistIndexAfterMoveUp(state, action) {
+
+    if (
+        action.playlistIndex === state.currentPlaylistIndex &&
+        action.playlistIndex !== 0
+    ) {
+        return state.currentPlaylistIndex - 1;
+    }
+
+    if (
+        action.playlistIndex === state.currentPlaylistIndex + 1
+    ) {
+        return state.currentPlaylistIndex + 1;
+    }
+
+    return state.currentPlaylistIndex;
+}
+
+function getCurrentPlaylistIndexAfterMoveDown(state, action) {
+
+    if (
+        action.playlistIndex === state.currentPlaylistIndex &&
+        action.playlistIndex !== state.playlist.length - 1
+    ) {
+        return state.currentPlaylistIndex + 1;
+    }
+
+    if (
+        action.playlistIndex === state.currentPlaylistIndex - 1
+    ) {
+        return state.currentPlaylistIndex - 1;
+    }
+
+    return state.currentPlaylistIndex;
+}

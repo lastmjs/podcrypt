@@ -51,7 +51,7 @@ customElement('pc-main-menu', () => {
 
         <div class="pc-menu-container">
             <div class="pc-menu-item">
-                <a href="/podcasts">Podcasts</a>
+                <a href="/">Podcasts</a>
             </div>
 
             <div class="pc-menu-item">
