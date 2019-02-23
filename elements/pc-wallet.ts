@@ -69,7 +69,7 @@ function calculateTotalTimeForPodcast(state, podcast) {
 
         return result + episode.timestamps.reduce((result, timestamp, index) => {
             const nextTimestamp = episode.timestamps[index + 1];
-            const previousTimestamp = episode.timestamps[index + 1];
+            const previousTimestamp = episode.timestamps[index - 1];
 
             if (timestamp.type === 'START') {
                 if (nextTimestamp && nextTimestamp.type === 'STOP') {
