@@ -194,6 +194,7 @@ function RootReducer(state=InitialState, action: any) {
     if (action.type === 'REMOVE_EPISODE_FROM_PLAYLIST') {
         return {
             ...state,
+            currentPlaylistIndex: state.currentPlaylistIndex > action.playlistIndex ? state.currentPlaylistIndex - 1 : state.currentPlaylistIndex,
             playlist: state.playlist.filter((episodeGuid: string, index: number) => {
                 return action.playlistIndex !== index;
             })
