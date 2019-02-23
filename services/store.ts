@@ -192,6 +192,57 @@ function RootReducer(state=InitialState, action: any) {
         };
     }
 
+    if (action.type === 'REMOVE_EPISODE_FROM_PLAYLIST') {
+        return {
+            ...state,
+            playlist: state.playlist.filter((episodeGuid: string, index: number) => {
+                return action.playlistIndex !== index;
+            })
+        };
+    }
+
+    if (action.type === 'MOVE_EPISODE_UP') {
+        return {
+            ...state,
+            playlist: state.playlist.map((episodeGuid: string, index: number) => {
+                if (action.playlistIndex === 0) {
+                    return episodeGuid;
+                }
+
+                if (index === action.playlistIndex - 1) {
+                    return state.playlist[action.playlistIndex];
+                }
+        
+                if (index === action.playlistIndex) {
+                    return state.playlist[action.playlistIndex - 1];
+                }
+
+                return episodeGuid;
+            })
+        };
+    }
+
+    if (action.type === 'MOVE_EPISODE_DOWN') {
+        return {
+            ...state,
+            playlist: state.playlist.map((episodeGuid: string, index: number) => {
+                if (action.playlistIndex === state.playlist.length - 1) {
+                    return episodeGuid;
+                }
+
+                if (index === action.playlistIndex + 1) {
+                    return state.playlist[action.playlistIndex];
+                }
+        
+                if (index === action.playlistIndex) {
+                    return state.playlist[action.playlistIndex + 1];
+                }
+
+                return episodeGuid;
+            })
+        };
+    }
+
     return state;
 }
 
