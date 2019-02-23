@@ -69,6 +69,7 @@ function calculateTotalTimeForPodcast(state, podcast) {
 
         return result + episode.timestamps.reduce((result, timestamp, index) => {
             const nextTimestamp = episode.timestamps[index + 1];
+            const previousTimestamp = episode.timestamps[index + 1];
 
             if (timestamp.type === 'START') {
                 if (nextTimestamp && nextTimestamp.type === 'STOP') {
@@ -78,8 +79,14 @@ function calculateTotalTimeForPodcast(state, podcast) {
                     return result + 0;
                 }
             }
-            else {
-                return result + new Date(timestamp.timestamp).getTime();
+
+            if (timestamp.type === 'STOP') {
+                if (previousTimestamp && previousTimestamp.type === 'START') {
+                    return result + new Date(timestamp.timestamp).getTime();
+                }
+                else {
+                    return result + 0;
+                }
             }
         }, 0);
     }, 0);
