@@ -20,10 +20,15 @@ customElement('pc-player', ({ constructing, update, element }) => {
                 bottom: 2%;
                 width: 100%;
             }
+
+            .pc-player-audio {
+                width: 100%;
+            }
         </style>
 
         <div class="pc-player-container">
             <audio
+                class="pc-player-audio"
                 src="${currentEpisode ? currentEpisode.src : ''}"
                 @ended=${audioEnded}
                 @timeupdate=${timeUpdated}

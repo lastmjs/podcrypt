@@ -13,14 +13,24 @@ customElement('pc-app', ({ constructing, update }) => {
 
     return html`
         <style>
-            .pc-app-main-menu-toggle {
-                position: absolute;
-                top: 1%;
-                left: 1%;
+            .pc-app-top-bar {
+                position: fixed;
+                padding-top: 2%;
+                padding-left: 2%;
+                padding-bottom: 2%;
+                width: 100%;
+                background-color: white;
             }
+
+            /* .pc-app-main-menu-toggle { */
+                /* padding: 5%; */
+            /* } */
         </style>
 
-        <pc-hamburger class="pc-app-main-menu-toggle" @click=${mainMenuToggle}></pc-hamburger>
+        <div class="pc-app-top-bar">
+            <pc-hamburger @click=${mainMenuToggle}></pc-hamburger>
+        </div>
+
         <pc-main-menu ?hidden=${!Store.getState().showMainMenu}></pc-main-menu>
         <pc-router></pc-router>
         <pc-player></pc-player>
