@@ -28,10 +28,14 @@ customElement('pc-wallet', ({ constructing, update }) => {
             </h3>
 
             ${Object.values(Store.getState().podcasts).map((podcast) => {
+                const totalTimeInSeconds = Math.floor(calculateTotalTimeForPodcast(Store.getState(), podcast) / 1000);
+                const totalMinutes = Math.floor(totalTimeInSeconds / 60);
+                const totalSecondsRemaining = totalTimeInSeconds % 60;
+
                 return html`
                     <div class="pc-wallet-podcast-item">
                         <h4>${podcast.title}</h4>
-                        $${calculatePayoutAmountForPodcast(Store.getState(), podcast).toFixed(2)}, ${Math.floor(calculatePercentageOfTotalTimeForPodcast(Store.getState(), podcast) * 100)}%, ${Math.floor(calculateTotalTimeForPodcast(Store.getState(), podcast) / 1000)} seconds
+                        $${calculatePayoutAmountForPodcast(Store.getState(), podcast).toFixed(2)}, ${Math.floor(calculatePercentageOfTotalTimeForPodcast(Store.getState(), podcast) * 100)}%, ${totalMinutes} min ${totalSecondsRemaining} sec
                     </div>
 
                     <hr>
@@ -65,6 +69,7 @@ function calculateTotalTimeForPodcast(state, podcast) {
 
         return result + episode.timestamps.reduce((result, timestamp, index) => {
             const nextTimestamp = episode.timestamps[index + 1];
+            const previousTimestamp = episode.timestamps[index + 1];
 
             if (timestamp.type === 'START') {
                 if (nextTimestamp && nextTimestamp.type === 'STOP') {
@@ -74,8 +79,14 @@ function calculateTotalTimeForPodcast(state, podcast) {
                     return result + 0;
                 }
             }
-            else {
-                return result + new Date(timestamp.timestamp).getTime();
+
+            if (timestamp.type === 'STOP') {
+                if (previousTimestamp && previousTimestamp.type === 'START') {
+                    return result + new Date(timestamp.timestamp).getTime();
+                }
+                else {
+                    return result + 0;
+                }
             }
         }, 0);
     }, 0);
