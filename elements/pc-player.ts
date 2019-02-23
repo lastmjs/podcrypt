@@ -9,6 +9,47 @@ customElement('pc-player', ({ constructing, update, element }) => {
     
     const state = Store.getState();
     const currentEpisode = state.episodes[state.currentEpisodeGuid];
+    const currentPodcast = state.podcasts[currentEpisode.podcastId];
+
+    if ('mediaSession' in navigator) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+            title: currentEpisode.title,
+            artwork: [
+                {
+                    src: currentPodcast.imageUrl,
+                    sizes: '60x60',
+                    type: 'image/jpg'
+                }
+            ] // TODO I can't get the artwork to work, not sure why
+        });
+
+        navigator.mediaSession.setActionHandler('play', () => {
+            element.querySelector('audio').play();
+        });
+        navigator.mediaSession.setActionHandler('pause', () => {
+            element.querySelector('audio').pause();
+        });
+        navigator.mediaSession.setActionHandler('seekbackward', () => {
+            const audioElement = element.querySelector('audio');
+            audioElement.currentTime = audioElement.currentTime - 5;
+        });
+        navigator.mediaSession.setActionHandler('seekforward', () => {
+            const audioElement = element.querySelector('audio');
+            audioElement.currentTime = audioElement.currentTime + 5;
+        });
+        // navigator.mediaSession.setActionHandler('previoustrack', () => {
+        //     Store.dispatch({
+        //         type: 'PLAY_EPISODE_FROM_PLAYLIST',
+        //         playlistIndex: Store.getState().playlistIndex + 1
+        //     });
+        // });
+        // navigator.mediaSession.setActionHandler('nexttrack', () => {
+        //     Store.dispatch({
+        //         type: 'PLAY_EPISODE_FROM_PLAYLIST',
+        //         playlistIndex: Store.getState().playlistIndex - 1
+        //     });
+        // });
+    }
 
     return html`
         <style>

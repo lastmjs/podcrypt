@@ -70,6 +70,7 @@ function addEpisodeToPlaylist(podcast, item) {
     Store.dispatch({
         type: 'ADD_EPISODE_TO_PLAYLIST',
         episode: {
+            podcastId: podcast.feedUrl,
             guid: item.guid,
             title: item.title,
             src: item.enclosure.url,
