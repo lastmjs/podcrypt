@@ -31,11 +31,7 @@ async function getFeed(podcastRaw) {
     }
 
     const podcast = JSON.parse(podcastRaw);
-
-    const feed = await new RSSParser().parseURL(`https://cors-anywhere.herokuapp.com/${podcast.feedUrl}`);
-    // const feed = await new RSSParser().parseURL(`${feedUrl}`);
-
-    console.log(feed);
+    const feed = await new RSSParser().parseURL(`https://jsonp.afeld.me/?url=${podcast.feedUrl}`);
 
     return html`
         <h2>${feed.title}</h2>
