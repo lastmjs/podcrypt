@@ -87,7 +87,6 @@ function RootReducer(state=InitialState, action: any) {
     if (action.type === 'PLAY_EPISODE_FROM_PLAYLIST') {
         const currentPlaylistIndex = action.playlistIndex;
         const currentEpisodeGuid = state.playlist[currentPlaylistIndex];
-        const currentEpisode = state.episodes[currentEpisodeGuid];
         const previousEpisodeGuid = state.currentPlaylistIndex === action.playlistIndex ? state.previousEpisodeGuid : state.currentEpisodeGuid;
 
         return {
