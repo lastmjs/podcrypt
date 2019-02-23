@@ -226,6 +226,7 @@ function RootReducer(state=InitialState, action: any) {
     if (action.type === 'MOVE_EPISODE_DOWN') {
         return {
             ...state,
+            currentPlaylistIndex: getCurrentPlaylistIndexAfterMoveDown(state, action),
             playlist: state.playlist.map((episodeGuid: string, index: number) => {
                 if (action.playlistIndex === state.playlist.length - 1) {
                     return episodeGuid;
@@ -277,6 +278,24 @@ function getCurrentPlaylistIndexAfterMoveUp(state, action) {
         action.playlistIndex === state.currentPlaylistIndex + 1
     ) {
         return state.currentPlaylistIndex + 1;
+    }
+
+    return state.currentPlaylistIndex;
+}
+
+function getCurrentPlaylistIndexAfterMoveDown(state, action) {
+
+    if (
+        action.playlistIndex === state.currentPlaylistIndex &&
+        action.playlistIndex !== state.playlist.length - 1
+    ) {
+        return state.currentPlaylistIndex + 1;
+    }
+
+    if (
+        action.playlistIndex === state.currentPlaylistIndex - 1
+    ) {
+        return state.currentPlaylistIndex - 1;
     }
 
     return state.currentPlaylistIndex;
