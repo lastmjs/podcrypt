@@ -1,5 +1,6 @@
 import { customElement, html } from 'functional-element';
 import { Store } from '../services/store';
+import { pcContainerStyles } from '../services/css';
 
 customElement('pc-podcasts', ({ constructing, connecting, element, update, props }) => {
     if (constructing) {
@@ -11,12 +12,7 @@ customElement('pc-podcasts', ({ constructing, connecting, element, update, props
     return html`
         <style>
             .pc-podcasts-container {
-                height: 100%;
-                padding-left: 2%;
-                padding-right: 2%;
-                padding-top: 10%;
-                padding-bottom: 5%;
-                overflow-y: auto;
+                ${pcContainerStyles}
             }
 
             .pc-podcasts-search-input {
