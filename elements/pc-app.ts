@@ -21,10 +21,6 @@ customElement('pc-app', ({ constructing, update }) => {
                 width: 100%;
                 background-color: white;
             }
-
-            /* .pc-app-main-menu-toggle { */
-                /* padding: 5%; */
-            /* } */
         </style>
 
         <div class="pc-app-top-bar">
