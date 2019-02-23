@@ -55,7 +55,7 @@ customElement('pc-router', async ({ constructing, update }) => {
     // await loadRouteModules(Store.getState().currentRoute);
 
     return html`
-        <pc-podcasts ?hidden=${currentRoute.pathname !== '/' && currentRoute.pathname !== '/podcasts'}></pc-podcasts>
+        <pc-podcasts ?hidden=${currentRoute.pathname !== '/'}></pc-podcasts>
         <pc-playlist ?hidden=${currentRoute.pathname !== '/playlist'}></pc-playlist>
         <pc-wallet ?hidden=${currentRoute.pathname !== '/wallet'}></pc-wallet>
         <pc-podcast-overview
@@ -64,33 +64,6 @@ customElement('pc-router', async ({ constructing, update }) => {
         ></pc-podcast-overview>
     `;
 });
-
-// TODO figure out lazy loading later...perhaps we should not do our own router in that case
-// TODO I am having issues with property settings when lazy loading
-async function loadRouteModules(currentRoute): Promise<void> {
-    const routes = {
-        '/': async () => {
-            await import('./pc-podcasts.ts');
-        },
-        '/podcasts': async () => {
-            await import('./pc-podcasts.ts');
-        },
-        '/playlist': async () => {
-            await import('./pc-playlist.ts');
-        },
-        '/player': async () => {
-            await import('./pc-player.ts');
-        },
-        '/wallet': async () => {
-            await import('./pc-wallet.ts');
-        },
-        '/podcast-overview': async () => {
-            await import('./pc-podcast-overview.ts');
-        }
-    };
-
-    await routes[currentRoute.pathname]();
-}
 
 function parseQueryString(queryString: string) {
     return queryString.split('&').reduce((result, keyAndValue) => {
@@ -103,3 +76,29 @@ function parseQueryString(queryString: string) {
         };
     }, {});
 }
+// TODO figure out lazy loading later...perhaps we should not do our own router in that case
+// TODO I am having issues with property settings when lazy loading
+// async function loadRouteModules(currentRoute): Promise<void> {
+//     const routes = {
+//         '/': async () => {
+//             await import('./pc-podcasts.ts');
+//         },
+//         '/podcasts': async () => {
+//             await import('./pc-podcasts.ts');
+//         },
+//         '/playlist': async () => {
+//             await import('./pc-playlist.ts');
+//         },
+//         '/player': async () => {
+//             await import('./pc-player.ts');
+//         },
+//         '/wallet': async () => {
+//             await import('./pc-wallet.ts');
+//         },
+//         '/podcast-overview': async () => {
+//             await import('./pc-podcast-overview.ts');
+//         }
+//     };
+
+//     await routes[currentRoute.pathname]();
+// }
