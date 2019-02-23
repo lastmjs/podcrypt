@@ -4,7 +4,7 @@ customElement('pc-hamburger', () => {
     return html`
         <style>
             .pc-hamburger-container {
-                font-size: 10px;
+                font-size: 5px;
                 cursor: pointer;
                 text-align: center;
                 vertical-align: middle;
@@ -14,6 +14,7 @@ customElement('pc-hamburger', () => {
                 height: .5em;
                 width: 3.5em;
                 background-color: black;
+                border-radius: 25px;
             }
         </style>
         <div class="pc-hamburger-container">
