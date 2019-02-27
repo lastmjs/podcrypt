@@ -23,6 +23,7 @@ StorePromise.then((Store) => {
                     width: 100%;
                     background-color: white;
                     box-shadow: -5px 5px 5px -5px grey;
+                    z-index: 1;
                 }
             </style>
     

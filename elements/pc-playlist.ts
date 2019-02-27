@@ -14,11 +14,14 @@ StorePromise.then((Store) => {
             <style>
                 .pc-playlist-container {
                     ${pcContainerStyles}
+                    padding-left: 0;
+                    padding-right: 0;
                 }
 
                 .pc-playlist-item {
                     display: flex;
-                    box-shadow: 0 2px 1px -1px grey;
+                    position: relative;
+                    box-shadow: 0 4px 2px -2px grey;
                     padding: 2%;
                     height: 10vh;
                 }
@@ -65,33 +68,37 @@ StorePromise.then((Store) => {
 
                     return html`
                         <div
-                            class="pc-playlist-item" style="${currentlyPlaying ? 'background-color: grey' : ''}"
+                            class="pc-playlist-item" style="${currentlyPlaying ? 'background-color: rgba(0, 0, 0, .05)' : ''}"
                         >
                             <div class="pc-playlist-item-arrows-container">
                                 <i 
                                     class="material-icons pc-playlist-item-arrow"
                                     @click=${() => moveEpisodeUp(index)}
+                                    title="Move episode up"
                                 >keyboard_arrow_up</i>
 
                                 <i 
                                     class="material-icons pc-playlist-item-arrow"
                                     @click=${() => moveEpisodeDown(index)}
+                                    title="Move episode down"
                                 >keyboard_arrow_down</i>
                             </div>
                             <div class="pc-playlist-item-title">${episode.finishedListening ? '*' : ''} ${episode.title}</div>
                             <div class="pc-playlist-item-controls-container">
                                 ${
                                     episode.playing ? 
-                                    html`<i class="material-icons pc-playlist-item-audio-control">pause</i>` : 
-                                    html`<i class="material-icons pc-playlist-item-audio-control" @click=${() => playEpisode(index)}>play_arrow</i>`
+                                    html`<i class="material-icons pc-playlist-item-audio-control" @click=${pauseEpisode} title="Pause episode">pause</i>` : 
+                                    html`<i class="material-icons pc-playlist-item-audio-control" @click=${() => playEpisode(index)} title="Resume episode">play_arrow</i>`
                                 }
 
-                                <!-- <i 
+                                <!--TODO we need a three dots menu for the extra stuff here, like deleting-->
+                                <i 
                                     class="material-icons"
-                                    style="font-size: 50px; cursor: pointer"
+                                    style="font-size: 15px; cursor: pointer; position: absolute; top: 5px; right: 5px"
                                     @click=${() => removeEpisodeFromPlaylist(index)}
-                                >clear
-                                </i>                                 -->
+                                    title="Remove episode from playlist"
+                                >delete
+                                </i>                                
                             </div>
                         </div>
                     `;
@@ -104,6 +111,12 @@ StorePromise.then((Store) => {
         Store.dispatch({
             type: 'PLAY_EPISODE_FROM_PLAYLIST',
             playlistIndex
+        });
+    }
+
+    function pauseEpisode() {
+        Store.dispatch({
+            type: 'PAUSE_EPISODE_FROM_PLAYLIST'
         });
     }
 

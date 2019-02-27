@@ -87,22 +87,49 @@ async function prepareStore() {
         }
     
         if (action.type === 'PLAY_EPISODE_FROM_PLAYLIST') {
-            const currentPlaylistIndex = action.playlistIndex;
-            const currentEpisodeGuid = state.playlist[currentPlaylistIndex];
+            const newCurrentPlaylistIndex = action.playlistIndex;
+            const newCurrentEpisodeGuid = state.playlist[newCurrentPlaylistIndex];
     
+            if (newCurrentEpisodeGuid === state.currentEpisodeGuid) {
+                return {
+                    ...state,
+                    episodes: {
+                        ...state.episodes,
+                        [state.currentEpisodeGuid]: {
+                            ...state.episodes[state.currentEpisodeGuid],
+                            playing: true
+                        }
+                    }
+                };
+            }
+            else {
+                return {
+                    ...state,
+                    currentEpisodeGuid: newCurrentEpisodeGuid,
+                    currentPlaylistIndex: newCurrentPlaylistIndex,
+                    episodes: {
+                        ...state.episodes,
+                        [newCurrentEpisodeGuid]: {
+                            ...state.episodes[newCurrentEpisodeGuid],
+                            playing: true
+                        },
+                        [state.currentEpisodeGuid]: {
+                            ...state.episodes[state.currentEpisodeGuid],
+                            playing: false
+                        }
+                    }
+                };
+            }
+        }
+
+        if (action.type === 'PAUSE_EPISODE_FROM_PLAYLIST') {
             return {
                 ...state,
-                currentEpisodeGuid,
-                currentPlaylistIndex,
                 episodes: {
                     ...state.episodes,
                     [state.currentEpisodeGuid]: {
                         ...state.episodes[state.currentEpisodeGuid],
-                        timestamps: [...(state.episodes[state.currentEpisodeGuid] ? state.episodes[state.currentEpisodeGuid].timestamps : []), ...((state.episodes[state.currentEpisodeGuid] ? state.episodes[state.currentEpisodeGuid].playing: false) && action.playlistIndex !== state.currentPlaylistIndex ? [{
-                            type: 'STOP',
-                            actionType: 'PLAY_EPISODE_FROM_PLAYLIST',
-                            timestamp: new Date().toISOString()
-                        }] : [])]
+                        playing: false
                     }
                 }
             };
@@ -120,7 +147,8 @@ async function prepareStore() {
                         [state.currentEpisodeGuid]: {
                             ...state.episodes[state.currentEpisodeGuid],
                             finishedListening: true,
-                            progress: 0
+                            progress: 0,
+                            playing: false
                         }
                     }
                 };
@@ -135,7 +163,12 @@ async function prepareStore() {
                     [state.currentEpisodeGuid]: {
                         ...state.episodes[state.currentEpisodeGuid],
                         finishedListening: true,
-                        progress: 0
+                        progress: 0,
+                        playing: false
+                    },
+                    [nextEpisodeGuid]: {
+                        ...state.episodes[nextEpisodeGuid],
+                        playing: true
                     }
                 }
             };
@@ -259,7 +292,6 @@ async function prepareStore() {
             console.log('state', newState);
         }
     
-        // window.localStorage.setItem('state', JSON.stringify(newState));
         set('state', newState);
     
         return newState;
