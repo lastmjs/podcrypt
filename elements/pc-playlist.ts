@@ -17,8 +17,43 @@ StorePromise.then((Store) => {
                 }
 
                 .pc-playlist-item {
+                    display: flex;
+                    box-shadow: 0 2px 1px -1px grey;
+                    padding: 2%;
+                    height: 10vh;
+                }
+
+                .pc-playlist-item-arrows-container {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                }
+
+                .pc-playlist-item-arrow {
                     font-size: calc(15px + 1vmin);
-                    padding: 5%;
+                    cursor: pointer;
+                }
+
+                .pc-playlist-item-title {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    overflow-x: scroll;
+                    flex: 1;
+                    font-size: calc(12px + 1vmin);
+                    text-align: center;
+                }
+
+                .pc-playlist-item-controls-container {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+
+                .pc-playlist-item-audio-control {
+                    font-size: calc(12px + 1vmin);
+                    cursor: pointer;
                 }
             </style>
 
@@ -32,16 +67,33 @@ StorePromise.then((Store) => {
                         <div
                             class="pc-playlist-item" style="${currentlyPlaying ? 'background-color: grey' : ''}"
                         >
-                            <div>${episode.finishedListening ? '*' : ''} ${episode.title}</div>
-                            <div>
-                                <button @click=${() => playEpisode(index)}>Play</button>
-                                <button @click=${() => moveEpisodeUp(index)}>Move up</button>
-                                <button @click=${() => moveEpisodeDown(index)}>Move down</button>
-                                <button @click=${() => removeEpisodeFromPlaylist(index)}>Remove from playlist</button>
+                            <div class="pc-playlist-item-arrows-container">
+                                <i 
+                                    class="material-icons pc-playlist-item-arrow"
+                                    @click=${() => moveEpisodeUp(index)}
+                                >keyboard_arrow_up</i>
+
+                                <i 
+                                    class="material-icons pc-playlist-item-arrow"
+                                    @click=${() => moveEpisodeDown(index)}
+                                >keyboard_arrow_down</i>
+                            </div>
+                            <div class="pc-playlist-item-title">${episode.finishedListening ? '*' : ''} ${episode.title}</div>
+                            <div class="pc-playlist-item-controls-container">
+                                ${
+                                    episode.playing ? 
+                                    html`<i class="material-icons" class="pc-playlist-item-audio-control">pause</i>` : 
+                                    html`<i class="material-icons" class="pc-playlist-item-audio-control" @click=${() => playEpisode(index)}>play_arrow</i>`
+                                }
+
+                                <!-- <i 
+                                    class="material-icons"
+                                    style="font-size: 50px; cursor: pointer"
+                                    @click=${() => removeEpisodeFromPlaylist(index)}
+                                >clear
+                                </i>                                 -->
                             </div>
                         </div>
-
-                        <hr>
                     `;
                 })}
             </div>
