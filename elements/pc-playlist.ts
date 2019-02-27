@@ -68,7 +68,7 @@ StorePromise.then((Store) => {
 
                     return html`
                         <div
-                            class="pc-playlist-item" style="${currentlyPlaying ? 'background-color: rgba(0, 0, 0, .05)' : ''}"
+                            class="pc-playlist-item" style="${currentlyPlaying ? 'background-color: rgba(0, 0, 0, .1)' : ''}"
                         >
                             <div class="pc-playlist-item-arrows-container">
                                 <i 
