@@ -31,7 +31,7 @@ StorePromise.then((Store) => {
                 }
 
                 .pc-playlist-item-arrow {
-                    font-size: calc(15px + 1vmin);
+                    font-size: calc(25px + 1vmin);
                     cursor: pointer;
                 }
 
@@ -52,7 +52,7 @@ StorePromise.then((Store) => {
                 }
 
                 .pc-playlist-item-audio-control {
-                    font-size: calc(12px + 1vmin);
+                    font-size: calc(35px + 1vmin);
                     cursor: pointer;
                 }
             </style>
@@ -82,8 +82,8 @@ StorePromise.then((Store) => {
                             <div class="pc-playlist-item-controls-container">
                                 ${
                                     episode.playing ? 
-                                    html`<i class="material-icons" class="pc-playlist-item-audio-control">pause</i>` : 
-                                    html`<i class="material-icons" class="pc-playlist-item-audio-control" @click=${() => playEpisode(index)}>play_arrow</i>`
+                                    html`<i class="material-icons pc-playlist-item-audio-control">pause</i>` : 
+                                    html`<i class="material-icons pc-playlist-item-audio-control" @click=${() => playEpisode(index)}>play_arrow</i>`
                                 }
 
                                 <!-- <i 
