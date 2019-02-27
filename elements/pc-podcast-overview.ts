@@ -17,6 +17,36 @@ StorePromise.then((Store) => {
             <style>
                 .pc-podcast-overview-container {
                     ${pcContainerStyles}
+                    padding-left: 0;
+                    padding-right: 0;
+                }
+
+                .pc-podcast-overview-episode {
+                    display: flex;
+                    box-shadow: 0 4px 2px -2px grey;
+                    padding: 2%;
+                    height: 10vh;
+                }
+
+                .pc-podcast-overview-episode-title {
+                    font-size: calc(12px + 1vmin);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    text-overflow: ellipsis;
+                    flex: 1;
+                    text-align: center;
+                }
+
+                .pc-podcast-overview-episode-controls-container {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+
+                .pc-podcast-overview-episode-add-control {
+                    font-size: 35px;
+                    cursor: pointer;
                 }
             </style>
     
@@ -35,16 +65,21 @@ StorePromise.then((Store) => {
         const feed = await new RSSParser().parseURL(`https://jsonp.afeld.me/?url=${podcast.feedUrl}`);
     
         return html`
-            <h2>${feed.title}</h2>
-            <h3>${feed.description}</h3>
-            <h4>Episodes</h4>
+            <h2 style="margin: 0; padding: 5%; box-shadow: 0 4px 2px -2px grey;">${feed.title}</h2>
+            <h4 style="margin: 0; padding: 2%; box-shadow: 0 4px 2px -2px grey;">${feed.description}</h4>
             ${feed.items.map((item) => {
                 return html`
-                    <div>
-                        <div>${new Date(item.isoDate).toLocaleString()} - ${item.title}</div>
-                        <button @click=${() => addEpisodeToPlaylist(podcast, item)}>Add to playlist</button>
+                    <div class="pc-podcast-overview-episode">
+                        <div class="pc-podcast-overview-episode-title">${new Date(item.isoDate).toLocaleString()} - ${item.title}</div>
+                        <div class="pc-podcast-overview-episode-controls-container">
+                            <i 
+                                class="material-icons pc-podcast-overview-episode-add-control"
+                                style="font-size: 35px; cursor: pointer"
+                                @click=${() => addEpisodeToPlaylist(podcast, item)}
+                            >playlist_add
+                            </i>  
+                        </div>
                     </div>
-                    <br>
                 `;
             })}
         `;
