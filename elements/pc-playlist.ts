@@ -82,7 +82,7 @@ StorePromise.then((Store) => {
                             <div class="pc-playlist-item-controls-container">
                                 ${
                                     episode.playing ? 
-                                    html`<i class="material-icons pc-playlist-item-audio-control">pause</i>` : 
+                                    html`<i class="material-icons pc-playlist-item-audio-control" @click=${pauseEpisode}>pause</i>` : 
                                     html`<i class="material-icons pc-playlist-item-audio-control" @click=${() => playEpisode(index)}>play_arrow</i>`
                                 }
 
@@ -104,6 +104,12 @@ StorePromise.then((Store) => {
         Store.dispatch({
             type: 'PLAY_EPISODE_FROM_PLAYLIST',
             playlistIndex
+        });
+    }
+
+    function pauseEpisode() {
+        Store.dispatch({
+            type: 'PAUSE_EPISODE_FROM_PLAYLIST'
         });
     }
 

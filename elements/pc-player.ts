@@ -10,18 +10,18 @@ StorePromise.then((Store) => {
         
         const state = Store.getState();
         const currentEpisode = state.episodes[state.currentEpisodeGuid];
-        const currentPodcast = state.podcasts[currentEpisode.podcastId];
+        const currentPodcast = currentEpisode ? state.podcasts[currentEpisode.podcastId] : null;
     
         if ('mediaSession' in navigator) {
             navigator.mediaSession.metadata = new MediaMetadata({
                 title: currentEpisode.title,
-                artwork: [
-                    {
-                        src: currentPodcast.imageUrl,
-                        sizes: '60x60',
-                        type: 'image/jpg'
-                    }
-                ] // TODO I can't get the artwork to work, not sure why
+                // artwork: [
+                //     {
+                //         src: currentPodcast.imageUrl,
+                //         sizes: '60x60',
+                //         type: 'image/jpg'
+                //     }
+                // ] // TODO I can't get the artwork to work, not sure why
             });
     
             navigator.mediaSession.setActionHandler('play', () => {
@@ -51,6 +51,17 @@ StorePromise.then((Store) => {
             //     });
             // });
         }
+
+        const audioElement = element.querySelector('audio');
+        if (audioElement && currentEpisode) {
+            if (currentEpisode.playing === true) {
+                audioElement.play();    
+            }
+
+            if (currentEpisode.playing === false) {
+                audioElement.pause();
+            }
+        }
     
         return html`
             <style>
@@ -78,7 +89,6 @@ StorePromise.then((Store) => {
                     @pause=${paused}
                     @loadstart=${() => loadStarted(currentEpisode, element)}
                     controls
-                    autoplay
                 ></audio>
             </div>
         `;
@@ -94,6 +104,10 @@ StorePromise.then((Store) => {
         const progress = e.target.currentTime;
     
         if (progress === 0) {
+            return;
+        }
+
+        if (e.target.paused) {
             return;
         }
     
@@ -116,7 +130,15 @@ StorePromise.then((Store) => {
     }
     
     function loadStarted(currentEpisode, element) {
+        if (currentEpisode === null || currentEpisode === undefined) {
+            return;
+        }
+
         const audioElement = element.querySelector('audio');
         audioElement.currentTime = currentEpisode.progress;
+
+        if (currentEpisode.playing) {
+            audioElement.play();
+        }
     }
 });
