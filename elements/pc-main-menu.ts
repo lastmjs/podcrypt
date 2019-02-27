@@ -31,6 +31,7 @@ StorePromise.then((Store) => {
                     display: flex;
                     flex-direction: column;
                     box-shadow: 0px 0px 1px black;
+                    z-index: 1;
                 }
     
                 .pc-menu-item {
