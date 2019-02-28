@@ -28,7 +28,7 @@ StorePromise.then((Store) => {
                 }
 
                 .pc-podcast-overview-episode-title {
-                    font-size: calc(10px + 1vmin);
+                    font-size: calc(12px + 1vmin);
                     font-weight: bold;
                     text-overflow: ellipsis;
                     flex: 1;

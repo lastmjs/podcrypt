@@ -1,29 +1,11 @@
 import { customElement, html } from 'functional-element';
 import { StorePromise } from '../services/store';
 
-StorePromise.then((Store) => {
-    window.addEventListener('click', (e: any) => {
-        if ((Store.getState() as any).showMainMenu) {
-            const cameFromMenu = e.path.reduce((result: any, element: any) => {
-                if (element.nodeName === 'PC-MAIN-MENU') {
-                    return true;
-                }
-                
-                return result;
-            }, false);
-        
-            if (!cameFromMenu) {
-                Store.dispatch({
-                    type: 'TOGGLE_SHOW_MAIN_MENU'
-                });
-            }    
-        }
-    });
-    
+StorePromise.then((Store) => {    
     customElement('pc-main-menu', () => {
         return html`
             <style>
-                .pc-menu-container {
+                .pc-main-menu-container {
                     position: fixed;
                     background-color: white;
                     height: 100%;
@@ -34,7 +16,7 @@ StorePromise.then((Store) => {
                     z-index: 1;
                 }
     
-                .pc-menu-item {
+                .pc-main-menu-item {
                     display: flex;
                     flex-direction: row;
                     justify-content: center;
@@ -45,29 +27,48 @@ StorePromise.then((Store) => {
                     padding: calc(25px + 1vmin);
                 }
     
-                .pc-menu-item a {
+                .pc-main-menu-item a {
                     color: inherit;
                     text-decoration: none;
                 }
+
+                .pc-main-menu-overlay {
+                    height: 100%;
+                    width: 100%;
+                    background-color: rgba(0, 0, 0, .25);
+                    position: fixed;
+                    z-index: 1;
+                }
             </style>
+
+            <div 
+                class="pc-main-menu-overlay"
+                @click=${closeMenu}
+            ></div>
     
-            <div class="pc-menu-container">
-                <div class="pc-menu-item">
+            <div class="pc-main-menu-container">
+                <div class="pc-main-menu-item">
                     <a href="/">Podcasts</a>
                 </div>
     
-                <div class="pc-menu-item">
+                <div class="pc-main-menu-item">
                     <a href="/playlist">Playlist</a>
                 </div>
     
-                <!-- <div class="pc-menu-item">
+                <!-- <div class="pc-main-menu-item">
                     <a href="/player">Player</a>
                 </div> -->
     
-                <div class="pc-menu-item">
+                <div class="pc-main-menu-item">
                     <a href="/wallet">Wallet</a>
                 </div>
             </div>
         `;
     });
+
+    function closeMenu() {
+        Store.dispatch({
+            type: 'TOGGLE_SHOW_MAIN_MENU'
+        });
+    }
 });
