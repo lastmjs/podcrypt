@@ -24,11 +24,16 @@ StorePromise.then((Store) => {
                     background-color: white;
                     box-shadow: -5px 5px 5px -5px grey;
                     z-index: 1;
+                    display: flex;
+                    align-items: center;
+                    font-size: calc(10px + 1vmin);
+                    font-weight: bold;
                 }
             </style>
     
             <div class="pc-app-top-bar">
                 <pc-hamburger @click=${mainMenuToggle}></pc-hamburger>
+                <div style="margin-left: 5%">Podcrypt Alpha</div>
             </div>
     
             <pc-main-menu ?hidden=${!(Store.getState() as any).showMainMenu}></pc-main-menu>
