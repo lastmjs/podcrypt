@@ -61,9 +61,9 @@ StorePromise.then((Store) => {
             </style>
 
             <div class="pc-playlist-container">
-                ${Store.getState().playlist.map((episodeGuid, index) => {
-                    const episode = Store.getState().episodes[episodeGuid];
-                    const currentPlaylistIndex = Store.getState().currentPlaylistIndex;
+                ${(Store.getState() as any).playlist.map((episodeGuid: any, index: any) => {
+                    const episode = (Store.getState() as any).episodes[episodeGuid];
+                    const currentPlaylistIndex = (Store.getState() as any).currentPlaylistIndex;
                     const currentlyPlaying = currentPlaylistIndex === index;
 
                     return html`

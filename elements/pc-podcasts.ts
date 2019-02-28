@@ -1,6 +1,9 @@
 import { customElement, html } from 'functional-element';
 import { StorePromise } from '../services/store';
 import { pcContainerStyles } from '../services/css';
+import { 
+    navigate
+} from '../services/utilities';
 
 StorePromise.then((Store) => {
     customElement('pc-podcasts', ({ constructing, connecting, element, update, props }) => {
@@ -52,11 +55,11 @@ StorePromise.then((Store) => {
                     class="pc-podcasts-search-input"
                     type="text"
                     placeholder="Search for podcasts"
-                    @keydown=${(e) => searchInputKeyDown(e, element, update)}
+                    @keydown=${(e: any) => searchInputKeyDown(e, element)}
                 >
     
                 <div class="pc-podcasts-item-container">
-                    ${Object.values(Store.getState().podcasts).map((podcast) => {
+                    ${Object.values((Store.getState() as any).podcasts as ReadonlyArray<any>).map((podcast) => {
                         return html`
                             <div class="pc-podcasts-item" ?hidden=${props.searchResults.length !== 0}>
                                 <div>
@@ -69,62 +72,15 @@ StorePromise.then((Store) => {
                         `;
                     })}
                 </div>
-    
-                ${props.searchResults.map((searchResult) => {
-                    const podcast = {
-                        feedUrl: searchResult.feedUrl,
-                        title: searchResult.trackName,
-                        imageUrl: searchResult.artworkUrl60,
-                        episodes: []
-                    };
-    
-                    return html`
-                        <div class="pc-podcasts-search-item">
-                            <img src="${searchResult.artworkUrl60}">
-                            <div class="pc-podcasts-search-item-text">
-                                <div>
-                                    <a href="podcast-overview?podcast=${encodeURIComponent(JSON.stringify(podcast))}">${searchResult.trackName}</a>
-                                </div>
-    
-                                <br>
-    
-                                <div>
-                                    <button @click=${() => subscribeToPodcast(podcast)}>Subscribe</button>
-                                </div>
-                            </div>
-                        </div>
-    
-                        <hr>
-                    `;
-                })}
             </div>
         `;
     });
     
-    async function searchForPodcasts(element, update) {
-        const searchInput = element.querySelector('#search-input');
-        const term = searchInput.value.split(' ').join('+');
-        const response = await window.fetch(`https://itunes.apple.com/search?country=US&media=podcast&term=${term}`);
-        const responseJSON = await response.json();
-    
-        update({
-            searchResults: responseJSON.results
-        });
-    }
-    
-    function searchInputKeyDown(e, element, update) {
+    function searchInputKeyDown(e: any, element: any) {
         if (e.keyCode === 13) {
-            searchForPodcasts(element, update);
+            const searchInput = element.querySelector('#search-input');
+            const term = searchInput.value.split(' ').join('+');
+            navigate(Store, `/podcast-search-results?term=${term}`);
         }
-    }
-    
-    // TODO defend against adding podcasts multiple times
-    // TODO only send the dynamic information that we need from here
-    // TODO put all of the defaults into the redux reducer
-    function subscribeToPodcast(podcast) {
-        Store.dispatch({
-            type: 'SUBSCRIBE_TO_PODCAST',
-            podcast
-        });
     }
 });

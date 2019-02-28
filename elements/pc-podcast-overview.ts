@@ -56,7 +56,7 @@ StorePromise.then((Store) => {
         `;
     });
     
-    async function getFeed(podcastRaw) {
+    async function getFeed(podcastRaw: any) {
         if (podcastRaw === 'undefined') {
             return;
         }
@@ -67,7 +67,7 @@ StorePromise.then((Store) => {
         return html`
             <h2 style="margin: 0; padding: 5%; box-shadow: 0 4px 2px -2px grey;">${feed.title}</h2>
             <h4 style="margin: 0; padding: 2%; box-shadow: 0 4px 2px -2px grey;">${feed.description}</h4>
-            ${feed.items.map((item) => {
+            ${feed.items.map((item: any) => {
                 return html`
                     <div class="pc-podcast-overview-episode">
                         <div class="pc-podcast-overview-episode-title">${new Date(item.isoDate).toLocaleString()} - ${item.title}</div>
@@ -101,7 +101,7 @@ StorePromise.then((Store) => {
     //     });
     // }
     
-    function addEpisodeToPlaylist(podcast, item) {
+    function addEpisodeToPlaylist(podcast: any, item: any) {
         console.log(item)
         Store.dispatch({
             type: 'ADD_EPISODE_TO_PLAYLIST',

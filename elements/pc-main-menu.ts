@@ -2,9 +2,9 @@ import { customElement, html } from 'functional-element';
 import { StorePromise } from '../services/store';
 
 StorePromise.then((Store) => {
-    window.addEventListener('click', (e) => {
-        if (Store.getState().showMainMenu) {
-            const cameFromMenu = e.path.reduce((result, element) => {
+    window.addEventListener('click', (e: any) => {
+        if ((Store.getState() as any).showMainMenu) {
+            const cameFromMenu = e.path.reduce((result: any, element: any) => {
                 if (element.nodeName === 'PC-MAIN-MENU') {
                     return true;
                 }

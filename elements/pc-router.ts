@@ -4,8 +4,12 @@ import './pc-podcasts.ts';
 import './pc-playlist';
 import './pc-wallet';
 import './pc-podcast-overview';
+import './pc-podcast-search-results';
+import { parseQueryString } from '../services/utilities';
 
 StorePromise.then((Store) => {
+
+    // this listens for browser navigation through the forward and backward navigation arrows, I believe
     window.addEventListener('popstate', (e) => {
         Store.dispatch({
             type: 'CHANGE_CURRENT_ROUTE',
@@ -17,10 +21,12 @@ StorePromise.then((Store) => {
         });
     });
     
-    window.addEventListener('click', (e) => {
+    // this listens for anchor tag clicks
+    window.addEventListener('click', (e: any) => {
         if (e.target.nodeName === 'A') {
             e.preventDefault();
     
+            // TODO replace this with the navigate function
             Store.dispatch({
                 type: 'CHANGE_CURRENT_ROUTE',
                 currentRoute: {
@@ -30,7 +36,7 @@ StorePromise.then((Store) => {
                 }
             });
     
-            history.pushState({}, '', `${Store.getState().currentRoute.pathname}${Store.getState().currentRoute.search ? `${Store.getState().currentRoute.search}` : ''}`);
+            history.pushState({}, '', `${(Store.getState() as any).currentRoute.pathname}${(Store.getState() as any).currentRoute.search ? `${(Store.getState() as any).currentRoute.search}` : ''}`);
         }
     });
     
@@ -51,7 +57,7 @@ StorePromise.then((Store) => {
             Store.subscribe(update);
         }
     
-        const currentRoute = Store.getState().currentRoute;
+        const currentRoute = (Store.getState() as any).currentRoute;
         // await loadRouteModules(Store.getState().currentRoute);
     
         return html`
@@ -60,22 +66,15 @@ StorePromise.then((Store) => {
             <pc-wallet ?hidden=${currentRoute.pathname !== '/wallet'}></pc-wallet>
             <pc-podcast-overview
                 ?hidden=${currentRoute.pathname !== '/podcast-overview'}
-                .podcast=${decodeURIComponent(Store.getState().currentRoute.query.podcast)}
+                .podcast=${decodeURIComponent((Store.getState() as any).currentRoute.query.podcast)}
             ></pc-podcast-overview>
+            <pc-podcast-search-results
+                ?hidden=${currentRoute.pathname !== '/podcast-search-results'}
+                .term=${(Store.getState() as any).currentRoute.query.term}
+            ></pc-podcast-search-results>
         `;
     });
     
-    function parseQueryString(queryString: string) {
-        return queryString.split('&').reduce((result, keyAndValue) => {
-            const keyAndValueArray = keyAndValue.split('=');
-            const key = keyAndValueArray[0];
-            const value = keyAndValueArray[1];
-            return {
-                ...result,
-                [key]: value
-            };
-        }, {});
-    }
     // TODO figure out lazy loading later...perhaps we should not do our own router in that case
     // TODO I am having issues with property settings when lazy loading
     // async function loadRouteModules(currentRoute): Promise<void> {
