@@ -42,10 +42,10 @@ StorePromise.then((Store) => {
                 .pc-main-menu-overlay {
                     height: 100%;
                     width: 100%;
-                    background-color: rgba(0, 0, 0, .25);
+                    background-color: rgba(0, 0, 0, .5);
                     position: fixed;
                     z-index: 1;
-                    right: ${Store.getState().showMainMenu ? '0' : '-100%'};
+                    opacity: ${Store.getState().showMainMenu ? '100%' : '0'};
                     transition: .5s;
                 }
             </style>
