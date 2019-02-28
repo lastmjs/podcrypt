@@ -1,3 +1,6 @@
+declare var RSSParser: any;
+declare var MediaMetadata: any;
+
 type Episode = {
     guid: string;
     title: string;

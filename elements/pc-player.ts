@@ -8,12 +8,12 @@ StorePromise.then((Store) => {
             Store.subscribe(update);
         }
         
-        const state = Store.getState();
+        const state = Store.getState() as any;
         const currentEpisode = state.episodes[state.currentEpisodeGuid];
         const currentPodcast = currentEpisode ? state.podcasts[currentEpisode.podcastId] : null;
     
-        if ('mediaSession' in navigator) {
-            navigator.mediaSession.metadata = new MediaMetadata({
+        if ('mediaSession' in window.navigator) {
+            (window.navigator as any).mediaSession.metadata = new MediaMetadata({
                 title: currentEpisode.title,
                 // artwork: [
                 //     {
@@ -24,19 +24,32 @@ StorePromise.then((Store) => {
                 // ] // TODO I can't get the artwork to work, not sure why
             });
     
-            navigator.mediaSession.setActionHandler('play', () => {
-                element.querySelector('audio').play();
-            });
-            navigator.mediaSession.setActionHandler('pause', () => {
-                element.querySelector('audio').pause();
-            });
-            navigator.mediaSession.setActionHandler('seekbackward', () => {
+            (window.navigator as any).mediaSession.setActionHandler('play', () => {
                 const audioElement = element.querySelector('audio');
-                audioElement.currentTime = audioElement.currentTime - 5;
+                if (audioElement) {
+                    audioElement.play();
+                }
             });
-            navigator.mediaSession.setActionHandler('seekforward', () => {
+            
+            (window.navigator as any).mediaSession.setActionHandler('pause', () => {
                 const audioElement = element.querySelector('audio');
-                audioElement.currentTime = audioElement.currentTime + 5;
+                if (audioElement) {
+                    audioElement.pause();
+                }
+            });
+            
+            (window.navigator as any).mediaSession.setActionHandler('seekbackward', () => {
+                const audioElement = element.querySelector('audio');
+                if (audioElement) {
+                    audioElement.currentTime = audioElement.currentTime - 10;
+                }
+            });
+            
+            (window.navigator as any).mediaSession.setActionHandler('seekforward', () => {
+                const audioElement = element.querySelector('audio');
+                if (audioElement) {
+                    audioElement.currentTime = audioElement.currentTime + 10;
+                }
             });
             // navigator.mediaSession.setActionHandler('previoustrack', () => {
             //     Store.dispatch({
@@ -100,7 +113,7 @@ StorePromise.then((Store) => {
         });
     }
     
-    function timeUpdated(e) {
+    function timeUpdated(e: any) {
         const progress = e.target.currentTime;
     
         if (progress === 0) {
@@ -129,7 +142,7 @@ StorePromise.then((Store) => {
         });
     }
     
-    function loadStarted(currentEpisode, element) {
+    function loadStarted(currentEpisode: any, element: any) {
         if (currentEpisode === null || currentEpisode === undefined) {
             return;
         }
