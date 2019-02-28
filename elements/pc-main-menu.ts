@@ -24,7 +24,7 @@ StorePromise.then((Store) => {
         return html`
             <style>
                 .pc-menu-container {
-                    position: absolute;
+                    position: fixed;
                     background-color: white;
                     height: 100%;
                     width: 75%;

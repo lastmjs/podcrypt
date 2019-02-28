@@ -23,7 +23,6 @@ StorePromise.then((Store) => {
                     position: relative;
                     box-shadow: 0 4px 2px -2px grey;
                     padding: 2%;
-                    height: 10vh;
                 }
 
                 .pc-playlist-item-arrows-container {
@@ -39,13 +38,11 @@ StorePromise.then((Store) => {
                 }
 
                 .pc-playlist-item-title {
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    overflow-x: scroll;
+                    text-overflow: ellipsis;
                     flex: 1;
                     font-size: calc(12px + 1vmin);
-                    text-align: center;
+                    padding: 2%;
+                    font-weight: bold;
                 }
 
                 .pc-playlist-item-controls-container {
