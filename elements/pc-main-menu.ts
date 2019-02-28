@@ -2,18 +2,25 @@ import { customElement, html } from 'functional-element';
 import { StorePromise } from '../services/store';
 
 StorePromise.then((Store) => {    
-    customElement('pc-main-menu', () => {
+    customElement('pc-main-menu', ({ element, update, constructing }) => {
+
+        if (constructing) {
+            Store.subscribe(update);
+        }
+
         return html`
             <style>
                 .pc-main-menu-container {
                     position: fixed;
                     background-color: white;
                     height: 100%;
-                    width: 75%;
                     display: flex;
                     flex-direction: column;
                     box-shadow: 0px 0px 1px black;
                     z-index: 1;
+                    transition: .5s;
+                    width: 75%;
+                    left: ${Store.getState().showMainMenu ? '0' : '-80%'};
                 }
     
                 .pc-main-menu-item {
@@ -38,6 +45,8 @@ StorePromise.then((Store) => {
                     background-color: rgba(0, 0, 0, .25);
                     position: fixed;
                     z-index: 1;
+                    right: ${Store.getState().showMainMenu ? '0' : '-100%'};
+                    transition: .5s;
                 }
             </style>
 
