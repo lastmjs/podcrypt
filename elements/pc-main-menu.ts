@@ -44,7 +44,7 @@ StorePromise.then((Store) => {
                     width: 100%;
                     background-color: rgba(0, 0, 0, .5);
                     position: fixed;
-                    z-index: 1;
+                    z-index: ${Store.getState().showMainMenu ? '1' : '-1'};
                     opacity: ${Store.getState().showMainMenu ? '100%' : '0'};
                     transition: .5s;
                 }
