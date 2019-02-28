@@ -27,16 +27,21 @@ StorePromise.then((Store) => {
                     border-bottom: 1px solid grey;
                 }
     
-                .pc-podcasts-item-container {
-                    display: grid;
-                    grid-template-columns: 1fr 1fr;
-                    grid-gap: 5%;
-                    margin-top: 5%;
-                }
-    
                 .pc-podcasts-item {
                     box-shadow: 0px 0px 5px grey;
-                    padding: 5%;
+                    padding: 2%;
+                    margin-top: 2%;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                }
+
+                .pc-podcasts-item-text {
+                    font-size: calc(12px + 1vmin);
+                    text-overflow: ellipsis;
+                    flex: 1;
+                    padding: 2%;
+                    display: flex;
                 }
             </style>
     
@@ -49,20 +54,18 @@ StorePromise.then((Store) => {
                     @keydown=${(e: any) => searchInputKeyDown(e, element)}
                 >
     
-                <div class="pc-podcasts-item-container">
-                    ${Object.values((Store.getState() as any).podcasts as ReadonlyArray<any>).map((podcast) => {
-                        return html`
-                            <div class="pc-podcasts-item" ?hidden=${props.searchResults.length !== 0}>
-                                <div>
-                                    <img src="${podcast.imageUrl}">
-                                </div>
-                                <div>
-                                    <a href="podcast-overview?podcast=${encodeURIComponent(JSON.stringify(podcast))}">${podcast.title}</a>
-                                </div>
+                ${Object.values((Store.getState() as any).podcasts as ReadonlyArray<any>).map((podcast) => {
+                    return html`
+                        <div class="pc-podcasts-item" @click=${() => podcastClick(podcast)}>
+                            <div>
+                                <img src="${podcast.imageUrl}">
                             </div>
-                        `;
-                    })}
-                </div>
+                            <div class="pc-podcasts-item-text">
+                                ${podcast.title}
+                            </div>
+                        </div>
+                    `;
+                })}
             </div>
         `;
     });
@@ -73,5 +76,9 @@ StorePromise.then((Store) => {
             const term = searchInput.value.split(' ').join('+');
             navigate(Store, `/podcast-search-results?term=${term}`);
         }
+    }
+
+    function podcastClick(podcast: any) {
+        navigate(Store, `podcast-overview?podcast=${encodeURIComponent(JSON.stringify(podcast))}`);
     }
 });
