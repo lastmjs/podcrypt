@@ -36,7 +36,7 @@ StorePromise.then((Store) => {
                 <div style="margin-left: 5%">Podcrypt Alpha</div>
             </div>
     
-            <pc-main-menu ?hidden=${!(Store.getState() as any).showMainMenu}></pc-main-menu>
+            <pc-main-menu></pc-main-menu>
             <pc-router></pc-router>
             <pc-player></pc-player>
         `;
