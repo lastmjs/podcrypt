@@ -46,7 +46,7 @@ StorePromise.then((Store) => {
                     position: fixed;
                     z-index: ${Store.getState().showMainMenu ? '1' : '-1'};
                     opacity: ${Store.getState().showMainMenu ? '100%' : '0'};
-                    transition: .5s;
+                    transition: .25s;
                 }
             </style>
 
