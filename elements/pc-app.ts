@@ -26,7 +26,7 @@ StorePromise.then((Store) => {
                     z-index: 1;
                     display: flex;
                     align-items: center;
-                    font-size: calc(10px + 1vmin);
+                    font-size: calc(15px + 1vmin);
                     font-weight: bold;
                 }
             </style>
