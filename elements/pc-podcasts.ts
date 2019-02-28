@@ -37,11 +37,12 @@ StorePromise.then((Store) => {
                 }
 
                 .pc-podcasts-item-text {
-                    font-size: calc(12px + 1vmin);
+                    font-size: calc(10px + 1vmin);
                     text-overflow: ellipsis;
                     flex: 1;
                     padding: 2%;
-                    display: flex;
+                    cursor: pointer;
+                    font-weight: bold;
                 }
             </style>
     
@@ -56,11 +57,11 @@ StorePromise.then((Store) => {
     
                 ${Object.values((Store.getState() as any).podcasts as ReadonlyArray<any>).map((podcast) => {
                     return html`
-                        <div class="pc-podcasts-item" @click=${() => podcastClick(podcast)}>
+                        <div class="pc-podcasts-item">
                             <div>
                                 <img src="${podcast.imageUrl}">
                             </div>
-                            <div class="pc-podcasts-item-text">
+                            <div class="pc-podcasts-item-text" @click=${() => podcastClick(podcast)}>
                                 ${podcast.title}
                             </div>
                         </div>

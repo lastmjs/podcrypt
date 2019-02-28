@@ -28,7 +28,8 @@ StorePromise.then((Store) => {
                 }
 
                 .pc-podcast-overview-episode-title {
-                    font-size: calc(12px + 1vmin);
+                    font-size: calc(10px + 1vmin);
+                    font-weight: bold;
                     text-overflow: ellipsis;
                     flex: 1;
                     padding: 2%;
@@ -69,7 +70,7 @@ StorePromise.then((Store) => {
                         <div class="pc-podcast-overview-episode-title">
                             <div>${item.title}</div>
                             <br>
-                            <div style="font-size: calc(10px + 1vmin)">${new Date(item.isoDate).toLocaleDateString()}</div>
+                            <div style="font-size: calc(10px + 1vmin); font-weight: normal">${new Date(item.isoDate).toLocaleDateString()}</div>
                         </div>
 
                         <div class="pc-podcast-overview-episode-controls-container">

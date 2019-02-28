@@ -30,10 +30,12 @@ StorePromise.then((Store) => {
                 }
     
                 .pc-podcast-search-results-item-text {
-                    font-size: calc(12px + 1vmin);
+                    font-size: calc(10px + 1vmin);
+                    font-weight: bold;
                     text-overflow: ellipsis;
                     flex: 1;
                     padding: 2%;
+                    cursor: pointer;
                 }
 
                 .pc-podcast-search-results-item-controls-container {
