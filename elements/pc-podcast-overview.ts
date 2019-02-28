@@ -25,17 +25,13 @@ StorePromise.then((Store) => {
                     display: flex;
                     box-shadow: 0 4px 2px -2px grey;
                     padding: 2%;
-                    height: 10vh;
                 }
 
                 .pc-podcast-overview-episode-title {
                     font-size: calc(12px + 1vmin);
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
                     text-overflow: ellipsis;
                     flex: 1;
-                    text-align: center;
+                    padding: 2%;
                 }
 
                 .pc-podcast-overview-episode-controls-container {
@@ -51,7 +47,7 @@ StorePromise.then((Store) => {
             </style>
     
             <div class="pc-podcast-overview-container">
-                ${until(getFeed(props.podcast), 'Loading...')}
+                ${until(getFeed(props.podcast), html`<div style="padding: 5%">Loading...</div>`)}
             </div>
         `;
     });
@@ -70,11 +66,15 @@ StorePromise.then((Store) => {
             ${feed.items.map((item: any) => {
                 return html`
                     <div class="pc-podcast-overview-episode">
-                        <div class="pc-podcast-overview-episode-title">${new Date(item.isoDate).toLocaleString()} - ${item.title}</div>
+                        <div class="pc-podcast-overview-episode-title">
+                            <div>${item.title}</div>
+                            <br>
+                            <div style="font-size: calc(10px + 1vmin)">${new Date(item.isoDate).toLocaleDateString()}</div>
+                        </div>
+
                         <div class="pc-podcast-overview-episode-controls-container">
                             <i 
                                 class="material-icons pc-podcast-overview-episode-add-control"
-                                style="font-size: 35px; cursor: pointer"
                                 @click=${() => addEpisodeToPlaylist(podcast, item)}
                             >playlist_add
                             </i>  

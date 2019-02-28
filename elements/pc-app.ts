@@ -31,7 +31,7 @@ StorePromise.then((Store) => {
                 <pc-hamburger @click=${mainMenuToggle}></pc-hamburger>
             </div>
     
-            <pc-main-menu ?hidden=${(!Store.getState() as any).showMainMenu}></pc-main-menu>
+            <pc-main-menu ?hidden=${!(Store.getState() as any).showMainMenu}></pc-main-menu>
             <pc-router></pc-router>
             <pc-player></pc-player>
         `;

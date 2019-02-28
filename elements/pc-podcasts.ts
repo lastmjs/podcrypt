@@ -6,8 +6,9 @@ import {
 } from '../services/utilities';
 
 StorePromise.then((Store) => {
-    customElement('pc-podcasts', ({ constructing, connecting, element, update, props }) => {
+    customElement('pc-podcasts', ({ constructing, element, update, props }) => {
         if (constructing) {
+            Store.subscribe(update);
             return {
                 searchResults: []
             };
@@ -24,16 +25,6 @@ StorePromise.then((Store) => {
                     font-size: calc(15px + 1vmin);
                     border: none;
                     border-bottom: 1px solid grey;
-                }
-    
-                .pc-podcasts-search-item {
-                    padding: 5%;
-                    display: grid;
-                    grid-template-columns: 1fr 9fr;
-                }
-    
-                .pc-podcasts-search-item-text {
-                    padding: 5%;
                 }
     
                 .pc-podcasts-item-container {
