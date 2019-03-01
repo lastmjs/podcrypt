@@ -33,26 +33,31 @@ StorePromise.then((Store) => {
                     Payout target
                 </h3>
 
-                <div>
+                <div style="font-size: calc(15px + 1vmin);">
                     USD:
                     <input
                         type="number"
                         value=${(Store.getState() as any).payoutTargetInUSD}
                         @input=${payoutTargetInUSDInputChanged}
+                        style="font-size: calc(15px + 1vmin);"
                     >
                 </div>
-                <div>ETH: ${eth}</div>
+
+                <br>
+
+                <div style="font-size: calc(15px + 1vmin);">ETH: ${eth}</div>
     
                 <h3>
                     Payout interval
                 </h3>
 
-                <div>
+                <div style="font-size: calc(15px + 1vmin);">
                     Days:
                     <input 
                         type="number"
                         value=${(Store.getState() as any).payoutIntervalInDays}
                         @input=${payoutIntervalInDaysInputChanged}
+                        style="font-size: calc(15px + 1vmin);"
                         min="1"
                         max="30"
                     >
@@ -62,7 +67,7 @@ StorePromise.then((Store) => {
                     Next payout date
                 </h3>
 
-                <div>${nextPayoutDate}</div>
+                <div style="font-size: calc(15px + 1vmin);">${nextPayoutDate}</div>
     
                 ${Object.values((Store.getState() as any).podcasts).map((podcast: any) => {
                     const totalTimeInSeconds = Math.floor(calculateTotalTimeForPodcast(Store.getState(), podcast) / 1000);
