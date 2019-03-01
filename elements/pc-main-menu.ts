@@ -18,7 +18,7 @@ StorePromise.then((Store) => {
                     flex-direction: column;
                     box-shadow: 0px 0px 1px black;
                     z-index: 1;
-                    transition: .5s;
+                    transition: .25s;
                     width: 75%;
                     left: ${Store.getState().showMainMenu ? '0' : '-80%'};
                 }

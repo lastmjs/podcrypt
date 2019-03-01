@@ -3,9 +3,10 @@ import '../node_modules/rss-parser/dist/rss-parser.min.js';
 import { until } from 'lit-html/directives/until.js'; // TODO perhaps functional-element should export everything from lit-html so that I can grab it all from functional-element instead of here
 import { StorePromise } from '../services/store';
 import { pcContainerStyles } from '../services/css';
-
-const firstProxy = 'https://cors-anywhere.herokuapp.com/';
-const backupProxy = 'https://jsonp.afeld.me/?url=';
+import {
+    firstProxy,
+    backupProxy
+} from '../services/utilities';
 
 StorePromise.then((Store) => {
     customElement('pc-podcast-overview', ({ constructing, element, update, props }) => {
