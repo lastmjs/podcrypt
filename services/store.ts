@@ -4,7 +4,7 @@ import { get, set } from 'idb-keyval';
 export const StorePromise = prepareStore();
 
 async function prepareStore() {
-    const version = 1;
+    const version = 2;
     const persistedState: any = await get('state');
 
     const InitialState = version === persistedState.version ? persistedState : {
@@ -24,7 +24,7 @@ async function prepareStore() {
         payoutIntervalInDays: 30,
         currentETHPriceInUSD: 'unknown',
         previousPayoutDateInMilliseconds: null,
-        nextPayoutDate: null,
+        nextPayoutDateInMilliseconds: null,
         ethereumPublicKey: null
     };
     
@@ -302,6 +302,13 @@ async function prepareStore() {
             return {
                 ...state,
                 payoutIntervalInDays: action.payoutIntervalInDays
+            };
+        }
+
+        if (action.type === 'SET_NEXT_PAYOUT_DATE_IN_MILLISECONDS') {
+            return {
+                ...state,
+                nextPayoutDateInMilliseconds: action.nextPayoutDateInMilliseconds
             };
         }
     

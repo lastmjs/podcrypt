@@ -7,11 +7,19 @@ StorePromise.then((Store) => {
     customElement('pc-wallet', ({ constructing, update }) => {
         if (constructing) {
             Store.subscribe(update);
+
             loadCurrentETHPriceInUSD();
+
+            const nextPayoutDateInMilliseconds = getNextPayoutDateInMilliseconds();
+
+            Store.dispatch({
+                type: 'SET_NEXT_PAYOUT_DATE_IN_MILLISECONDS',
+                nextPayoutDateInMilliseconds
+            });
         }
 
         const eth = (Store.getState() as any).currentETHPriceInUSD === 'Loading...' ? 'Loading...' : (Store.getState() as any).payoutTargetInUSD / (Store.getState() as any).currentETHPriceInUSD;
-        const nextPayoutDate = getNextPayoutDate();
+        const nextPayoutLocaleDateString = new Date((Store.getState() as any).nextPayoutDateInMilliseconds).toLocaleDateString()
 
         return html`
             <style>
@@ -67,7 +75,7 @@ StorePromise.then((Store) => {
                     Next payout date
                 </h3>
 
-                <div style="font-size: calc(15px + 1vmin);">${nextPayoutDate}</div>
+                <div style="font-size: calc(15px + 1vmin);">${nextPayoutLocaleDateString}</div>
     
                 ${Object.values((Store.getState() as any).podcasts).map((podcast: any) => {
                     const totalTimeInSeconds = Math.floor(calculateTotalTimeForPodcast(Store.getState(), podcast) / 1000);
@@ -147,6 +155,13 @@ StorePromise.then((Store) => {
             type: 'SET_PAYOUT_INTERVAL_IN_DAYS',
             payoutIntervalInDays: e.target.value
         });
+
+        const nextPayoutDateInMilliseconds = getNextPayoutDateInMilliseconds();
+
+        Store.dispatch({
+            type: 'SET_NEXT_PAYOUT_DATE_IN_MILLISECONDS',
+            nextPayoutDateInMilliseconds
+        });
     }
 
     async function loadCurrentETHPriceInUSD() {
@@ -163,7 +178,7 @@ StorePromise.then((Store) => {
         });
     }
 
-    function getNextPayoutDate() {
+    function getNextPayoutDateInMilliseconds() {
         const previousPayoutDateInMilliseconds = (Store.getState() as any).previousPayoutDateInMilliseconds;
         const payoutIntervalInDays = (Store.getState() as any).payoutIntervalInDays;
         const oneDayInSeconds = 86400;
@@ -171,12 +186,24 @@ StorePromise.then((Store) => {
         const payoutIntervalInMilliseconds = oneDayInMilliseconds * payoutIntervalInDays;
 
         if (previousPayoutDateInMilliseconds === null) {
-            const nextPayoutDate = new Date(new Date().getTime() + payoutIntervalInMilliseconds).toLocaleDateString();
+            const nextPayoutDate = new Date(new Date().getTime() + payoutIntervalInMilliseconds).getTime();
             return nextPayoutDate;
         }
         else {
-            const nextPayoutDate = new Date(previousPayoutDateInMilliseconds + payoutIntervalInMilliseconds).toLocaleDateString();
+            const nextPayoutDate = new Date(previousPayoutDateInMilliseconds + payoutIntervalInMilliseconds).getTime();
             return nextPayoutDate;   
         }
     }
+
+    setInterval(() => {
+        const currentLocaleDateString = new Date().toLocaleDateString();
+        const nextPayoutLocaleDateString = new Date((Store.getState() as any).nextPayoutDateInMilliseconds).toLocaleDateString();
+
+        console.log('currentLocaleDateString', currentLocaleDateString);
+        console.log('nextPayoutLocaleDateString', nextPayoutLocaleDateString);
+
+        if (currentLocaleDateString === nextPayoutLocaleDateString) {
+            console.log('Payout now!');
+        }
+    }, 60000);
 });
