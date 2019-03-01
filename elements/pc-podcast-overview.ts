@@ -4,6 +4,9 @@ import { until } from 'lit-html/directives/until.js'; // TODO perhaps functional
 import { StorePromise } from '../services/store';
 import { pcContainerStyles } from '../services/css';
 
+const firstProxy = 'https://cors-anywhere.herokuapp.com/';
+const backupProxy = 'https://jsonp.afeld.me/?url=';
+
 StorePromise.then((Store) => {
     customElement('pc-podcast-overview', ({ constructing, element, update, props }) => {
     
@@ -48,42 +51,54 @@ StorePromise.then((Store) => {
             </style>
     
             <div class="pc-podcast-overview-container">
-                ${until(getFeed(props.podcast), html`<div style="padding: 5%">Loading...</div>`)}
+                ${until(getFeed(props.podcast, backupProxy), html`<div style="padding: 5%">Loading...</div>`)}
             </div>
         `;
     });
     
-    async function getFeed(podcastRaw: any) {
-        if (podcastRaw === 'undefined') {
-            return;
+    async function getFeed(podcastRaw: any, corsProxy: string): Promise<any> {
+        try {
+            if (podcastRaw === 'undefined') {
+                return;
+            }
+        
+            const podcast = JSON.parse(podcastRaw);
+        
+            const feedResponse = await window.fetch(`${corsProxy}${podcast.feedUrl}`);
+            const feedRaw = await feedResponse.text();
+            const feed = await new RSSParser().parseString(feedRaw);
+        
+            return html`
+                <h2 style="margin: 0; padding: 5%; box-shadow: 0 4px 2px -2px grey;">${feed.title}</h2>
+                <h4 style="margin: 0; padding: 2%; box-shadow: 0 4px 2px -2px grey;">${feed.description}</h4>
+                ${feed.items.map((item: any) => {
+                    return html`
+                        <div class="pc-podcast-overview-episode">
+                            <div class="pc-podcast-overview-episode-title">
+                                <div>${item.title}</div>
+                                <br>
+                                <div style="font-size: calc(10px + 1vmin); font-weight: normal">${new Date(item.isoDate).toLocaleDateString()}</div>
+                            </div>
+    
+                            <div class="pc-podcast-overview-episode-controls-container">
+                                <i 
+                                    class="material-icons pc-podcast-overview-episode-add-control"
+                                    @click=${() => addEpisodeToPlaylist(podcast, item)}
+                                >playlist_add
+                                </i>  
+                            </div>
+                        </div>
+                    `;
+                })}
+            `;    
         }
-    
-        const podcast = JSON.parse(podcastRaw);
-        const feed = await new RSSParser().parseURL(`https://jsonp.afeld.me/?url=${podcast.feedUrl}`);
-    
-        return html`
-            <h2 style="margin: 0; padding: 5%; box-shadow: 0 4px 2px -2px grey;">${feed.title}</h2>
-            <h4 style="margin: 0; padding: 2%; box-shadow: 0 4px 2px -2px grey;">${feed.description}</h4>
-            ${feed.items.map((item: any) => {
-                return html`
-                    <div class="pc-podcast-overview-episode">
-                        <div class="pc-podcast-overview-episode-title">
-                            <div>${item.title}</div>
-                            <br>
-                            <div style="font-size: calc(10px + 1vmin); font-weight: normal">${new Date(item.isoDate).toLocaleDateString()}</div>
-                        </div>
+        catch(error) {
+            if (corsProxy !== firstProxy) {
+                return await getFeed(podcastRaw, firstProxy);
+            }
 
-                        <div class="pc-podcast-overview-episode-controls-container">
-                            <i 
-                                class="material-icons pc-podcast-overview-episode-add-control"
-                                @click=${() => addEpisodeToPlaylist(podcast, item)}
-                            >playlist_add
-                            </i>  
-                        </div>
-                    </div>
-                `;
-            })}
-        `;
+            return html`<div>Failed to load</div>`;
+        }
     }
     
     // TODO really this should add to the playlist and start the playlist
