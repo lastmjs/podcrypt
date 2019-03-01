@@ -33,7 +33,7 @@ StorePromise.then((Store) => {
     
             <div class="pc-app-top-bar">
                 <pc-hamburger @click=${mainMenuToggle}></pc-hamburger>
-                <div style="margin-left: 5%">Podcrypt Alpha</div>
+                <div style="margin-left: 5%">Podcrypt Pre-alpha</div>
             </div>
     
             <pc-main-menu></pc-main-menu>

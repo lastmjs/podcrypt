@@ -23,7 +23,14 @@ StorePromise.then((Store) => {
     
     // this listens for anchor tag clicks
     window.addEventListener('click', (e: any) => {
+
         if (e.target.nodeName === 'A') {
+
+            // allow absolute urls to go through...this might not be thorough
+            if (e.target.href.startsWith('https')) {
+                return;
+            }
+
             e.preventDefault();
     
             // TODO replace this with the navigate function

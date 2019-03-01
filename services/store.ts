@@ -4,7 +4,7 @@ import { get, set } from 'idb-keyval';
 export const StorePromise = prepareStore();
 
 async function prepareStore() {
-    const version = 2;
+    const version = 4;
     const persistedState: any = await get('state');
 
     const InitialState = version === persistedState.version ? persistedState : {
@@ -25,7 +25,12 @@ async function prepareStore() {
         currentETHPriceInUSD: 'unknown',
         previousPayoutDateInMilliseconds: null,
         nextPayoutDateInMilliseconds: null,
-        ethereumPublicKey: null
+        ethereumPublicKey: null,
+        warningCheckbox1Checked: false,
+        warningCheckbox2Checked: false,
+        warningCheckbox3Checked: false,
+        warningCheckbox4Checked: false,
+        walletCreationState: 'NOT_CREATED'
     };
     
     const RootReducer = (state=InitialState, action: any) => {
@@ -309,6 +314,41 @@ async function prepareStore() {
             return {
                 ...state,
                 nextPayoutDateInMilliseconds: action.nextPayoutDateInMilliseconds
+            };
+        }
+
+        if (action.type === 'SET_WARNING_CHECKBOX_1_CHECKED') {
+            return {
+                ...state,
+                warningCheckbox1Checked: action.checked
+            };
+        }
+
+        if (action.type === 'SET_WARNING_CHECKBOX_2_CHECKED') {
+            return {
+                ...state,
+                warningCheckbox2Checked: action.checked
+            };
+        }
+
+        if (action.type === 'SET_WARNING_CHECKBOX_3_CHECKED') {
+            return {
+                ...state,
+                warningCheckbox3Checked: action.checked
+            };
+        }
+
+        if (action.type === 'SET_WARNING_CHECKBOX_4_CHECKED') {
+            return {
+                ...state,
+                warningCheckbox4Checked: action.checked
+            };
+        }
+
+        if (action.type === 'SET_WALLET_CREATION_STATE') {
+            return {
+                ...state,
+                walletCreationState: action.walletCreationState
             };
         }
     

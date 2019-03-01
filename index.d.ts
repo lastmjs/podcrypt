@@ -9,3 +9,5 @@ type Episode = {
     finishedListening: boolean;
     progress: number;
 }
+
+type WalletCreationState = 'NOT_CREATED' | 'CREATING' | 'CREATED';
