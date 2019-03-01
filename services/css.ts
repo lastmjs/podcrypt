@@ -3,6 +3,6 @@ export const pcContainerStyles = `
     padding-left: 2%;
     padding-right: 2%;
     padding-top: 20%;
-    padding-bottom: 15%;
+    padding-bottom: 20%;
     overflow-y: auto;
 `;

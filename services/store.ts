@@ -4,9 +4,11 @@ import { get, set } from 'idb-keyval';
 export const StorePromise = prepareStore();
 
 async function prepareStore() {
-    const persistedState = await get('state');
+    const version = 1;
+    const persistedState: any = await get('state');
 
-    const InitialState = persistedState || {
+    const InitialState = version === persistedState.version ? persistedState : {
+        version,
         currentRoute: {
             pathname: '/',
             search: '',
@@ -18,7 +20,12 @@ async function prepareStore() {
         currentPlaylistIndex: 0,
         podcasts: {},
         episodes: {},
-        payoutAmountDollars: 10
+        payoutTargetInUSD: 10,
+        payoutIntervalInDays: 30,
+        currentETHPriceInUSD: 'unknown',
+        previousPayoutDateInMilliseconds: null,
+        nextPayoutDate: null,
+        ethereumPublicKey: null
     };
     
     const RootReducer = (state=InitialState, action: any) => {
@@ -274,6 +281,27 @@ async function prepareStore() {
     
                     return episodeGuid;
                 })
+            };
+        }
+
+        if (action.type === 'SET_CURRENT_ETH_PRICE_IN_USD') {
+            return {
+                ...state,
+                currentETHPriceInUSD: action.currentETHPriceInUSD
+            };
+        }
+
+        if (action.type === 'SET_PAYOUT_TARGET_IN_USD') {
+            return {
+                ...state,
+                payoutTargetInUSD: action.payoutTargetInUSD
+            };
+        }
+
+        if (action.type === 'SET_PAYOUT_INTERVAL_IN_DAYS') {
+            return {
+                ...state,
+                payoutIntervalInDays: action.payoutIntervalInDays
             };
         }
     
