@@ -2,7 +2,7 @@ import { customElement, html } from 'functional-element';
 import { pcContainerStyles } from '../services/css';
 import { StorePromise } from '../services/store';
 import { getCurrentETHPriceInUSD } from '../services/utilities';
-import { set } from 'idb-keyval';
+import { set, get } from 'idb-keyval';
 
 const web3 = new Web3('https://ropsten-rpc.linkpool.io/');
 
@@ -17,6 +17,8 @@ StorePromise.then((Store) => {
 
         const eth = (Store.getState() as any).currentETHPriceInUSD === 'Loading...' ? 'Loading...' : (Store.getState() as any).payoutTargetInUSD / (Store.getState() as any).currentETHPriceInUSD;
         const nextPayoutLocaleDateString = new Date((Store.getState() as any).nextPayoutDateInMilliseconds).toLocaleDateString()
+        const previousPayoutDateInMilliseconds = (Store.getState() as any).previousPayoutDateInMilliseconds;
+        const previousPayoutLocaleDateString = previousPayoutDateInMilliseconds === null ? 'never' : new Date(previousPayoutDateInMilliseconds).toLocaleDateString();
 
         return html`
             <style>
@@ -30,7 +32,7 @@ StorePromise.then((Store) => {
                     margin-top: 2%;
                     display: flex;
                     justify-content: center;
-                    align-items: center;
+                    /* align-items: center; */
                 }
 
                 .pc-wallet-podcast-item-text {
@@ -43,12 +45,12 @@ StorePromise.then((Store) => {
             </style>
     
             <div class="pc-wallet-container">
-                ${(Store.getState() as any).walletCreationState === 'CREATED' ? walletUI(eth, nextPayoutLocaleDateString) : (Store.getState() as any).walletCreationState === 'CREATING' ? html`<div>Creating wallet...</div>` : walletWarnings()}
+                ${(Store.getState() as any).walletCreationState === 'CREATED' ? walletUI(eth, previousPayoutLocaleDateString, nextPayoutLocaleDateString) : (Store.getState() as any).walletCreationState === 'CREATING' ? html`<div>Creating wallet...</div>` : walletWarnings()}
             </div>
         `;
     })
 
-    function walletUI(eth: number | 'Loading...', nextPayoutLocaleDateString: string) {
+    function walletUI(eth: number | 'Loading...', previousPayoutLocaleDateString: string, nextPayoutLocaleDateString: string) {
         return html`
             <h3>Public key</h3>
 
@@ -105,12 +107,16 @@ StorePromise.then((Store) => {
             <div style="font-size: calc(15px + 1vmin);">${nextPayoutLocaleDateString}</div>
 
             <br>
+
+            <button @click=${payout}>Manual payout</button>
+
+            <br>
             <br>
             <hr>
             <br>
 
             ${Object.values((Store.getState() as any).podcasts).map((podcast: any) => {
-                const totalTimeInSeconds = Math.floor(calculateTotalTimeForPodcast(Store.getState(), podcast) / 1000);
+                const totalTimeInSeconds = Math.floor(calculateTotalTimeForPodcastDuringCurrentInterval(Store.getState(), podcast) / 1000);
                 const totalMinutes = Math.floor(totalTimeInSeconds / 60);
                 const totalSecondsRemaining = totalTimeInSeconds % 60;
 
@@ -119,9 +125,13 @@ StorePromise.then((Store) => {
                         <div>
                             <img src="${podcast.imageUrl}">
                         </div>
-                        <div style="display:flex: flex-direction: column; padding: 2%;">
+                        <div style="display:flex: flex-direction: column; padding-left: 5%">
                             <div class="pc-wallet-podcast-item-text">${podcast.title}</div>
-                            <div>$${calculatePayoutAmountForPodcast(Store.getState(), podcast).toFixed(2)}, ${Math.floor(calculatePercentageOfTotalTimeForPodcast(Store.getState(), podcast) * 100)}%, ${totalMinutes} min ${totalSecondsRemaining} sec</div>
+                            <br>
+                            <div>$${calculatePayoutAmountForPodcastDuringCurrentInterval(Store.getState(), podcast).toFixed(2)}, ${Math.floor(calculatePercentageOfTotalTimeForPodcastDuringCurrentInterval(Store.getState(), podcast) * 100)}%, ${totalMinutes} min ${totalSecondsRemaining} sec</div>
+                            <br>
+                            <div>Last payout: ${previousPayoutLocaleDateString === 'never' ? previousPayoutLocaleDateString : html`<a href="https://ropsten.etherscan.io/tx/${podcast.latestTransactionHash}" target="_blank">${previousPayoutLocaleDateString}</a>`}</div>
+                            <div>Next payout: ${nextPayoutLocaleDateString}</div>
                         </div>
                     </div>
                 `;
@@ -190,6 +200,64 @@ StorePromise.then((Store) => {
         Store.dispatch({
             type: 'SET_WARNING_CHECKBOX_4_CHECKED',
             checked: e.target.checked
+        });
+    }
+
+    function calculatePayoutAmountForPodcastDuringCurrentInterval(state: any, podcast: any) {
+        const percentageOfTotalTimeForPodcastDuringCurrentInterval = calculatePercentageOfTotalTimeForPodcastDuringCurrentInterval(state, podcast);        
+        return state.payoutTargetInUSD * percentageOfTotalTimeForPodcastDuringCurrentInterval;
+    }
+
+    function calculatePercentageOfTotalTimeForPodcastDuringCurrentInterval(state: any, podcast: any) {
+        const totalTime = calculateTotalTimeDuringCurrentInterval(state);
+        const totalTimeForPodcast = calculateTotalTimeForPodcastDuringCurrentInterval(state, podcast);
+    
+        if (totalTime === 0) {
+            return 0;
+        }
+
+        return totalTimeForPodcast / totalTime;
+    }
+
+    function calculateTotalTimeDuringCurrentInterval(state: any): number {
+        return Object.values(state.podcasts).reduce((result: number, podcast) => {
+            return result + calculateTotalTimeForPodcastDuringCurrentInterval(state, podcast);
+        }, 0);
+    }
+
+    function calculateTotalTimeForPodcastDuringCurrentInterval(state: any, podcast: any): number {
+        return podcast.episodes.reduce((result: number, episodeGuid: string) => {
+            const episode = state.episodes[episodeGuid];
+            const timestampsDuringCurrentInterval = getTimestampsDuringCurrentInterval(state, episode.timestamps);
+
+            return result + timestampsDuringCurrentInterval.reduce((result: number, timestamp: any, index: number) => {
+                const nextTimestamp = timestampsDuringCurrentInterval[index + 1];
+                const previousTimestamp = timestampsDuringCurrentInterval[index - 1];
+    
+                if (timestamp.type === 'START') {
+                    if (nextTimestamp && nextTimestamp.type === 'STOP') {
+                        return result - timestamp.timestamp;
+                    }
+                    else {
+                        return result + 0;
+                    }
+                }
+    
+                if (timestamp.type === 'STOP') {
+                    if (previousTimestamp && previousTimestamp.type === 'START') {
+                        return result + timestamp.timestamp;
+                    }
+                    else {
+                        return result + 0;
+                    }
+                }
+            }, 0);
+        }, 0);
+    }
+
+    function getTimestampsDuringCurrentInterval(state: any, timestamps: any) {
+        return timestamps.filter((timestamp: any) => {
+            return timestamp.timestamp > state.previousPayoutDateInMilliseconds && timestamp.timestamp <= new Date().getTime();
         });
     }
     
@@ -343,6 +411,79 @@ StorePromise.then((Store) => {
         });
     }
 
+    function parseEthereumAddressFromPodcastDescription(podcastDescription: string) {
+        const testPodcastAccount = '0x81C0bf46ED56216E3f9f0864B46C099B8A3315B3';
+        return testPodcastAccount;
+    }
+
+    async function payout() {
+        
+        const podcasts: any = Object.values((Store.getState() as any).podcasts);
+
+        for (let i=0; i < podcasts.length; i++) {
+            const podcast = podcasts[i];
+
+            const podcastEthereumAddress = parseEthereumAddressFromPodcastDescription(podcast.description);
+        
+            // const gasPrice = await web3.eth.getGasPrice();
+            const gasPrice = 10000000000;
+            const valueInUSD = calculatePayoutAmountForPodcastDuringCurrentInterval(Store.getState(), podcast);
+            const valueInETH = valueInUSD / (Store.getState() as any).currentETHPriceInUSD;
+            const valueInWEI = valueInETH * 1e18;
+            const value = valueInWEI - gasPrice;
+
+            const transactionObject = {
+                from: (Store.getState() as any).ethereumAddress,
+                to: podcastEthereumAddress,
+                gas: 21000,
+                gasPrice,
+                value
+                // data: web3.utils.asciiToHex('podcrypt') // TODO we might need to increase the gaslimit for this?
+            };
+
+            console.log('transactionObject', transactionObject);
+
+            const signedTransactionObject = await web3.eth.accounts.signTransaction(transactionObject, await get('ethereumPrivateKey'));
+
+            console.log('signedTransactionObject', signedTransactionObject);
+
+            await signAndSendTransaction(signedTransactionObject, podcast);
+        }
+
+        Store.dispatch({
+            type: 'SET_PREVIOUS_PAYOUT_DATE_IN_MILLISECONDS',
+            previousPayoutDateInMilliseconds: new Date().getTime()
+        });
+
+        const nextPayoutDateInMilliseconds = getNextPayoutDateInMilliseconds();
+
+        Store.dispatch({
+            type: 'SET_NEXT_PAYOUT_DATE_IN_MILLISECONDS',
+            nextPayoutDateInMilliseconds
+        });
+    }
+
+    async function signAndSendTransaction(signedTransactionObject: any, podcast: any) {
+        return new Promise((resolve, reject) => {
+            web3.eth.sendSignedTransaction(signedTransactionObject.rawTransaction, (error: any, transactionHash: string) => {
+                console.log('error', error);
+                console.log('transactionHash', transactionHash);
+                Store.dispatch({
+                    type: 'SET_PODCAST_LATEST_TRANSACTION_HASH',
+                    feedUrl: podcast.feedUrl,
+                    latestTransactionHash: transactionHash
+                });
+
+                resolve();
+            })
+            .catch((error: any) => {
+                // TODO we need to update web3 to the latest version to get rid of this error
+                // TODO once that happens, consider using await again
+                console.log('This error should go away once we update web3', error);
+            });    
+        });
+    }
+
     setInterval(() => {
         const currentLocaleDateString = new Date().toLocaleDateString();
         const nextPayoutLocaleDateString = new Date((Store.getState() as any).nextPayoutDateInMilliseconds).toLocaleDateString();
@@ -351,15 +492,7 @@ StorePromise.then((Store) => {
         console.log('nextPayoutLocaleDateString', nextPayoutLocaleDateString);
 
         if (currentLocaleDateString === nextPayoutLocaleDateString) {
-            const testPodcastAccount = '0x81C0bf46ED56216E3f9f0864B46C099B8A3315B3';
-
-            console.log('Payout now!');
-            // TODO loop through podcasts and podcrypt
-            // TODO send transactions to test account
-            // TODO store transaction hashes, make the pending etc very robust to the user
-            Object.values((Store.getState() as any).podcasts).map((podcast: any) => {
-
-            });
+            payout();
         }
     }, 60000);
 });

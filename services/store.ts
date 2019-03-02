@@ -77,6 +77,19 @@ async function prepareStore() {
                 }
             };
         }
+
+        if (action.type === 'SET_PODCAST_LATEST_TRANSACTION_HASH') {
+            return {
+                ...state,
+                podcasts: {
+                    ...state.podcasts,
+                    [action.feedUrl]: {
+                        ...state.podcasts[action.feedUrl],
+                        latestTransactionHash: action.latestTransactionHash
+                    }
+                }
+            };
+        }
     
         if (action.type === 'ADD_EPISODE_TO_PLAYLIST') {
             return {
@@ -212,7 +225,7 @@ async function prepareStore() {
                         timestamps: [...state.episodes[state.currentEpisodeGuid].timestamps, {
                             type: 'START',
                             actionType: 'CURRENT_EPISODE_PLAYED',
-                            timestamp: new Date().toISOString()
+                            timestamp: new Date().getTime()
                         }]
                     }
                 }
@@ -230,7 +243,7 @@ async function prepareStore() {
                         timestamps: [...state.episodes[state.currentEpisodeGuid].timestamps, {
                             type: 'STOP',
                             actionType: 'CURRENT_EPISODE_PAUSED',
-                            timestamp: new Date().toISOString()
+                            timestamp: new Date().getTime()
                         }]
                     }
                 }
@@ -316,6 +329,13 @@ async function prepareStore() {
             return {
                 ...state,
                 nextPayoutDateInMilliseconds: action.nextPayoutDateInMilliseconds
+            };
+        }
+
+        if (action.type === 'SET_PREVIOUS_PAYOUT_DATE_IN_MILLISECONDS') {
+            return {
+                ...state,
+                previousPayoutDateInMilliseconds: action.previousPayoutDateInMilliseconds
             };
         }
 
