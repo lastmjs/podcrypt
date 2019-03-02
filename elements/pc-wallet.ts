@@ -154,7 +154,7 @@ StorePromise.then((Store) => {
             <div><input type="checkbox" @input=${checkbox2InputChanged} .checked=${(Store.getState() as any).warningCheckbox2Checked}> This is pre-alpha software</div>
             <div><input type="checkbox" @input=${checkbox3InputChanged} .checked=${(Store.getState() as any).warningCheckbox3Checked}> Anything could go wrong</div>
             <div><input type="checkbox" @input=${checkbox4InputChanged} .checked=${(Store.getState() as any).warningCheckbox4Checked}> My Podcrypt data will probably be wiped regularly during the pre-alpha</div>
-            <div><input type="checkbox"> Podcrypt Pre-alpha uses the Ropsten test network for payments. I should NOT send real ETH to Podcrypt Pre-alpha.</div>
+            <div><input type="checkbox" @input=${checkbox5InputChanged} .checked=${(Store.getState() as any).warningCheckbox5Checked}> Podcrypt Pre-alpha uses the Ropsten test network for payments. I should NOT send real ETH to Podcrypt Pre-alpha.</div>
             <br>
             <button @click=${createWalletClick}>Create Wallet</button>
         `;
@@ -165,7 +165,8 @@ StorePromise.then((Store) => {
             (Store.getState() as any).warningCheckbox1Checked &&
             (Store.getState() as any).warningCheckbox2Checked &&
             (Store.getState() as any).warningCheckbox3Checked &&
-            (Store.getState() as any).warningCheckbox4Checked;
+            (Store.getState() as any).warningCheckbox4Checked &&
+            (Store.getState() as any).warningCheckbox5Checked;
 
         if (!warningsAccepted) {
             alert('Silly you, you must understand');
@@ -199,6 +200,13 @@ StorePromise.then((Store) => {
     function checkbox4InputChanged(e: any) {
         Store.dispatch({
             type: 'SET_WARNING_CHECKBOX_4_CHECKED',
+            checked: e.target.checked
+        });
+    }
+
+    function checkbox5InputChanged(e: any) {
+        Store.dispatch({
+            type: 'SET_WARNING_CHECKBOX_5_CHECKED',
             checked: e.target.checked
         });
     }

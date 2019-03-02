@@ -31,6 +31,7 @@ async function prepareStore() {
         warningCheckbox2Checked: false,
         warningCheckbox3Checked: false,
         warningCheckbox4Checked: false,
+        warningCheckbox5Checked: false,
         walletCreationState: 'NOT_CREATED',
         podcryptEthereumAddress: '0x0a0d88E64da0CFB51d8D1D5a9A3604647eB3D131'
     };
@@ -364,6 +365,13 @@ async function prepareStore() {
             return {
                 ...state,
                 warningCheckbox4Checked: action.checked
+            };
+        }
+
+        if (action.type === 'SET_WARNING_CHECKBOX_5_CHECKED') {
+            return {
+                ...state,
+                warningCheckbox5Checked: action.checked
             };
         }
 
