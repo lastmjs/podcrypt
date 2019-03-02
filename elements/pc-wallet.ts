@@ -2,7 +2,7 @@ import { customElement, html } from 'functional-element';
 import { pcContainerStyles } from '../services/css';
 import { StorePromise } from '../services/store';
 import { getCurrentETHPriceInUSD } from '../services/utilities';
-import { set } from 'idb-keyval';
+import { set, get } from 'idb-keyval';
 
 const web3 = new Web3('https://ropsten-rpc.linkpool.io/');
 
@@ -17,6 +17,8 @@ StorePromise.then((Store) => {
 
         const eth = (Store.getState() as any).currentETHPriceInUSD === 'Loading...' ? 'Loading...' : (Store.getState() as any).payoutTargetInUSD / (Store.getState() as any).currentETHPriceInUSD;
         const nextPayoutLocaleDateString = new Date((Store.getState() as any).nextPayoutDateInMilliseconds).toLocaleDateString()
+        const previousPayoutDateInMilliseconds = (Store.getState() as any).previousPayoutDateInMilliseconds;
+        const previousPayoutLocaleDateString = previousPayoutDateInMilliseconds === null ? 'never' : new Date(previousPayoutDateInMilliseconds).toLocaleDateString();
 
         return html`
             <style>
@@ -30,7 +32,7 @@ StorePromise.then((Store) => {
                     margin-top: 2%;
                     display: flex;
                     justify-content: center;
-                    align-items: center;
+                    /* align-items: center; */
                 }
 
                 .pc-wallet-podcast-item-text {
@@ -43,12 +45,12 @@ StorePromise.then((Store) => {
             </style>
     
             <div class="pc-wallet-container">
-                ${(Store.getState() as any).walletCreationState === 'CREATED' ? walletUI(eth, nextPayoutLocaleDateString) : (Store.getState() as any).walletCreationState === 'CREATING' ? html`<div>Creating wallet...</div>` : walletWarnings()}
+                ${(Store.getState() as any).walletCreationState === 'CREATED' ? walletUI(eth, previousPayoutLocaleDateString, nextPayoutLocaleDateString) : (Store.getState() as any).walletCreationState === 'CREATING' ? html`<div>Creating wallet...</div>` : walletWarnings()}
             </div>
         `;
     })
 
-    function walletUI(eth: number | 'Loading...', nextPayoutLocaleDateString: string) {
+    function walletUI(eth: number | 'Loading...', previousPayoutLocaleDateString: string, nextPayoutLocaleDateString: string) {
         return html`
             <h3>Public key</h3>
 
@@ -105,6 +107,10 @@ StorePromise.then((Store) => {
             <div style="font-size: calc(15px + 1vmin);">${nextPayoutLocaleDateString}</div>
 
             <br>
+
+            <button @click=${payout}>Manual payout</button>
+
+            <br>
             <br>
             <hr>
             <br>
@@ -119,9 +125,13 @@ StorePromise.then((Store) => {
                         <div>
                             <img src="${podcast.imageUrl}">
                         </div>
-                        <div style="display:flex: flex-direction: column; padding: 2%;">
+                        <div style="display:flex: flex-direction: column; padding-left: 5%">
                             <div class="pc-wallet-podcast-item-text">${podcast.title}</div>
+                            <br>
                             <div>$${calculatePayoutAmountForPodcast(Store.getState(), podcast).toFixed(2)}, ${Math.floor(calculatePercentageOfTotalTimeForPodcast(Store.getState(), podcast) * 100)}%, ${totalMinutes} min ${totalSecondsRemaining} sec</div>
+                            <br>
+                            <div>Last payout: ${previousPayoutLocaleDateString === 'never' ? previousPayoutLocaleDateString : html`<a href="https://ropsten.etherscan.io/tx/${podcast.latestTransactionHash}" target="_blank">${previousPayoutLocaleDateString}</a>`}</div>
+                            <div>Next payout: ${nextPayoutLocaleDateString}</div>
                         </div>
                     </div>
                 `;
@@ -343,6 +353,57 @@ StorePromise.then((Store) => {
         });
     }
 
+    function parseEthereumAddressFromPodcastDescription(podcastDescription: string) {
+        const testPodcastAccount = '0x81C0bf46ED56216E3f9f0864B46C099B8A3315B3';
+        return testPodcastAccount;
+    }
+
+    function payout() {
+        Store.dispatch({
+            type: 'SET_PREVIOUS_PAYOUT_DATE_IN_MILLISECONDS',
+            previousPayoutDateInMilliseconds: new Date().getTime()
+        });
+
+        // TODO loop through podcasts and podcrypt
+        // TODO send transactions to test account
+        // TODO store transaction hashes, make the pending etc very robust to the user
+        Object.values((Store.getState() as any).podcasts).forEach(async (podcast: any) => {
+            const podcastEthereumAddress = parseEthereumAddressFromPodcastDescription(podcast.description);
+        
+            const gasPrice = await web3.eth.getGasPrice();
+
+            const transactionObject = {
+                from: (Store.getState() as any).ethereumAddress,
+                to: podcastEthereumAddress,
+                gas: 21000,
+                gasPrice: 30000000000,
+                value: 10 - gasPrice, // TODO grab the correct value for this interval
+                // data: web3.utils.asciiToHex('podcrypt') // TODO we might need to increase the gaslimit for this?
+            };
+
+            console.log('transactionObject', transactionObject);
+
+            const signedTransactionObject = await web3.eth.accounts.signTransaction(transactionObject, await get('ethereumPrivateKey'));
+
+            console.log('signedTransactionObject', signedTransactionObject);
+
+            web3.eth.sendSignedTransaction(signedTransactionObject.rawTransaction, (error: any, transactionHash: string) => {
+                console.log('error', error);
+                console.log('transactionHash', transactionHash);
+                Store.dispatch({
+                    type: 'SET_PODCAST_LATEST_TRANSACTION_HASH',
+                    feedUrl: podcast.feedUrl,
+                    latestTransactionHash: transactionHash
+                });
+            })
+            .catch((error: any) => {
+                // TODO we need to update web3 to the latest version to get rid of this error
+                // TODO once that happens, consider using await again
+                console.log('This error should go away once we update web3', error);
+            });
+        });
+    }
+
     setInterval(() => {
         const currentLocaleDateString = new Date().toLocaleDateString();
         const nextPayoutLocaleDateString = new Date((Store.getState() as any).nextPayoutDateInMilliseconds).toLocaleDateString();
@@ -351,15 +412,7 @@ StorePromise.then((Store) => {
         console.log('nextPayoutLocaleDateString', nextPayoutLocaleDateString);
 
         if (currentLocaleDateString === nextPayoutLocaleDateString) {
-            const testPodcastAccount = '0x81C0bf46ED56216E3f9f0864B46C099B8A3315B3';
-
-            console.log('Payout now!');
-            // TODO loop through podcasts and podcrypt
-            // TODO send transactions to test account
-            // TODO store transaction hashes, make the pending etc very robust to the user
-            Object.values((Store.getState() as any).podcasts).map((podcast: any) => {
-
-            });
+            payout();
         }
     }, 60000);
 });
