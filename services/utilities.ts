@@ -26,6 +26,8 @@ export function navigate(Store: any, path: string) {
 }
 
 export async function getCurrentETHPriceInUSD(): Promise<string | 'UNKNOWN'> {
+    // window.fetch('https://api.coinbase.com/v2/exchange-rates?currency=ETH').then((result) => result.json()).then((result) => console.log(result))
+
     // TODO use the backup proxy system here...perhaps create a proxy backup request system
     try {
         const ethPriceResponse = await window.fetch(`https://cors-anywhere.herokuapp.com/https://api.coinmarketcap.com/v1/ticker/ethereum`);

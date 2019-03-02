@@ -2,12 +2,16 @@ import { customElement, html } from 'functional-element';
 import { pcContainerStyles } from '../services/css';
 import { StorePromise } from '../services/store';
 import { getCurrentETHPriceInUSD } from '../services/utilities';
+import { set } from 'idb-keyval';
+
+const web3 = new Web3('https://ropsten-rpc.linkpool.io/');
 
 StorePromise.then((Store) => {
     customElement('pc-wallet', ({ constructing, update }) => {
         if (constructing) {
             Store.subscribe(update);
 
+            loadEthereumAccountBalance();
             loadCurrentETHPriceInUSD();
 
             const nextPayoutDateInMilliseconds = getNextPayoutDateInMilliseconds();
@@ -42,7 +46,13 @@ StorePromise.then((Store) => {
         return html`
             <h3>Public key</h3>
 
-            <div>${(Store.getState() as any).ethereumPublicKey}</div>
+            <div style="word-wrap: break-word;">${(Store.getState() as any).ethereumAddress}</div>
+
+            <h3>Balance</h3>
+
+            <div>USD: ${(Store.getState() as any).currentETHPriceInUSD === 'Loading...' ? 'Loading...' : (((Store.getState() as any).ethereumBalanceInWEI / 1e18) * (Store.getState() as any).currentETHPriceInUSD).toFixed(2)}</div>
+
+            <div>ETH: ${(Store.getState() as any).ethereumBalanceInWEI / 1e18}</div>
 
             <h3>
                 Payout target
@@ -257,13 +267,43 @@ StorePromise.then((Store) => {
         }
     }
 
-    function createWallet() {
+    async function createWallet() {
         Store.dispatch({
             type: 'SET_WALLET_CREATION_STATE',
             walletCreationState: 'CREATING'
         });
 
-        
+        // TODO we might want some backup nodes
+        const newAccount = await web3.eth.accounts.create();
+
+        await set('ethereumPrivateKey', newAccount.privateKey);
+
+        Store.dispatch({
+            type: 'SET_ETHEREUM_ADDRESS',
+            ethereumAddress: newAccount.address
+        });
+
+        Store.dispatch({
+            type: 'SET_WALLET_CREATION_STATE',
+            walletCreationState: 'CREATED'
+        });
+
+        await loadEthereumAccountBalance();
+    }
+
+    async function loadEthereumAccountBalance() {
+        const ethereumAddress = (Store.getState() as any).ethereumAddress;
+
+        if (ethereumAddress === null) {
+            return;
+        }
+
+        const ethereumBalanceInWEI = await web3.eth.getBalance(ethereumAddress);
+
+        Store.dispatch({
+            type: 'SET_ETHEREUM_BALANCE_IN_WEI',
+            ethereumBalanceInWEI
+        });
     }
 
     setInterval(() => {
