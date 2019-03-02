@@ -425,14 +425,19 @@ StorePromise.then((Store) => {
 
             const podcastEthereumAddress = parseEthereumAddressFromPodcastDescription(podcast.description);
         
-            const gasPrice = await web3.eth.getGasPrice();
+            // const gasPrice = await web3.eth.getGasPrice();
+            const gasPrice = 10000000000;
+            const valueInUSD = calculatePayoutAmountForPodcastDuringCurrentInterval(Store.getState(), podcast);
+            const valueInETH = valueInUSD / (Store.getState() as any).currentETHPriceInUSD;
+            const valueInWEI = valueInETH * 1e18;
+            const value = valueInWEI - gasPrice;
 
             const transactionObject = {
                 from: (Store.getState() as any).ethereumAddress,
                 to: podcastEthereumAddress,
                 gas: 21000,
-                gasPrice: 30000000000,
-                value: 10 - gasPrice, // TODO grab the correct value for this interval
+                gasPrice,
+                value
                 // data: web3.utils.asciiToHex('podcrypt') // TODO we might need to increase the gaslimit for this?
             };
 
