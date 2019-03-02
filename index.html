@@ -2,6 +2,16 @@
 
 <html>
     <head>
+        <title>Podcrypt</title>
+
+        <!--TODO look into using the web app manifest instead, at least for Android-->
+        <!-- <meta name="mobile-web-app-capable" content="yes"> -->
+        <!-- <meta name="apple-mobile-web-app-capable" content="yes"> -->
+        <link rel="manifest" href="manifest.json">
+
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
         <!-- Global site tag (gtag.js) - Google Analytics -->
         <script async src="https://www.googletagmanager.com/gtag/js?id=UA-61431139-2"></script>
         <script>
@@ -9,29 +19,29 @@
             function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
                 gtag('config', 'UA-61431139-2', { 'anonymize_ip': true });
-        </script>
+        </script>        
 
-        <title>Podcrypt</title>
-        <link rel="icon" type="image/png" href="podcrypt-logo-transparent.png">
+        <script src="services/process-polyfill.js"></script>
+
+        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+        <script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js@1.0.0-beta.37/dist/web3.min.js"></script>
+        <script type="module" src="elements/pc-app.ts"></script>
     </head>
 
-    <body style="color: white; background-color: grey; background-image: url('podcrypt-logo-transparent.png'); background-size: 150vh; background-repeat: no-repeat; background-position: top right -25vw">
-        <h1>Podcrypt</h1>
-        <h2>Automatic, fair, peer-to-peer podcast donations with Ether</h2>
+    
+    <body>
+        <style>
+            html {
+                height: 100%;
+                font-family: sans-serif;
+            }
 
-        <p>We've reached the first validation goal of 100 members in the Telegram group. The MVP is now being built.</p>
+            body {
+                height: 100%;
+                margin: 0;
+            }
+        </style>
 
-        <p>Expect an alpha release by the end of March 2019.</p>
-
-        <p>If you are a podcast owner, you can prepare by adding your Ethereum address to your podcast's main description.</p>
-
-        <p>Stay up to date:</p>
-        <ul>
-            <li><a href="https://t.me/podcrypt" target="_blank">Telegram group</a></li>
-            <li><a href="https://hackernoon.com/podcrypt-automatic-fair-peer-to-peer-podcast-donations-with-ether-f0a638111410" target="_blank">Introductory article</a></li>
-            <li><a href="https://twitter.com/lastmjs" target="_blank">@lastmjs</a></li>
-        </ul>
-        
-        <a style="position: fixed; bottom: 25px" target="_blank" href="privacy.html">Privacy Policy</a>
+        <pc-app></pc-app>
     </body>
 </html>

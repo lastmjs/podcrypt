@@ -1,18 +1,37 @@
 {
   "name": "podcrypt",
   "version": "0.0.0",
-  "description": "Progressive web dapp for podcasts",
+  "description": "Progressive Web DApp for podcasts",
+  "engines": {
+    "node": "10.7.0"
+  },
   "scripts": {
-    "build": "echo \"Error: no test specified\" && exit 1"
+    "start": "zwitterion",
+    "generate-attribution": "generate-attribution",
+    "build": "zwitterion --build-static --exclude node_modules --include functional-element,redux/es"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/lastmjs/podcrypt.git"
   },
-  "author": "",
-  "license": "All Rights Reserved",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/lastmjs/podcrypt/issues"
   },
-  "homepage": "https://github.com/lastmjs/podcrypt#readme"
+  "homepage": "https://github.com/lastmjs/podcrypt#readme",
+  "contributors": [
+    "Jordan Last <jordan.michael.last@gmail.com>"
+  ],
+  "devDependencies": {
+    "jsverify-es-module": "0.0.2",
+    "oss-attribution-generator": "1.7.1",
+    "zwitterion": "0.28.1"
+  },
+  "dependencies": {
+    "functional-element": "0.0.12",
+    "idb-keyval": "3.1.0",
+    "redux": "4.0.1",
+    "rss-parser": "3.6.2",
+    "web3-es-module": "0.0.0"
+  }
 }
