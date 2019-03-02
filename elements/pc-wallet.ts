@@ -13,13 +13,6 @@ StorePromise.then((Store) => {
 
             loadEthereumAccountBalance();
             loadCurrentETHPriceInUSD();
-
-            const nextPayoutDateInMilliseconds = getNextPayoutDateInMilliseconds();
-
-            Store.dispatch({
-                type: 'SET_NEXT_PAYOUT_DATE_IN_MILLISECONDS',
-                nextPayoutDateInMilliseconds
-            });
         }
 
         const eth = (Store.getState() as any).currentETHPriceInUSD === 'Loading...' ? 'Loading...' : (Store.getState() as any).payoutTargetInUSD / (Store.getState() as any).currentETHPriceInUSD;
@@ -32,7 +25,20 @@ StorePromise.then((Store) => {
                 }
     
                 .pc-wallet-podcast-item {
-                    padding: 5%;
+                    box-shadow: 0px 0px 5px grey;
+                    padding: 2%;
+                    margin-top: 2%;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                }
+
+                .pc-wallet-podcast-item-text {
+                    font-size: calc(12px + 1vmin);
+                    text-overflow: ellipsis;
+                    flex: 1;
+                    cursor: pointer;
+                    font-weight: bold;
                 }
             </style>
     
@@ -50,9 +56,11 @@ StorePromise.then((Store) => {
 
             <h3>Balance</h3>
 
-            <div>USD: ${(Store.getState() as any).currentETHPriceInUSD === 'Loading...' ? 'Loading...' : (((Store.getState() as any).ethereumBalanceInWEI / 1e18) * (Store.getState() as any).currentETHPriceInUSD).toFixed(2)}</div>
+            <div style="font-size: calc(15px + 1vmin);">USD: ${(Store.getState() as any).currentETHPriceInUSD === 'Loading...' ? 'Loading...' : (((Store.getState() as any).ethereumBalanceInWEI / 1e18) * (Store.getState() as any).currentETHPriceInUSD).toFixed(2)}</div>
 
-            <div>ETH: ${(Store.getState() as any).ethereumBalanceInWEI / 1e18}</div>
+            <br>
+
+            <div style="font-size: calc(15px + 1vmin);">ETH: ${(Store.getState() as any).ethereumBalanceInWEI / 1e18}</div>
 
             <h3>
                 Payout target
@@ -64,7 +72,9 @@ StorePromise.then((Store) => {
                     type="number"
                     value=${(Store.getState() as any).payoutTargetInUSD}
                     @input=${payoutTargetInUSDInputChanged}
-                    style="font-size: calc(15px + 1vmin);"
+                    style="font-size: calc(15px + 1vmin); border: none; border-bottom: 1px solid grey;"
+                    min="0"
+                    max="100"
                 >
             </div>
 
@@ -82,7 +92,7 @@ StorePromise.then((Store) => {
                     type="number"
                     value=${(Store.getState() as any).payoutIntervalInDays}
                     @input=${payoutIntervalInDaysInputChanged}
-                    style="font-size: calc(15px + 1vmin);"
+                    style="font-size: calc(15px + 1vmin); border: none; border-bottom: 1px solid grey"
                     min="1"
                     max="30"
                 >
@@ -94,6 +104,11 @@ StorePromise.then((Store) => {
 
             <div style="font-size: calc(15px + 1vmin);">${nextPayoutLocaleDateString}</div>
 
+            <br>
+            <br>
+            <hr>
+            <br>
+
             ${Object.values((Store.getState() as any).podcasts).map((podcast: any) => {
                 const totalTimeInSeconds = Math.floor(calculateTotalTimeForPodcast(Store.getState(), podcast) / 1000);
                 const totalMinutes = Math.floor(totalTimeInSeconds / 60);
@@ -101,13 +116,23 @@ StorePromise.then((Store) => {
 
                 return html`
                     <div class="pc-wallet-podcast-item">
-                        <h4>${podcast.title}</h4>
-                        $${calculatePayoutAmountForPodcast(Store.getState(), podcast).toFixed(2)}, ${Math.floor(calculatePercentageOfTotalTimeForPodcast(Store.getState(), podcast) * 100)}%, ${totalMinutes} min ${totalSecondsRemaining} sec
+                        <div>
+                            <img src="${podcast.imageUrl}">
+                        </div>
+                        <div style="display:flex: flex-direction: column; padding: 2%;">
+                            <div class="pc-wallet-podcast-item-text">${podcast.title}</div>
+                            <div>$${calculatePayoutAmountForPodcast(Store.getState(), podcast).toFixed(2)}, ${Math.floor(calculatePercentageOfTotalTimeForPodcast(Store.getState(), podcast) * 100)}%, ${totalMinutes} min ${totalSecondsRemaining} sec</div>
+                        </div>
                     </div>
-
-                    <hr>
                 `;
             })}
+<!-- 
+            <div class="pc-wallet-podcast-item">
+                <h4>Podcrypt</h4>
+                10%
+            </div>
+
+            <hr> -->
         `;
     }
 
@@ -119,6 +144,7 @@ StorePromise.then((Store) => {
             <div><input type="checkbox" @input=${checkbox2InputChanged} .checked=${(Store.getState() as any).warningCheckbox2Checked}> This is pre-alpha software</div>
             <div><input type="checkbox" @input=${checkbox3InputChanged} .checked=${(Store.getState() as any).warningCheckbox3Checked}> Anything could go wrong</div>
             <div><input type="checkbox" @input=${checkbox4InputChanged} .checked=${(Store.getState() as any).warningCheckbox4Checked}> My Podcrypt data will probably be wiped regularly during the pre-alpha</div>
+            <div><input type="checkbox"> Podcrypt Pre-alpha uses the Ropsten test network for payments. I should NOT send real ETH to Podcrypt Pre-alpha.</div>
             <br>
             <button @click=${createWalletClick}>Create Wallet</button>
         `;
@@ -168,14 +194,18 @@ StorePromise.then((Store) => {
     }
     
     function calculatePayoutAmountForPodcast(state: any, podcast: any) {
-        const percentageOfTotalTimeForPodcast = calculatePercentageOfTotalTimeForPodcast(state, podcast);
-        return state.payoutAmountDollars * percentageOfTotalTimeForPodcast;
+        const percentageOfTotalTimeForPodcast = calculatePercentageOfTotalTimeForPodcast(state, podcast);        
+        return state.payoutTargetInUSD * percentageOfTotalTimeForPodcast;
     }
     
     function calculatePercentageOfTotalTimeForPodcast(state: any, podcast: any) {
         const totalTime = calculateTotalTime(state);
         const totalTimeForPodcast = calculateTotalTimeForPodcast(state, podcast);
     
+        if (totalTime === 0) {
+            return 0;
+        }
+
         return totalTimeForPodcast / totalTime;
     }
     
@@ -289,6 +319,13 @@ StorePromise.then((Store) => {
         });
 
         await loadEthereumAccountBalance();
+
+        const nextPayoutDateInMilliseconds = getNextPayoutDateInMilliseconds();
+
+        Store.dispatch({
+            type: 'SET_NEXT_PAYOUT_DATE_IN_MILLISECONDS',
+            nextPayoutDateInMilliseconds
+        });
     }
 
     async function loadEthereumAccountBalance() {
@@ -314,7 +351,15 @@ StorePromise.then((Store) => {
         console.log('nextPayoutLocaleDateString', nextPayoutLocaleDateString);
 
         if (currentLocaleDateString === nextPayoutLocaleDateString) {
+            const testPodcastAccount = '0x81C0bf46ED56216E3f9f0864B46C099B8A3315B3';
+
             console.log('Payout now!');
+            // TODO loop through podcasts and podcrypt
+            // TODO send transactions to test account
+            // TODO store transaction hashes, make the pending etc very robust to the user
+            Object.values((Store.getState() as any).podcasts).map((podcast: any) => {
+
+            });
         }
     }, 60000);
 });
