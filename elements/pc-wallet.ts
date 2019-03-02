@@ -13,13 +13,6 @@ StorePromise.then((Store) => {
 
             loadEthereumAccountBalance();
             loadCurrentETHPriceInUSD();
-
-            const nextPayoutDateInMilliseconds = getNextPayoutDateInMilliseconds();
-
-            Store.dispatch({
-                type: 'SET_NEXT_PAYOUT_DATE_IN_MILLISECONDS',
-                nextPayoutDateInMilliseconds
-            });
         }
 
         const eth = (Store.getState() as any).currentETHPriceInUSD === 'Loading...' ? 'Loading...' : (Store.getState() as any).payoutTargetInUSD / (Store.getState() as any).currentETHPriceInUSD;
@@ -50,9 +43,11 @@ StorePromise.then((Store) => {
 
             <h3>Balance</h3>
 
-            <div>USD: ${(Store.getState() as any).currentETHPriceInUSD === 'Loading...' ? 'Loading...' : (((Store.getState() as any).ethereumBalanceInWEI / 1e18) * (Store.getState() as any).currentETHPriceInUSD).toFixed(2)}</div>
+            <div style="font-size: calc(15px + 1vmin);">USD: ${(Store.getState() as any).currentETHPriceInUSD === 'Loading...' ? 'Loading...' : (((Store.getState() as any).ethereumBalanceInWEI / 1e18) * (Store.getState() as any).currentETHPriceInUSD).toFixed(2)}</div>
 
-            <div>ETH: ${(Store.getState() as any).ethereumBalanceInWEI / 1e18}</div>
+            <br>
+
+            <div style="font-size: calc(15px + 1vmin);">ETH: ${(Store.getState() as any).ethereumBalanceInWEI / 1e18}</div>
 
             <h3>
                 Payout target
@@ -64,7 +59,9 @@ StorePromise.then((Store) => {
                     type="number"
                     value=${(Store.getState() as any).payoutTargetInUSD}
                     @input=${payoutTargetInUSDInputChanged}
-                    style="font-size: calc(15px + 1vmin);"
+                    style="font-size: calc(15px + 1vmin); border: none; border-bottom: 1px solid grey;"
+                    min="0"
+                    max="100"
                 >
             </div>
 
@@ -82,7 +79,7 @@ StorePromise.then((Store) => {
                     type="number"
                     value=${(Store.getState() as any).payoutIntervalInDays}
                     @input=${payoutIntervalInDaysInputChanged}
-                    style="font-size: calc(15px + 1vmin);"
+                    style="font-size: calc(15px + 1vmin); border: none; border-bottom: 1px solid grey"
                     min="1"
                     max="30"
                 >
@@ -108,6 +105,13 @@ StorePromise.then((Store) => {
                     <hr>
                 `;
             })}
+
+            <div class="pc-wallet-podcast-item">
+                <h4>Podcrypt</h4>
+                10%
+            </div>
+
+            <hr>
         `;
     }
 
@@ -119,6 +123,7 @@ StorePromise.then((Store) => {
             <div><input type="checkbox" @input=${checkbox2InputChanged} .checked=${(Store.getState() as any).warningCheckbox2Checked}> This is pre-alpha software</div>
             <div><input type="checkbox" @input=${checkbox3InputChanged} .checked=${(Store.getState() as any).warningCheckbox3Checked}> Anything could go wrong</div>
             <div><input type="checkbox" @input=${checkbox4InputChanged} .checked=${(Store.getState() as any).warningCheckbox4Checked}> My Podcrypt data will probably be wiped regularly during the pre-alpha</div>
+            <div><input type="checkbox"> Podcrypt Pre-alpha uses the Ropsten test network for payments. I should NOT send real ETH to Podcrypt Pre-alpha.</div>
             <br>
             <button @click=${createWalletClick}>Create Wallet</button>
         `;
@@ -289,6 +294,13 @@ StorePromise.then((Store) => {
         });
 
         await loadEthereumAccountBalance();
+
+        const nextPayoutDateInMilliseconds = getNextPayoutDateInMilliseconds();
+
+        Store.dispatch({
+            type: 'SET_NEXT_PAYOUT_DATE_IN_MILLISECONDS',
+            nextPayoutDateInMilliseconds
+        });
     }
 
     async function loadEthereumAccountBalance() {
@@ -314,7 +326,15 @@ StorePromise.then((Store) => {
         console.log('nextPayoutLocaleDateString', nextPayoutLocaleDateString);
 
         if (currentLocaleDateString === nextPayoutLocaleDateString) {
+            const testPodcastAccount = '0x81C0bf46ED56216E3f9f0864B46C099B8A3315B3';
+
             console.log('Payout now!');
+            // TODO loop through podcasts and podcrypt
+            // TODO send transactions to test account
+            // TODO store transaction hashes, make the pending etc very robust to the user
+            Object.values((Store.getState() as any).podcasts).map((podcast: any) => {
+
+            });
         }
     }, 60000);
 });

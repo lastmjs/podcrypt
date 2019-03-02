@@ -31,7 +31,8 @@ async function prepareStore() {
         warningCheckbox2Checked: false,
         warningCheckbox3Checked: false,
         warningCheckbox4Checked: false,
-        walletCreationState: 'NOT_CREATED'
+        walletCreationState: 'NOT_CREATED',
+        podcryptEthereumAddress: '0x0a0d88E64da0CFB51d8D1D5a9A3604647eB3D131'
     };
     
     const RootReducer = (state=InitialState, action: any) => {
