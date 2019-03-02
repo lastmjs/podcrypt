@@ -19,8 +19,8 @@ StorePromise.then((Store) => {
                     box-shadow: 0px 0px 1px black;
                     z-index: 1;
                     transition: .25s;
-                    width: 75%;
-                    left: ${Store.getState().showMainMenu ? '0' : '-80%'};
+                    width: 80%;
+                    left: ${Store.getState().showMainMenu ? '0' : '-90%'};
                 }
     
                 .pc-main-menu-item {

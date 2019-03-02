@@ -27,7 +27,11 @@ StorePromise.then((Store) => {
         if (e.target.nodeName === 'A') {
 
             // allow absolute urls to go through...this might not be thorough
-            if (e.target.href.startsWith('https')) {
+            if (
+                !e.target.href.startsWith('http://localhost') &&
+                !e.target.href.startsWith('https://deploy-preview') &&
+                !e.target.href.startsWith('https://podcrypt')
+            ) {
                 return;
             }
 

@@ -4,10 +4,10 @@ import { get, set } from 'idb-keyval';
 export const StorePromise = prepareStore();
 
 async function prepareStore() {
-    const version = 4;
+    const version = 10;
     const persistedState: any = await get('state');
 
-    const InitialState = version === persistedState.version ? persistedState : {
+    const InitialState = persistedState && version === persistedState.version ? persistedState : {
         version,
         currentRoute: {
             pathname: '/',
@@ -25,7 +25,8 @@ async function prepareStore() {
         currentETHPriceInUSD: 'unknown',
         previousPayoutDateInMilliseconds: null,
         nextPayoutDateInMilliseconds: null,
-        ethereumPublicKey: null,
+        ethereumAddress: null,
+        ethereumBalanceInWEI: 0,
         warningCheckbox1Checked: false,
         warningCheckbox2Checked: false,
         warningCheckbox3Checked: false,
@@ -349,6 +350,20 @@ async function prepareStore() {
             return {
                 ...state,
                 walletCreationState: action.walletCreationState
+            };
+        }
+
+        if (action.type === 'SET_ETHEREUM_ADDRESS') {
+            return {
+                ...state,
+                ethereumAddress: action.ethereumAddress
+            };
+        }
+
+        if (action.type === 'SET_ETHEREUM_BALANCE_IN_WEI') {
+            return {
+                ...state,
+                ethereumBalanceInWEI: action.ethereumBalanceInWEI
             };
         }
     
