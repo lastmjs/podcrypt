@@ -71,6 +71,14 @@ StorePromise.then((Store) => {
                 <div class="pc-main-menu-item">
                     <a href="/wallet">Wallet</a>
                 </div>
+
+                <div class="pc-main-menu-item">
+                    <a href="/privacy">Privacy</a>
+                </div>
+
+                <div class="pc-main-menu-item">
+                    <a href="/open-source">Open Source</a>
+                </div>
             </div>
         `;
     });

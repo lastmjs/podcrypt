@@ -7,6 +7,7 @@
   },
   "scripts": {
     "start": "zwitterion",
+    "generate-attribution": "generate-attribution",
     "build": "zwitterion --build-static --exclude node_modules --include functional-element,redux/es"
   },
   "repository": {
@@ -22,8 +23,8 @@
     "Jordan Last <jordan.michael.last@gmail.com>"
   ],
   "devDependencies": {
-    "@pika/web": "^0.2.0",
     "jsverify-es-module": "0.0.2",
+    "oss-attribution-generator": "1.7.1",
     "zwitterion": "0.28.1"
   },
   "dependencies": {
