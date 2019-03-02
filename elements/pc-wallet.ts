@@ -116,7 +116,7 @@ StorePromise.then((Store) => {
             <br>
 
             ${Object.values((Store.getState() as any).podcasts).map((podcast: any) => {
-                const totalTimeInSeconds = Math.floor(calculateTotalTimeForPodcast(Store.getState(), podcast) / 1000);
+                const totalTimeInSeconds = Math.floor(calculateTotalTimeForPodcastDuringCurrentInterval(Store.getState(), podcast) / 1000);
                 const totalMinutes = Math.floor(totalTimeInSeconds / 60);
                 const totalSecondsRemaining = totalTimeInSeconds % 60;
 
@@ -128,7 +128,7 @@ StorePromise.then((Store) => {
                         <div style="display:flex: flex-direction: column; padding-left: 5%">
                             <div class="pc-wallet-podcast-item-text">${podcast.title}</div>
                             <br>
-                            <div>$${calculatePayoutAmountForPodcast(Store.getState(), podcast).toFixed(2)}, ${Math.floor(calculatePercentageOfTotalTimeForPodcast(Store.getState(), podcast) * 100)}%, ${totalMinutes} min ${totalSecondsRemaining} sec</div>
+                            <div>$${calculatePayoutAmountForPodcastDuringCurrentInterval(Store.getState(), podcast).toFixed(2)}, ${Math.floor(calculatePercentageOfTotalTimeForPodcastDuringCurrentInterval(Store.getState(), podcast) * 100)}%, ${totalMinutes} min ${totalSecondsRemaining} sec</div>
                             <br>
                             <div>Last payout: ${previousPayoutLocaleDateString === 'never' ? previousPayoutLocaleDateString : html`<a href="https://ropsten.etherscan.io/tx/${podcast.latestTransactionHash}" target="_blank">${previousPayoutLocaleDateString}</a>`}</div>
                             <div>Next payout: ${nextPayoutLocaleDateString}</div>
@@ -200,6 +200,64 @@ StorePromise.then((Store) => {
         Store.dispatch({
             type: 'SET_WARNING_CHECKBOX_4_CHECKED',
             checked: e.target.checked
+        });
+    }
+
+    function calculatePayoutAmountForPodcastDuringCurrentInterval(state: any, podcast: any) {
+        const percentageOfTotalTimeForPodcastDuringCurrentInterval = calculatePercentageOfTotalTimeForPodcastDuringCurrentInterval(state, podcast);        
+        return state.payoutTargetInUSD * percentageOfTotalTimeForPodcastDuringCurrentInterval;
+    }
+
+    function calculatePercentageOfTotalTimeForPodcastDuringCurrentInterval(state: any, podcast: any) {
+        const totalTime = calculateTotalTimeDuringCurrentInterval(state);
+        const totalTimeForPodcast = calculateTotalTimeForPodcastDuringCurrentInterval(state, podcast);
+    
+        if (totalTime === 0) {
+            return 0;
+        }
+
+        return totalTimeForPodcast / totalTime;
+    }
+
+    function calculateTotalTimeDuringCurrentInterval(state: any): number {
+        return Object.values(state.podcasts).reduce((result: number, podcast) => {
+            return result + calculateTotalTimeForPodcastDuringCurrentInterval(state, podcast);
+        }, 0);
+    }
+
+    function calculateTotalTimeForPodcastDuringCurrentInterval(state: any, podcast: any): number {
+        return podcast.episodes.reduce((result: number, episodeGuid: string) => {
+            const episode = state.episodes[episodeGuid];
+            const timestampsDuringCurrentInterval = getTimestampsDuringCurrentInterval(state, episode.timestamps);
+
+            return result + timestampsDuringCurrentInterval.reduce((result: number, timestamp: any, index: number) => {
+                const nextTimestamp = timestampsDuringCurrentInterval[index + 1];
+                const previousTimestamp = timestampsDuringCurrentInterval[index - 1];
+    
+                if (timestamp.type === 'START') {
+                    if (nextTimestamp && nextTimestamp.type === 'STOP') {
+                        return result - timestamp.timestamp;
+                    }
+                    else {
+                        return result + 0;
+                    }
+                }
+    
+                if (timestamp.type === 'STOP') {
+                    if (previousTimestamp && previousTimestamp.type === 'START') {
+                        return result + timestamp.timestamp;
+                    }
+                    else {
+                        return result + 0;
+                    }
+                }
+            }, 0);
+        }, 0);
+    }
+
+    function getTimestampsDuringCurrentInterval(state: any, timestamps: any) {
+        return timestamps.filter((timestamp: any) => {
+            return timestamp.timestamp > state.previousPayoutDateInMilliseconds && timestamp.timestamp <= new Date().getTime();
         });
     }
     
@@ -358,16 +416,13 @@ StorePromise.then((Store) => {
         return testPodcastAccount;
     }
 
-    function payout() {
-        Store.dispatch({
-            type: 'SET_PREVIOUS_PAYOUT_DATE_IN_MILLISECONDS',
-            previousPayoutDateInMilliseconds: new Date().getTime()
-        });
+    async function payout() {
+        
+        const podcasts: any = Object.values((Store.getState() as any).podcasts);
 
-        // TODO loop through podcasts and podcrypt
-        // TODO send transactions to test account
-        // TODO store transaction hashes, make the pending etc very robust to the user
-        Object.values((Store.getState() as any).podcasts).forEach(async (podcast: any) => {
+        for (let i=0; i < podcasts.length; i++) {
+            const podcast = podcasts[i];
+
             const podcastEthereumAddress = parseEthereumAddressFromPodcastDescription(podcast.description);
         
             const gasPrice = await web3.eth.getGasPrice();
@@ -387,6 +442,24 @@ StorePromise.then((Store) => {
 
             console.log('signedTransactionObject', signedTransactionObject);
 
+            await signAndSendTransaction(signedTransactionObject, podcast);
+        }
+
+        Store.dispatch({
+            type: 'SET_PREVIOUS_PAYOUT_DATE_IN_MILLISECONDS',
+            previousPayoutDateInMilliseconds: new Date().getTime()
+        });
+
+        const nextPayoutDateInMilliseconds = getNextPayoutDateInMilliseconds();
+
+        Store.dispatch({
+            type: 'SET_NEXT_PAYOUT_DATE_IN_MILLISECONDS',
+            nextPayoutDateInMilliseconds
+        });
+    }
+
+    async function signAndSendTransaction(signedTransactionObject: any, podcast: any) {
+        return new Promise((resolve, reject) => {
             web3.eth.sendSignedTransaction(signedTransactionObject.rawTransaction, (error: any, transactionHash: string) => {
                 console.log('error', error);
                 console.log('transactionHash', transactionHash);
@@ -395,12 +468,14 @@ StorePromise.then((Store) => {
                     feedUrl: podcast.feedUrl,
                     latestTransactionHash: transactionHash
                 });
+
+                resolve();
             })
             .catch((error: any) => {
                 // TODO we need to update web3 to the latest version to get rid of this error
                 // TODO once that happens, consider using await again
                 console.log('This error should go away once we update web3', error);
-            });
+            });    
         });
     }
 

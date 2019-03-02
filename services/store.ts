@@ -225,7 +225,7 @@ async function prepareStore() {
                         timestamps: [...state.episodes[state.currentEpisodeGuid].timestamps, {
                             type: 'START',
                             actionType: 'CURRENT_EPISODE_PLAYED',
-                            timestamp: new Date().toISOString()
+                            timestamp: new Date().getTime()
                         }]
                     }
                 }
@@ -243,7 +243,7 @@ async function prepareStore() {
                         timestamps: [...state.episodes[state.currentEpisodeGuid].timestamps, {
                             type: 'STOP',
                             actionType: 'CURRENT_EPISODE_PAUSED',
-                            timestamp: new Date().toISOString()
+                            timestamp: new Date().getTime()
                         }]
                     }
                 }
