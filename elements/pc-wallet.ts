@@ -25,7 +25,20 @@ StorePromise.then((Store) => {
                 }
     
                 .pc-wallet-podcast-item {
-                    padding: 5%;
+                    box-shadow: 0px 0px 5px grey;
+                    padding: 2%;
+                    margin-top: 2%;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                }
+
+                .pc-wallet-podcast-item-text {
+                    font-size: calc(12px + 1vmin);
+                    text-overflow: ellipsis;
+                    flex: 1;
+                    cursor: pointer;
+                    font-weight: bold;
                 }
             </style>
     
@@ -91,6 +104,11 @@ StorePromise.then((Store) => {
 
             <div style="font-size: calc(15px + 1vmin);">${nextPayoutLocaleDateString}</div>
 
+            <br>
+            <br>
+            <hr>
+            <br>
+
             ${Object.values((Store.getState() as any).podcasts).map((podcast: any) => {
                 const totalTimeInSeconds = Math.floor(calculateTotalTimeForPodcast(Store.getState(), podcast) / 1000);
                 const totalMinutes = Math.floor(totalTimeInSeconds / 60);
@@ -98,20 +116,23 @@ StorePromise.then((Store) => {
 
                 return html`
                     <div class="pc-wallet-podcast-item">
-                        <h4>${podcast.title}</h4>
-                        $${calculatePayoutAmountForPodcast(Store.getState(), podcast).toFixed(2)}, ${Math.floor(calculatePercentageOfTotalTimeForPodcast(Store.getState(), podcast) * 100)}%, ${totalMinutes} min ${totalSecondsRemaining} sec
+                        <div>
+                            <img src="${podcast.imageUrl}">
+                        </div>
+                        <div style="display:flex: flex-direction: column; padding: 2%;">
+                            <div class="pc-wallet-podcast-item-text">${podcast.title}</div>
+                            <div>$${calculatePayoutAmountForPodcast(Store.getState(), podcast).toFixed(2)}, ${Math.floor(calculatePercentageOfTotalTimeForPodcast(Store.getState(), podcast) * 100)}%, ${totalMinutes} min ${totalSecondsRemaining} sec</div>
+                        </div>
                     </div>
-
-                    <hr>
                 `;
             })}
-
+<!-- 
             <div class="pc-wallet-podcast-item">
                 <h4>Podcrypt</h4>
                 10%
             </div>
 
-            <hr>
+            <hr> -->
         `;
     }
 
@@ -173,14 +194,18 @@ StorePromise.then((Store) => {
     }
     
     function calculatePayoutAmountForPodcast(state: any, podcast: any) {
-        const percentageOfTotalTimeForPodcast = calculatePercentageOfTotalTimeForPodcast(state, podcast);
-        return state.payoutAmountDollars * percentageOfTotalTimeForPodcast;
+        const percentageOfTotalTimeForPodcast = calculatePercentageOfTotalTimeForPodcast(state, podcast);        
+        return state.payoutTargetInUSD * percentageOfTotalTimeForPodcast;
     }
     
     function calculatePercentageOfTotalTimeForPodcast(state: any, podcast: any) {
         const totalTime = calculateTotalTime(state);
         const totalTimeForPodcast = calculateTotalTimeForPodcast(state, podcast);
     
+        if (totalTime === 0) {
+            return 0;
+        }
+
         return totalTimeForPodcast / totalTime;
     }
     
