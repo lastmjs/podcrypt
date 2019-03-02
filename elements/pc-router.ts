@@ -5,6 +5,7 @@ import './pc-playlist';
 import './pc-wallet';
 import './pc-podcast-overview';
 import './pc-podcast-search-results';
+import './pc-open-source';
 import { parseQueryString } from '../services/utilities';
 
 StorePromise.then((Store) => {
@@ -83,6 +84,7 @@ StorePromise.then((Store) => {
                 ?hidden=${currentRoute.pathname !== '/podcast-search-results'}
                 .term=${(Store.getState() as any).currentRoute.query.term}
             ></pc-podcast-search-results>
+            <pc-open-source ?hidden=${currentRoute.pathname !== '/open-source'}></pc-open-source>
         `;
     });
     
