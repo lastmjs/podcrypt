@@ -8,6 +8,7 @@ import './pc-podcast-search-results';
 import './pc-open-source';
 import './pc-privacy';
 import './pc-contact';
+import './pc-about';
 import { parseQueryString } from '../services/utilities';
 
 StorePromise.then((Store) => {
@@ -89,6 +90,7 @@ StorePromise.then((Store) => {
             <pc-open-source ?hidden=${currentRoute.pathname !== '/open-source'}></pc-open-source>
             <pc-privacy ?hidden=${currentRoute.pathname !== '/privacy'}></pc-privacy>
             <pc-contact ?hidden=${currentRoute.pathname !== '/contact'}></pc-contact>
+            <pc-about ?hidden=${currentRoute.pathname !== '/about'}></pc-about>
         `;
     });
     
