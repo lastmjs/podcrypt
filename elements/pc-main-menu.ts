@@ -1,5 +1,8 @@
 import { customElement, html } from 'functional-element';
 import { StorePromise } from '../services/store';
+import { 
+    navigate
+} from '../services/utilities';
 
 StorePromise.then((Store) => {    
     customElement('pc-main-menu', ({ element, update, constructing }) => {
@@ -56,42 +59,66 @@ StorePromise.then((Store) => {
             ></div>
     
             <div class="pc-main-menu-container">
-                <div class="pc-main-menu-item">
-                    <a href="/">Podcasts</a>
+                <div 
+                    class="pc-main-menu-item"
+                    @click=${() => menuItemClick(Store, '/')}
+                >
+                    Podcasts
                 </div>
     
-                <div class="pc-main-menu-item">
-                    <a href="/playlist">Playlist</a>
+                <div
+                    class="pc-main-menu-item"
+                    @click=${() => menuItemClick(Store, '/playlist')}
+                >
+                    Playlist
                 </div>
-    
-                <!-- <div class="pc-main-menu-item">
-                    <a href="/player">Player</a>
-                </div> -->
-    
-                <div class="pc-main-menu-item">
-                    <a href="/wallet">Wallet</a>
-                </div>
-
-                <div class="pc-main-menu-item">
-                    <a href="/privacy">Privacy</a>
+        
+                <div 
+                    class="pc-main-menu-item"
+                    @click=${() => menuItemClick(Store, '/wallet')}
+                >
+                    Wallet
                 </div>
 
-                <div class="pc-main-menu-item">
-                    <a href="/contact">Contact</a>
+                <div
+                    class="pc-main-menu-item"
+                    @click=${() => menuItemClick(Store, '/privacy')}
+                >
+                    Privacy
                 </div>
 
-                <div class="pc-main-menu-item">
-                    <a href="/about">About</a>
+                <div
+                    class="pc-main-menu-item"
+                    @click=${() => menuItemClick(Store, '/contact')}
+                >
+                    Contact
                 </div>
 
-                <div class="pc-main-menu-item">
-                    <a href="/open-source">Open Source</a>
+                <div
+                    class="pc-main-menu-item"
+                    @click=${() => menuItemClick(Store, '/about')}
+                >
+                    About
+                </div>
+
+                <div
+                    class="pc-main-menu-item"
+                    @click=${() => menuItemClick(Store, '/open-source')}
+                >
+                    Open Source
                 </div>
             </div>
         `;
     });
 
     function closeMenu() {
+        Store.dispatch({
+            type: 'TOGGLE_SHOW_MAIN_MENU'
+        });
+    }
+
+    function menuItemClick(Store: any, path: string) {
+        navigate(Store, path);
         Store.dispatch({
             type: 'TOGGLE_SHOW_MAIN_MENU'
         });
