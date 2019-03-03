@@ -77,11 +77,15 @@ StorePromise.then((Store) => {
                 </div>
 
                 <div class="pc-main-menu-item">
-                    <a href="/open-source">Open Source</a>
+                    <a href="/contact">Contact</a>
                 </div>
 
                 <div class="pc-main-menu-item">
-                    <a href="/contact">Contact</a>
+                    <a href="/about">About</a>
+                </div>
+
+                <div class="pc-main-menu-item">
+                    <a href="/open-source">Open Source</a>
                 </div>
             </div>
         `;

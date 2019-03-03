@@ -18,6 +18,8 @@ customElement('pc-contact', () => {
                 <a href="https://t.me/podcrypt" target="_blank">Telegram</a>
             </div>
 
+            <br>
+
             <div>
                 <a href="https://twitter.com/lastmjs" target="_blank">Twitter</a>
             </div>
