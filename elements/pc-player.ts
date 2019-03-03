@@ -65,16 +65,20 @@ StorePromise.then((Store) => {
             // });
         }
 
-        const audioElement = element.querySelector('audio');
-        if (audioElement && currentEpisode) {
-            if (currentEpisode.playing === true) {
-                audioElement.play();    
+        // TODO this might be necessary so that the src gets set first when switching episodes
+        // TODO the src gets set, then we click play on a new episode
+        setTimeout(() => {
+            const audioElement = element.querySelector('audio');
+            if (audioElement && currentEpisode) {
+                if (currentEpisode.playing === true) {
+                    audioElement.play();    
+                }
+    
+                if (currentEpisode.playing === false) {
+                    audioElement.pause();
+                }
             }
-
-            if (currentEpisode.playing === false) {
-                audioElement.pause();
-            }
-        }
+        });
     
         return html`
             <style>
