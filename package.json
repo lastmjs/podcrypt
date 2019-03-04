@@ -25,7 +25,7 @@
   "devDependencies": {
     "jsverify-es-module": "0.0.2",
     "oss-attribution-generator": "1.7.1",
-    "zwitterion": "0.28.1"
+    "zwitterion": "0.29.0"
   },
   "dependencies": {
     "functional-element": "0.0.12",
