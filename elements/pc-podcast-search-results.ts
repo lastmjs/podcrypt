@@ -57,7 +57,10 @@ StorePromise.then((Store) => {
     });
 
     async function searchForPodcasts(term: string) {
-        if (term === null) {
+        if (
+            term === null ||
+            term === undefined
+        ) {
             return;
         }
 

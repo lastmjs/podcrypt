@@ -8,7 +8,7 @@ import './pc-hamburger';
 if ('serviceWorker' in window.navigator) {
     window.addEventListener('load', async () => {
         try {     
-            await window.navigator.serviceWorker.register('/services/service-worker.ts');
+            await window.navigator.serviceWorker.register('/service-worker.ts');
             console.log('service worker registration successful');
         }
         catch(error) {
