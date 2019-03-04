@@ -32,7 +32,7 @@ StorePromise.then((Store) => {
                 // TODO perhaps we want to make a new action type that plays the currenty episode?
                 Store.dispatch({
                     type: 'PLAY_EPISODE_FROM_PLAYLIST',
-                    playlistIndex: (Store.getState() as any).playlistIndex
+                    playlistIndex: (Store.getState() as any).currentPlaylistIndex
                 });
             });
             
