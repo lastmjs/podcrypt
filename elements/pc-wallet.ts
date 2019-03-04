@@ -428,6 +428,9 @@ StorePromise.then((Store) => {
         
         const podcasts: any = Object.values((Store.getState() as any).podcasts);
 
+        // TODO if there is a failure with one transaction, we want to keep going with the other transactions
+        // TODO we want the previous payment sent even if some transactions fail...or do we?
+        // TODO we should probably set the previous transaction payment sent field on podcasts in particular?
         for (let i=0; i < podcasts.length; i++) {
             const podcast = podcasts[i];
 
