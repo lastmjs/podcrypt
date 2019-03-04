@@ -1,5 +1,6 @@
 {
-    "name": "Podcrypt",
+    "name": "Podcrypt - Progressive web DApp for podcasts",
+    "short_name": "Podcrypt",
     "display": "standalone",
     "icons": [
         {
@@ -8,5 +9,5 @@
           "type": "image/png"
         }
       ],
-      "start_url": ""
+      "start_url": "/"
 }
