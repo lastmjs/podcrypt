@@ -438,7 +438,8 @@ StorePromise.then((Store) => {
             const valueInUSD = calculatePayoutAmountForPodcastDuringCurrentInterval(Store.getState(), podcast);
             const valueInETH = valueInUSD / (Store.getState() as any).currentETHPriceInUSD;
             const valueInWEI = valueInETH * 1e18;
-            const value = valueInWEI - gasPrice;
+            const valueLessGasPrice = valueInWEI - gasPrice;
+            const value = valueLessGasPrice > 0 ? valueLessGasPrice : 0; // TODO we probably want to stop here and send nothing if the value after gas is zero
 
             const transactionObject = {
                 from: (Store.getState() as any).ethereumAddress,
