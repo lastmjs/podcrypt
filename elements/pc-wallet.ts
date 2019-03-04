@@ -440,7 +440,7 @@ StorePromise.then((Store) => {
             const gasPrice = 10000000000;
             const valueInUSD = calculatePayoutAmountForPodcastDuringCurrentInterval(Store.getState(), podcast);
             const valueInETH = valueInUSD / (Store.getState() as any).currentETHPriceInUSD;
-            const valueInWEI = valueInETH * 1e18;
+            const valueInWEI = Math.floor(valueInETH) * 1e18;
             const valueLessGasPrice = valueInWEI - gasPrice;
             const value = valueLessGasPrice > 0 ? valueLessGasPrice : 0; // TODO we probably want to stop here and send nothing if the value after gas is zero
 
