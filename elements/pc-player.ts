@@ -25,17 +25,25 @@ StorePromise.then((Store) => {
             });
     
             (window.navigator as any).mediaSession.setActionHandler('play', () => {
-                const audioElement = element.querySelector('audio');
-                if (audioElement) {
-                    audioElement.play();
-                }
+                // const audioElement = element.querySelector('audio');
+                // if (audioElement && currentEpisode) {
+                //     audioElement.play();
+                // }
+                // TODO perhaps we want to make a new action type that plays the currenty episode?
+                Store.dispatch({
+                    type: 'PLAY_EPISODE_FROM_PLAYLIST',
+                    playlistIndex: (Store.getState() as any).playlistIndex
+                });
             });
             
             (window.navigator as any).mediaSession.setActionHandler('pause', () => {
-                const audioElement = element.querySelector('audio');
-                if (audioElement) {
-                    audioElement.pause();
-                }
+                // const audioElement = element.querySelector('audio');
+                // if (audioElement) {
+                //     audioElement.pause();
+                // }
+                Store.dispatch({
+                    type: 'PAUSE_EPISODE_FROM_PLAYLIST'
+                });
             });
             
             (window.navigator as any).mediaSession.setActionHandler('seekbackward', () => {
