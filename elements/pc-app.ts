@@ -5,6 +5,18 @@ import './pc-main-menu';
 import './pc-player';
 import './pc-hamburger';
 
+if ('serviceWorker' in window.navigator) {
+    window.addEventListener('load', async () => {
+        try {     
+            await window.navigator.serviceWorker.register('/services/service-worker.ts');
+            console.log('service worker registration successful');
+        }
+        catch(error) {
+            console.log(error);
+        }
+    });
+}
+
 // TODO I do not like how we have to do this to get the store...top level await would be really nice
 StorePromise.then((Store) => {
     customElement('pc-app', async ({ constructing, update }) => {
