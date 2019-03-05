@@ -4,7 +4,7 @@ import { get, set } from 'idb-keyval';
 export const StorePromise = prepareStore();
 
 async function prepareStore() {
-    const version = 12;
+    const version = 13;
     const persistedState: any = await get('state');
 
     const InitialState = persistedState && version === persistedState.version ? persistedState : {
@@ -36,7 +36,7 @@ async function prepareStore() {
         podcryptEthereumAddress: '0x0a0d88E64da0CFB51d8D1D5a9A3604647eB3D131',
         playerPlaying: false,
         showPlaybackRateMenu: false,
-        playbackRate: 1
+        playbackRate: '1'
     };
     
     const RootReducer = (state=InitialState, action: any) => {

@@ -119,7 +119,7 @@ StorePromise.then((Store) => {
                 </i> -->
 
                 <div style="display: flex; flex-direction: column; flex: 1; align-items: center; justify-content: center">
-                    <div style="font-size: calc(10px + 1vmin);">${secondsToHoursMinutesSeconds(currentEpisode.progress)}</div>
+                    <div style="font-size: calc(10px + 1vmin);">${secondsToHoursMinutesSeconds(currentEpisode ? currentEpisode.progress : 0)}</div>
                     <div><hr style="width: 100%"></div>
                     <div style="font-size: calc(10px + 1vmin);">${getDuration(element)}</div>
                 </div>
