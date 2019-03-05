@@ -109,11 +109,19 @@ StorePromise.then((Store) => {
             type: 'PLAY_EPISODE_FROM_PLAYLIST',
             playlistIndex
         });
+
+        Store.dispatch({
+            type: 'CURRENT_EPISODE_PLAYED'
+        });
     }
 
     function pauseEpisode() {
         Store.dispatch({
             type: 'PAUSE_EPISODE_FROM_PLAYLIST'
+        });
+
+        Store.dispatch({
+            type: 'CURRENT_EPISODE_PAUSED'
         });
     }
 

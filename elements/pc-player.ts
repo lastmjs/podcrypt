@@ -30,9 +30,12 @@ StorePromise.then((Store) => {
                 //     audioElement.play();
                 // }
                 // TODO perhaps we want to make a new action type that plays the currenty episode?
+                // Store.dispatch({
+                //     type: 'PLAY_EPISODE_FROM_PLAYLIST',
+                //     playlistIndex: (Store.getState() as any).currentPlaylistIndex
+                // });
                 Store.dispatch({
-                    type: 'PLAY_EPISODE_FROM_PLAYLIST',
-                    playlistIndex: (Store.getState() as any).currentPlaylistIndex
+                    type: 'CURRENT_EPISODE_PLAYED'
                 });
             });
             
@@ -41,8 +44,11 @@ StorePromise.then((Store) => {
                 // if (audioElement) {
                 //     audioElement.pause();
                 // }
+                // Store.dispatch({
+                //     type: 'PAUSE_EPISODE_FROM_PLAYLIST'
+                // });
                 Store.dispatch({
-                    type: 'PAUSE_EPISODE_FROM_PLAYLIST'
+                    type: 'CURRENT_EPISODE_PAUSED'
                 });
             });
             
@@ -185,8 +191,6 @@ StorePromise.then((Store) => {
                 src="${currentEpisode ? currentEpisode.src : ''}"
                 @ended=${audioEnded}
                 @timeupdate=${timeUpdated}
-                @play=${played}
-                @pause=${paused}
                 @loadstart=${() => loadStarted(currentEpisode, element)}
                 .playbackRate=${(Store.getState() as any).playbackRate}
             ></audio>
@@ -287,14 +291,14 @@ StorePromise.then((Store) => {
         const audioElement = element.querySelector('audio');
         audioElement.currentTime = currentEpisode.progress;
 
-        if (currentEpisode.playing) {
-            audioElement.play();
-        }
+        // if (currentEpisode.playing) {
+        //     audioElement.play();
+        // }
     }
 
-    function togglePlaybackRateMenu() {
-        Store.dispatch({
-            type: 'TOGGLE_PLAYBACK_RATE_MENU'
-        });
-    }
+    // function togglePlaybackRateMenu() {
+    //     Store.dispatch({
+    //         type: 'TOGGLE_PLAYBACK_RATE_MENU'
+    //     });
+    // }
 });
