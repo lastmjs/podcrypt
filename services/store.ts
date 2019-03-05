@@ -4,7 +4,7 @@ import { get, set } from 'idb-keyval';
 export const StorePromise = prepareStore();
 
 async function prepareStore() {
-    const version = 10;
+    const version = 12;
     const persistedState: any = await get('state');
 
     const InitialState = persistedState && version === persistedState.version ? persistedState : {
@@ -33,10 +33,27 @@ async function prepareStore() {
         warningCheckbox4Checked: false,
         warningCheckbox5Checked: false,
         walletCreationState: 'NOT_CREATED',
-        podcryptEthereumAddress: '0x0a0d88E64da0CFB51d8D1D5a9A3604647eB3D131'
+        podcryptEthereumAddress: '0x0a0d88E64da0CFB51d8D1D5a9A3604647eB3D131',
+        playerPlaying: false,
+        showPlaybackRateMenu: false,
+        playbackRate: 1
     };
     
     const RootReducer = (state=InitialState, action: any) => {
+        if (action.type === 'SET_PLAYBACK_RATE') {
+            return {
+                ...state,
+                playbackRate: action.playbackRate
+            };
+        }
+
+        if (action.type === 'TOGGLE_PLAYBACK_RATE_MENU') {
+            return {
+                ...state,
+                showPlaybackRateMenu: !state.showPlaybackRateMenu
+            };
+        }
+
         if (action.type === 'CHANGE_CURRENT_ROUTE') {
             return {
                 ...state,
@@ -76,6 +93,30 @@ async function prepareStore() {
                         ...action.podcast
                     }
                 }
+            };
+        }
+
+        // TODO we need timestamps potentially
+        if (action.type === 'PLAY_PREVIOUS_EPISODE') {
+            const nextPlaylistIndex = state.currentPlaylistIndex - 1 >= 0 ? state.currentPlaylistIndex - 1 : 0;
+            const nextCurrentEpisodeGuid = state.playlist[nextPlaylistIndex];
+
+            return {
+                ...state,
+                currentPlaylistIndex: nextPlaylistIndex,
+                currentEpisodeGuid: nextCurrentEpisodeGuid
+            };
+        }
+
+        // TODO we need timestamps potentially
+        if (action.type === 'PLAY_NEXT_EPISODE') {
+            const nextPlaylistIndex = state.currentPlaylistIndex + 1 < state.playlist.length - 1 ? state.currentPlaylistIndex + 1 : state.playlist.length - 1;
+            const nextCurrentEpisodeGuid = state.playlist[nextPlaylistIndex];
+
+            return {
+                ...state,
+                currentPlaylistIndex: nextPlaylistIndex,
+                currentEpisodeGuid: nextCurrentEpisodeGuid
             };
         }
 
@@ -218,6 +259,7 @@ async function prepareStore() {
         if (action.type === 'CURRENT_EPISODE_PLAYED') {
             return {
                 ...state,
+                playerPlaying: true,
                 episodes: {
                     ...state.episodes,
                     [state.currentEpisodeGuid]: {
@@ -236,6 +278,7 @@ async function prepareStore() {
         if (action.type === 'CURRENT_EPISODE_PAUSED') {
             return {
                 ...state,
+                playerPlaying: false,
                 episodes: {
                     ...state.episodes,
                     [state.currentEpisodeGuid]: {
