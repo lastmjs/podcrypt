@@ -95,32 +95,154 @@ StorePromise.then((Store) => {
             <style>
                 .pc-player-container {
                     display: flex;
-                    flex-direction: row;
                     justify-content: center;
+                    align-items: center;
                     position: fixed;
-                    bottom: 2%;
+                    bottom: 0;
                     width: 100%;
+                    background-color: white;
+                    padding: calc(10px + 1vmin);
                 }
     
-                .pc-player-audio {
-                    width: 100%;
+                .pc-player-play-icon {
+                    font-size: calc(50px + 1vmin);
                 }
             </style>
     
             <div class="pc-player-container">
-                <audio
-                    class="pc-player-audio"
-                    src="${currentEpisode ? currentEpisode.src : ''}"
-                    @ended=${audioEnded}
-                    @timeupdate=${timeUpdated}
-                    @play=${played}
-                    @pause=${paused}
-                    @loadstart=${() => loadStarted(currentEpisode, element)}
-                    controls
-                ></audio>
+                <div style="width: 100%; position: absolute; top: 0; right: 0; height: 100%; background-color: rgba(1, 1, 1, .05); z-index: -1"></div>
+                <div style="width: ${getProgressPercentage(element)}%; position: absolute; top: 0; left: 0; height: 100%; background-color: rgba(1, 1, 1, .1); z-index: -1"></div>
+                <!-- <i 
+                    class="material-icons pc-player-play-icon"
+                >
+                    skip_previous
+                </i> -->
+
+                <div style="display: flex; flex-direction: column; flex: 1; align-items: center; justify-content: center">
+                    <div style="font-size: calc(10px + 1vmin);">${secondsToHoursMinutesSeconds(currentEpisode ? currentEpisode.progress : 0)}</div>
+                    <div><hr style="width: 100%"></div>
+                    <div style="font-size: calc(10px + 1vmin);">${getDuration(element)}</div>
+                </div>
+
+                <div style="flex: 2; display: flex; align-items: center; justify-content: center">
+                    <i 
+                        class="material-icons pc-player-play-icon"
+                        @click=${() => skipBack(element)}
+                    >
+                        fast_rewind
+                    </i>
+
+                    ${
+                        Store.getState().playerPlaying ? 
+                        html`
+                            <i 
+                                class="material-icons pc-player-play-icon"
+                                @click=${paused}
+                            >
+                                pause
+                            </i>
+                        ` :
+                        html`
+                            <i 
+                                class="material-icons pc-player-play-icon"
+                                @click=${played}
+                            >
+                                play_arrow
+                            </i>
+                        `
+                    }
+
+                    <i 
+                        class="material-icons pc-player-play-icon"
+                        @click=${() => skipForward(element)}
+                    >
+                        fast_forward
+                    </i>
+
+                    <!-- <i 
+                        class="material-icons pc-player-play-icon"
+                    >
+                        skip_next
+                    </i> -->
+                </div>
+
+                <div style="flex: 1; display: flex; justify-content: center; align-items: center">
+                    <select @change=${playbackRateChanged} style="border: none;">
+                        <option value=".25" ?selected=${Store.getState().playbackRate === '.25'}>.25x</option>
+                        <option value=".5" ?selected=${Store.getState().playbackRate === '.5'}>.5x</option>
+                        <option value=".75" ?selected=${Store.getState().playbackRate === '.75'}>.75x</option>
+                        <option value="1" ?selected=${Store.getState().playbackRate === '1'}>1x</option>
+                        <option value="1.25" ?selected=${Store.getState().playbackRate === '1.25'}>1.25x</option>
+                        <option value="1.5" ?selected=${Store.getState().playbackRate === '1.5'}>1.5x</option>
+                        <option value="1.75" ?selected=${Store.getState().playbackRate === '1.75'}>1.75x</option>
+                        <option value="2" ?selected=${Store.getState().playbackRate === '2'}>2x</option>
+                    </select>
+                </div>
+
             </div>
+
+            <audio
+                src="${currentEpisode ? currentEpisode.src : ''}"
+                @ended=${audioEnded}
+                @timeupdate=${timeUpdated}
+                @play=${played}
+                @pause=${paused}
+                @loadstart=${() => loadStarted(currentEpisode, element)}
+                .playbackRate=${(Store.getState() as any).playbackRate}
+            ></audio>
         `;
     });
+
+    function getProgressPercentage(element: any) {
+        const audioElement = element.querySelector('audio');
+        if (audioElement && !isNaN(audioElement.duration) && !isNaN(audioElement.currentTime)) {
+            return (audioElement.currentTime / audioElement.duration) * 100;
+        }
+        else {
+            return 0;
+        }
+    }
+
+    function getDuration(element: any) {
+        const audioElement = element.querySelector('audio');
+        if (
+            audioElement &&
+            !isNaN(audioElement.duration)
+        ) {
+            return secondsToHoursMinutesSeconds(audioElement.duration);
+        }
+    }
+
+    function secondsToHoursMinutesSeconds(seconds: any) {
+        const hours = Math.floor(seconds / 3600);
+        const hoursRemainder = seconds % 3600;
+        const minutes = Math.floor(hoursRemainder / 60);
+        const totalSeconds = Math.floor(hoursRemainder % 60);
+
+        return `${hours === 0 ? '' : `${hours}:`}${minutes < 10 ? `0${minutes}` : minutes}:${totalSeconds < 10 ? `0${totalSeconds}` : totalSeconds}`;
+    }
+
+    function playbackRateChanged(e: any) {
+        console.log(e)
+        Store.dispatch({
+            type: 'SET_PLAYBACK_RATE',
+            playbackRate: e.target.value
+        });
+    }
+
+    function skipBack(element: any) {
+        const audioElement = element.querySelector('audio');
+        if (audioElement) {
+            audioElement.currentTime = audioElement.currentTime - 10;
+        }
+    }
+
+    function skipForward(element: any) {
+        const audioElement = element.querySelector('audio');
+        if (audioElement) {
+            audioElement.currentTime = audioElement.currentTime + 10;
+        }
+    }
     
     function audioEnded() {
         Store.dispatch({
@@ -168,5 +290,11 @@ StorePromise.then((Store) => {
         if (currentEpisode.playing) {
             audioElement.play();
         }
+    }
+
+    function togglePlaybackRateMenu() {
+        Store.dispatch({
+            type: 'TOGGLE_PLAYBACK_RATE_MENU'
+        });
     }
 });
