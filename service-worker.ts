@@ -2,7 +2,6 @@
 
 const CACHE_NAME = 'PODCRYPT_CACHE_V1';
 const urlsToCache = [
-    '/',
     '/index.html'
 ];
 
