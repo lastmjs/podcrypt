@@ -77,9 +77,10 @@ StorePromise.then((Store) => {
         else {
             return html`
                 ${responseJSON.results.map((searchResult: any) => {
-                    const podcast = {
+                    const podcast: Podcast = {
                         feedUrl: searchResult.feedUrl,
                         title: searchResult.trackName,
+                        description: searchResult.description,
                         imageUrl: searchResult.artworkUrl60,
                         episodes: [],
                         previousPayoutDateInMilliseconds: null

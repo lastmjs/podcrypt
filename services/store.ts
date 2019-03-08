@@ -1,13 +1,20 @@
-import { createStore } from 'redux';
-import { get, set } from 'idb-keyval';
+import { 
+    createStore,
+    Store,
+    AnyAction
+} from 'redux';
+import { 
+    get,
+    set
+} from 'idb-keyval';
 
-export const StorePromise = prepareStore();
+export const StorePromise: Promise<Readonly<Store<Readonly<State>, Readonly<AnyAction>>>> = prepareStore();
 
-async function prepareStore() {
-    const version = 13;
-    const persistedState: any = await get('state');
+async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<AnyAction>>>> {
+    const version: number = 14;
+    const persistedState: Readonly<State> = await get('state');
 
-    const InitialState = persistedState && version === persistedState.version ? persistedState : {
+    const InitialState: Readonly<State> = persistedState && version === persistedState.version ? persistedState : {
         version,
         currentRoute: {
             pathname: '/',
@@ -15,14 +22,14 @@ async function prepareStore() {
             query: {}
         },
         showMainMenu: false,
-        currentEpisodeGuid: null,
+        currentEpisodeGuid: 'NOT_SET',
         playlist: [],
         currentPlaylistIndex: 0,
         podcasts: {},
         episodes: {},
-        payoutTargetInUSD: 10,
+        payoutTargetInUSDCents: 1000,
         payoutIntervalInDays: 30,
-        currentETHPriceInUSD: 'unknown',
+        currentETHPriceInUSDCents: null,
         previousPayoutDateInMilliseconds: null,
         nextPayoutDateInMilliseconds: null,
         ethereumAddress: null,
@@ -39,7 +46,7 @@ async function prepareStore() {
         playbackRate: '1'
     };
     
-    const RootReducer = (state=InitialState, action: any) => {
+    const RootReducer: (state: Readonly<State> | undefined, action: AnyAction) => Readonly<State> = (state: Readonly<State> = InitialState, action: AnyAction) => {
         if (action.type === 'SET_PLAYBACK_RATE') {
             return {
                 ...state,
@@ -455,13 +462,13 @@ async function prepareStore() {
         return state;
     }
 
-    const Store = createStore((state, action) => {
+    const Store: Store<Readonly<State>, Readonly<AnyAction>> = createStore((state: Readonly<State> | undefined, action: AnyAction) => {
 
         if (action.type !== 'UPDATE_CURRENT_EPISODE_PROGRESS') {
             console.log('action', action);
         }
     
-        const newState = RootReducer(state, action);
+        const newState: Readonly<State> = RootReducer(state, action);
     
         if (action.type !== 'UPDATE_CURRENT_EPISODE_PROGRESS') {
             console.log('state', newState);
@@ -475,7 +482,7 @@ async function prepareStore() {
     return Store;
 }
 
-function getCurrentPlaylistIndexAfterMoveUp(state, action) {
+function getCurrentPlaylistIndexAfterMoveUp(state: Readonly<State>, action: Readonly<AnyAction>): number {
 
     if (
         action.playlistIndex === state.currentPlaylistIndex &&
@@ -493,7 +500,7 @@ function getCurrentPlaylistIndexAfterMoveUp(state, action) {
     return state.currentPlaylistIndex;
 }
 
-function getCurrentPlaylistIndexAfterMoveDown(state, action) {
+function getCurrentPlaylistIndexAfterMoveDown(state: Readonly<State>, action: Readonly<AnyAction>) {
 
     if (
         action.playlistIndex === state.currentPlaylistIndex &&
