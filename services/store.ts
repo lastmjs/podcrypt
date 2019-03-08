@@ -362,10 +362,10 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
             };
         }
 
-        if (action.type === 'SET_PAYOUT_TARGET_IN_USD') {
+        if (action.type === 'SET_PAYOUT_TARGET_IN_USD_CENTS') {
             return {
                 ...state,
-                payoutTargetInUSD: action.payoutTargetInUSD
+                payoutTargetInUSDCents: action.payoutTargetInUSDCents
             };
         }
 

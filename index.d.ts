@@ -35,6 +35,8 @@ type WEI = number;
 type GWEI = number;
 type ETH = number;
 type EthereumPublicKey = string;
+type Days = number;
+type Seconds = number;
 
 type State = {
     readonly version: number;

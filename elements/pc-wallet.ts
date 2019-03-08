@@ -1,9 +1,11 @@
 import { customElement, html } from 'functional-element';
+import { TemplateResult } from 'lit-html';
 import { pcContainerStyles } from '../services/css';
 import { StorePromise } from '../services/store';
-import { getCurrentETHPriceInUSD } from '../services/utilities';
+import { getCurrentETHPriceInUSDCents } from '../services/utilities';
 import { set, get } from 'idb-keyval';
 
+// TODO we will need a backup node
 const web3 = new Web3('https://ropsten-rpc.linkpool.io/');
 
 StorePromise.then((Store) => {
@@ -12,11 +14,11 @@ StorePromise.then((Store) => {
             Store.subscribe(update);
 
             loadEthereumAccountBalance();
-            loadCurrentETHPriceInUSD();
+            loadCurrentETHPriceInUSDCents();
         }
 
-        const eth = (Store.getState() as any).currentETHPriceInUSD === 'Loading...' ? 'Loading...' : (Store.getState() as any).payoutTargetInUSD / (Store.getState() as any).currentETHPriceInUSD;
-        const nextPayoutLocaleDateString = new Date((Store.getState() as any).nextPayoutDateInMilliseconds).toLocaleDateString()
+        const eth = Store.getState().currentETHPriceInUSDCents === null ? 'Loading...' : Store.getState().payoutTargetInUSDCents / Store.getState().currentETHPriceInUSDCents;
+        const nextPayoutLocaleDateString: string = new Date(Store.getState().nextPayoutDateInMilliseconds).toLocaleDateString()
 
         return html`
             <style>
@@ -43,24 +45,49 @@ StorePromise.then((Store) => {
             </style>
     
             <div class="pc-wallet-container">
-                ${(Store.getState() as any).walletCreationState === 'CREATED' ? walletUI(eth, nextPayoutLocaleDateString) : (Store.getState() as any).walletCreationState === 'CREATING' ? html`<div>Creating wallet...</div>` : walletWarnings()}
+                ${
+                    Store.getState().walletCreationState === 'CREATED' ? 
+                        walletUI(eth, nextPayoutLocaleDateString) :
+                        Store.getState().walletCreationState === 'CREATING' ?
+                            html`<div>Creating wallet...</div>` :
+                            walletWarnings()
+                }
             </div>
         `;
     })
 
-    function walletUI(eth: number | 'Loading...', nextPayoutLocaleDateString: string) {
+    function walletUI(
+        eth: number | 'Loading...',
+        nextPayoutLocaleDateString: string
+    ): Readonly<TemplateResult> {
         return html`
             <h3>Public key</h3>
 
-            <div style="word-wrap: break-word;">${(Store.getState() as any).ethereumAddress}</div>
+            <div
+                style="word-wrap: break-word;"
+            >
+                ${Store.getState().ethereumAddress}
+            </div>
 
             <h3>Balance</h3>
 
-            <div style="font-size: calc(15px + 1vmin);">USD: ${(Store.getState() as any).currentETHPriceInUSD === 'Loading...' ? 'Loading...' : (((Store.getState() as any).ethereumBalanceInWEI / 1e18) * (Store.getState() as any).currentETHPriceInUSD).toFixed(2)}</div>
+            <div
+                style="font-size: calc(15px + 1vmin);"
+            >
+                USD: 
+                ${
+                    Store.getState().currentETHPriceInUSDCents === 'Loading...' ?
+                        'Loading...' : ((Store.getState().ethereumBalanceInWEI / 1e18) * Store.getState().currentETHPriceInUSDCents).toFixed(2)
+                }
+            </div>
 
             <br>
 
-            <div style="font-size: calc(15px + 1vmin);">ETH: ${(Store.getState() as any).ethereumBalanceInWEI / 1e18}</div>
+            <div
+                style="font-size: calc(15px + 1vmin);"
+            >
+                ETH: ${Store.getState().ethereumBalanceInWEI / 1e18}
+            </div>
 
             <h3>
                 Payout target
@@ -70,8 +97,8 @@ StorePromise.then((Store) => {
                 USD:
                 <input
                     type="number"
-                    value=${(Store.getState() as any).payoutTargetInUSD}
-                    @input=${payoutTargetInUSDInputChanged}
+                    value=${Store.getState().payoutTargetInUSDCents.toString()}
+                    @input=${payoutTargetInUSDCentsInputChanged}
                     style="font-size: calc(15px + 1vmin); border: none; border-bottom: 1px solid grey;"
                     min="0"
                     max="100"
@@ -148,11 +175,46 @@ StorePromise.then((Store) => {
         return html`
             <div>I understand the following:</div>
             <br>
-            <div><input type="checkbox" @input=${checkbox1InputChanged} .checked=${(Store.getState() as any).warningCheckbox1Checked}> Podcrypt is offered to me under the terms of the <a href="https://opensource.org/licenses/MIT" target="_blank">MIT license</a></div>
-            <div><input type="checkbox" @input=${checkbox2InputChanged} .checked=${(Store.getState() as any).warningCheckbox2Checked}> This is pre-alpha software</div>
-            <div><input type="checkbox" @input=${checkbox3InputChanged} .checked=${(Store.getState() as any).warningCheckbox3Checked}> Anything could go wrong</div>
-            <div><input type="checkbox" @input=${checkbox4InputChanged} .checked=${(Store.getState() as any).warningCheckbox4Checked}> My Podcrypt data will probably be wiped regularly during the pre-alpha</div>
-            <div><input type="checkbox" @input=${checkbox5InputChanged} .checked=${(Store.getState() as any).warningCheckbox5Checked}> Podcrypt Pre-alpha uses the Ropsten test network for payments. I should NOT send real ETH to Podcrypt Pre-alpha.</div>
+            <div>
+                <input 
+                    type="checkbox"
+                    @input=${checkbox1InputChanged}
+                    .checked=${Store.getState().warningCheckbox1Checked}
+                >
+                Podcrypt is offered to me under the terms of the <a href="https://opensource.org/licenses/MIT" target="_blank">MIT license</a>
+            </div>
+            <div>
+                <input
+                    type="checkbox"
+                    @input=${checkbox2InputChanged}
+                    .checked=${Store.getState().warningCheckbox2Checked}
+                >
+                This is pre-alpha software
+            </div>
+            <div>
+                <input
+                    type="checkbox"
+                    @input=${checkbox3InputChanged}
+                    .checked=${Store.getState().warningCheckbox3Checked}
+                >
+                Anything could go wrong
+            </div>
+            <div>
+                <input
+                    type="checkbox"
+                    @input=${checkbox4InputChanged}
+                    .checked=${Store.getState().warningCheckbox4Checked}
+                >
+                My Podcrypt data will probably be wiped regularly during the pre-alpha
+            </div>
+            <div>
+                <input
+                    type="checkbox"
+                    @input=${checkbox5InputChanged}
+                    .checked=${Store.getState().warningCheckbox5Checked}
+                >
+                Podcrypt Pre-alpha uses the Ropsten test network for payments. I should NOT send real ETH to Podcrypt Pre-alpha.
+            </div>
             <br>
             <button @click=${createWalletClick}>Create Wallet</button>
         `;
@@ -160,11 +222,11 @@ StorePromise.then((Store) => {
 
     function createWalletClick() {
         const warningsAccepted = 
-            (Store.getState() as any).warningCheckbox1Checked &&
-            (Store.getState() as any).warningCheckbox2Checked &&
-            (Store.getState() as any).warningCheckbox3Checked &&
-            (Store.getState() as any).warningCheckbox4Checked &&
-            (Store.getState() as any).warningCheckbox5Checked;
+            Store.getState().warningCheckbox1Checked &&
+            Store.getState().warningCheckbox2Checked &&
+            Store.getState().warningCheckbox3Checked &&
+            Store.getState().warningCheckbox4Checked &&
+            Store.getState().warningCheckbox5Checked;
 
         if (!warningsAccepted) {
             alert('Silly you, you must understand');
@@ -267,62 +329,62 @@ StorePromise.then((Store) => {
         });
     }
     
-    function calculatePayoutAmountForPodcast(state: any, podcast: any) {
-        const percentageOfTotalTimeForPodcast = calculatePercentageOfTotalTimeForPodcast(state, podcast);        
-        return state.payoutTargetInUSD * percentageOfTotalTimeForPodcast;
-    }
+    // function calculatePayoutAmountForPodcast(state: any, podcast: any) {
+    //     const percentageOfTotalTimeForPodcast = calculatePercentageOfTotalTimeForPodcast(state, podcast);        
+    //     return state.payoutTargetInUSD * percentageOfTotalTimeForPodcast;
+    // }
     
-    function calculatePercentageOfTotalTimeForPodcast(state: any, podcast: any) {
-        const totalTime = calculateTotalTime(state);
-        const totalTimeForPodcast = calculateTotalTimeForPodcast(state, podcast);
+    // function calculatePercentageOfTotalTimeForPodcast(state: any, podcast: any) {
+    //     const totalTime = calculateTotalTime(state);
+    //     const totalTimeForPodcast = calculateTotalTimeForPodcast(state, podcast);
     
-        if (totalTime === 0) {
-            return 0;
-        }
+    //     if (totalTime === 0) {
+    //         return 0;
+    //     }
 
-        return totalTimeForPodcast / totalTime;
-    }
+    //     return totalTimeForPodcast / totalTime;
+    // }
     
-    function calculateTotalTime(state: any): number {
-        return Object.values(state.podcasts).reduce((result: number, podcast) => {
-            return result + calculateTotalTimeForPodcast(state, podcast);
-        }, 0);
-    }
+    // function calculateTotalTime(state: any): number {
+    //     return Object.values(state.podcasts).reduce((result: number, podcast) => {
+    //         return result + calculateTotalTimeForPodcast(state, podcast);
+    //     }, 0);
+    // }
     
-    function calculateTotalTimeForPodcast(state: any, podcast: any): number {
-        return podcast.episodes.reduce((result: number, episodeGuid: string) => {
-            const episode = state.episodes[episodeGuid];
+    // function calculateTotalTimeForPodcast(state: any, podcast: any): number {
+    //     return podcast.episodes.reduce((result: number, episodeGuid: string) => {
+    //         const episode = state.episodes[episodeGuid];
     
-            return result + episode.timestamps.reduce((result: number, timestamp: any, index: number) => {
-                const nextTimestamp = episode.timestamps[index + 1];
-                const previousTimestamp = episode.timestamps[index - 1];
+    //         return result + episode.timestamps.reduce((result: number, timestamp: any, index: number) => {
+    //             const nextTimestamp = episode.timestamps[index + 1];
+    //             const previousTimestamp = episode.timestamps[index - 1];
     
-                if (timestamp.type === 'START') {
-                    if (nextTimestamp && nextTimestamp.type === 'STOP') {
-                        return result - new Date(timestamp.timestamp).getTime();
-                    }
-                    else {
-                        return result + 0;
-                    }
-                }
+    //             if (timestamp.type === 'START') {
+    //                 if (nextTimestamp && nextTimestamp.type === 'STOP') {
+    //                     return result - new Date(timestamp.timestamp).getTime();
+    //                 }
+    //                 else {
+    //                     return result + 0;
+    //                 }
+    //             }
     
-                if (timestamp.type === 'STOP') {
-                    if (previousTimestamp && previousTimestamp.type === 'START') {
-                        return result + new Date(timestamp.timestamp).getTime();
-                    }
-                    else {
-                        return result + 0;
-                    }
-                }
-            }, 0);
-        }, 0);
-    }
+    //             if (timestamp.type === 'STOP') {
+    //                 if (previousTimestamp && previousTimestamp.type === 'START') {
+    //                     return result + new Date(timestamp.timestamp).getTime();
+    //                 }
+    //                 else {
+    //                     return result + 0;
+    //                 }
+    //             }
+    //         }, 0);
+    //     }, 0);
+    // }
 
-    async function payoutTargetInUSDInputChanged(e: any) {
-        await loadCurrentETHPriceInUSD();
+    async function payoutTargetInUSDCentsInputChanged(e: any) {
+        await loadCurrentETHPriceInUSDCents();
         Store.dispatch({
-            type: 'SET_PAYOUT_TARGET_IN_USD',
-            payoutTargetInUSD: e.target.value
+            type: 'SET_PAYOUT_TARGET_IN_USD_CENTS',
+            payoutTargetInUSDCents: parseInt(e.target.value) * 100
         });
     }
 
@@ -332,7 +394,7 @@ StorePromise.then((Store) => {
             payoutIntervalInDays: e.target.value
         });
 
-        const nextPayoutDateInMilliseconds = getNextPayoutDateInMilliseconds();
+        const nextPayoutDateInMilliseconds: Milliseconds = getNextPayoutDateInMilliseconds();
 
         Store.dispatch({
             type: 'SET_NEXT_PAYOUT_DATE_IN_MILLISECONDS',
@@ -340,38 +402,39 @@ StorePromise.then((Store) => {
         });
     }
 
-    async function loadCurrentETHPriceInUSD() {
+    async function loadCurrentETHPriceInUSDCents(): Promise<void> {
         Store.dispatch({
-            type: 'SET_CURRENT_ETH_PRICE_IN_USD',
-            currentETHPriceInUSD: 'Loading...'
+            type: 'SET_CURRENT_ETH_PRICE_IN_USD_CENTS',
+            currentETHPriceInUSDCents: 'LOADING' // TODO change to UNKNOWN or some state or something
         });
+        // TODO the above should be setting another variable on the state called currentETHPriceInUSDCentsState or something like that, like the wallet state
 
-        const currentETHPriceInUSD = await getCurrentETHPriceInUSD();
+        const currentETHPriceInUSDCents: USDCents | 'UNKNOWN' = await getCurrentETHPriceInUSDCents();
 
         Store.dispatch({
-            type: 'SET_CURRENT_ETH_PRICE_IN_USD',
-            currentETHPriceInUSD
+            type: 'SET_CURRENT_ETH_PRICE_IN_USD_CENTS',
+            currentETHPriceInUSDCents
         });
     }
 
-    function getNextPayoutDateInMilliseconds() {
-        const previousPayoutDateInMilliseconds = (Store.getState() as any).previousPayoutDateInMilliseconds;
-        const payoutIntervalInDays = (Store.getState() as any).payoutIntervalInDays;
-        const oneDayInSeconds = 86400;
-        const oneDayInMilliseconds = oneDayInSeconds * 1000;
-        const payoutIntervalInMilliseconds = oneDayInMilliseconds * payoutIntervalInDays;
+    function getNextPayoutDateInMilliseconds(): Milliseconds {
+        const previousPayoutDateInMilliseconds: Milliseconds | null = Store.getState().previousPayoutDateInMilliseconds;
+        const payoutIntervalInDays: Days = Store.getState().payoutIntervalInDays;
+        const oneDayInSeconds: Seconds = 86400;
+        const oneDayInMilliseconds: Milliseconds = oneDayInSeconds * 1000;
+        const payoutIntervalInMilliseconds: Milliseconds = oneDayInMilliseconds * payoutIntervalInDays;
 
         if (previousPayoutDateInMilliseconds === null) {
-            const nextPayoutDate = new Date(new Date().getTime() + payoutIntervalInMilliseconds).getTime();
-            return nextPayoutDate;
+            const nextPayoutDateInMilliseconds = new Date(new Date().getTime() + payoutIntervalInMilliseconds).getTime();
+            return nextPayoutDateInMilliseconds;
         }
         else {
-            const nextPayoutDate = new Date(previousPayoutDateInMilliseconds + payoutIntervalInMilliseconds).getTime();
-            return nextPayoutDate;   
+            const nextPayoutDateInMilliseconds = new Date(previousPayoutDateInMilliseconds + payoutIntervalInMilliseconds).getTime();
+            return nextPayoutDateInMilliseconds;   
         }
     }
 
-    async function createWallet() {
+    async function createWallet(): Promise<void> {
         Store.dispatch({
             type: 'SET_WALLET_CREATION_STATE',
             walletCreationState: 'CREATING'
@@ -380,6 +443,7 @@ StorePromise.then((Store) => {
         // TODO we might want some backup nodes
         const newAccount = await web3.eth.accounts.create();
 
+        // TODO we will probably need some more hardcore security than this
         await set('ethereumPrivateKey', newAccount.privateKey);
 
         Store.dispatch({
@@ -394,7 +458,7 @@ StorePromise.then((Store) => {
 
         await loadEthereumAccountBalance();
 
-        const nextPayoutDateInMilliseconds = getNextPayoutDateInMilliseconds();
+        const nextPayoutDateInMilliseconds: Milliseconds = getNextPayoutDateInMilliseconds();
 
         Store.dispatch({
             type: 'SET_NEXT_PAYOUT_DATE_IN_MILLISECONDS',
@@ -402,14 +466,15 @@ StorePromise.then((Store) => {
         });
     }
 
-    async function loadEthereumAccountBalance() {
-        const ethereumAddress = (Store.getState() as any).ethereumAddress;
+    async function loadEthereumAccountBalance(): Promise<void> {
+        // TODO try not to use null for anything...use a description string instead
+        const ethereumAddress: EthereumPublicKey | null = Store.getState().ethereumAddress;
 
         if (ethereumAddress === null) {
             return;
         }
 
-        const ethereumBalanceInWEI = await web3.eth.getBalance(ethereumAddress);
+        const ethereumBalanceInWEI: WEI = await web3.eth.getBalance(ethereumAddress);
 
         Store.dispatch({
             type: 'SET_ETHEREUM_BALANCE_IN_WEI',
@@ -417,49 +482,50 @@ StorePromise.then((Store) => {
         });
     }
 
-    function parseEthereumAddressFromPodcastDescription(podcastDescription: string) {
+    function parseEthereumAddressFromPodcastDescription(podcastDescription: string): string {
         const testPodcastAccount = '0x81C0bf46ED56216E3f9f0864B46C099B8A3315B3';
         return testPodcastAccount;
     }
 
-    async function payout() {
+    async function payout(): Promise<void> {
         
-        const podcasts: any = Object.values((Store.getState() as any).podcasts);
+        const podcasts: ReadonlyArray<Podcast> = Object.values(Store.getState().podcasts);
 
         // TODO if there is a failure with one transaction, we want to keep going with the other transactions
         // TODO we want the previous payment sent even if some transactions fail...or do we?
         // TODO we should probably set the previous transaction payment sent field on podcasts in particular?
         for (let i=0; i < podcasts.length; i++) {
-            const podcast = podcasts[i];
+            const podcast: Podcast = podcasts[i];
 
-            const podcastEthereumAddress = parseEthereumAddressFromPodcastDescription(podcast.description);
+            const podcastEthereumAddress: EthereumPublicKey = parseEthereumAddressFromPodcastDescription(podcast.description);
         
             // const gasPrice = await web3.eth.getGasPrice();
-            const gasPrice = 10000000000;
+            const gasPriceInWEI: WEI = 10000000000;
             
-            console.log('gasPrice', gasPrice);
+            console.log('gasPriceInWEI', gasPriceInWEI);
 
-            const valueInUSD = calculatePayoutAmountForPodcastDuringCurrentInterval(Store.getState(), podcast);
+            const valueInUSDCents: USDCents = calculatePayoutAmountForPodcastDuringCurrentInterval(Store.getState(), podcast);
             
-            console.log('valueInUSD', valueInUSD);
+            console.log('valueInUSDCents', valueInUSDCents);
             
-            const valueInETH = valueInUSD / (Store.getState() as any).currentETHPriceInUSD;
+            const valueInETH: ETH = valueInUSDCents / Store.getState().currentETHPriceInUSDCents;
             
             console.log('valueInETH', valueInETH);
             
-            const valueInWEI = Math.floor(valueInETH * 1e18);
+            // TODO check if we need to Math.floor
+            const valueInWEI: WEI = valueInETH * 1e18;
             
             console.log('valueInWEI', valueInWEI);
             
-            const valueLessGasPrice = valueInWEI - gasPrice;
+            const valueLessGasPriceInWEI: WEI = valueInWEI - gasPriceInWEI;
             
-            console.log('valueLessGasPrice', valueLessGasPrice);
+            console.log('valueLessGasPriceInWEI', valueLessGasPriceInWEI);
             
-            const value = valueLessGasPrice > 0 ? valueLessGasPrice : 0;
+            const netValueInWEI: WEI = valueLessGasPriceInWEI > 0 ? valueLessGasPriceInWEI : 0;
 
-            console.log('value', value);
+            console.log('netValueInWEI', netValueInWEI);
 
-            if (value === 0) {
+            if (netValueInWEI === 0) {
                 continue;
             }
 
@@ -467,8 +533,8 @@ StorePromise.then((Store) => {
                 from: (Store.getState() as any).ethereumAddress,
                 to: podcastEthereumAddress,
                 gas: 21000,
-                gasPrice,
-                value
+                gasPrice: gasPriceInWEI,
+                value: netValueInWEI
                 // data: web3.utils.asciiToHex('podcrypt') // TODO we might need to increase the gaslimit for this?
             };
 
@@ -492,7 +558,7 @@ StorePromise.then((Store) => {
             previousPayoutDateInMilliseconds: new Date().getTime()
         });
 
-        const nextPayoutDateInMilliseconds = getNextPayoutDateInMilliseconds();
+        const nextPayoutDateInMilliseconds: Milliseconds = getNextPayoutDateInMilliseconds();
 
         Store.dispatch({
             type: 'SET_NEXT_PAYOUT_DATE_IN_MILLISECONDS',
@@ -502,7 +568,7 @@ StorePromise.then((Store) => {
         await loadEthereumAccountBalance();
     }
 
-    async function signAndSendTransaction(signedTransactionObject: any, podcast: any) {
+    async function signAndSendTransaction(signedTransactionObject: any, podcast: any): Promise<void> {
         return new Promise((resolve, reject) => {
             web3.eth.sendSignedTransaction(signedTransactionObject.rawTransaction, (error: any, transactionHash: string) => {
                 console.log('error', error);
@@ -524,8 +590,8 @@ StorePromise.then((Store) => {
     }
 
     setInterval(() => {
-        const currentLocaleDateString = new Date().toLocaleDateString();
-        const nextPayoutLocaleDateString = new Date((Store.getState() as any).nextPayoutDateInMilliseconds).toLocaleDateString();
+        const currentLocaleDateString: string = new Date().toLocaleDateString();
+        const nextPayoutLocaleDateString: string = new Date((Store.getState() as any).nextPayoutDateInMilliseconds).toLocaleDateString();
 
         console.log('currentLocaleDateString', currentLocaleDateString);
         console.log('nextPayoutLocaleDateString', nextPayoutLocaleDateString);

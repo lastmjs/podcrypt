@@ -25,16 +25,17 @@ export function navigate(Store: any, path: string) {
     });
 }
 
-export async function getCurrentETHPriceInUSD(): Promise<string | 'UNKNOWN'> {
+export async function getCurrentETHPriceInUSDCents(): Promise<number | 'UNKNOWN'> {
     // TODO do not use this api until reviewing and complying with the terms
     // window.fetch('https://api.coinbase.com/v2/exchange-rates?currency=ETH').then((result) => result.json()).then((result) => console.log(result))
 
     // TODO use the backup requeset system here...perhaps create a backup request system
     try {
-        const ethPriceResponse = await window.fetch(`https://api.cryptonator.com/api/ticker/eth-usd`);
+        const ethPriceResponse: Readonly<Response> = await window.fetch(`https://api.cryptonator.com/api/ticker/eth-usd`);
         const ethPriceJSON = await ethPriceResponse.json();
-        const currentETHPriceInUSD = ethPriceJSON.ticker.price;
-        return currentETHPriceInUSD;    
+        const currentETHPriceInUSD: number = ethPriceJSON.ticker.price;
+        const currentETHPriceInUSDCents: number = currentETHPriceInUSD * 100;
+        return currentETHPriceInUSDCents;    
     }
     catch(error) {
         return 'UNKNOWN';
