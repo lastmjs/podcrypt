@@ -5,16 +5,17 @@ declare var Web3: any; // TODO the types are available in the web3 repo
 type Milliseconds = number;
 
 type Podcast = {
-    readonly feedUrl: string;
+    readonly feedUrl: PodcastGuid;
     readonly title: string;
     readonly description: string;
     readonly imageUrl: string;
-    readonly episodes: ReadonlyArray<Episode>;
-    readonly previousPayoutDateInMilliseconds: Milliseconds | null;
+    readonly episodeGuids: ReadonlyArray<EpisodeGuid>;
+    readonly previousPayoutDateInMilliseconds: Milliseconds | 'never';
+    readonly latestTransactionHash: string | null;
 }
 
 type Episode = {
-    readonly guid: string;
+    readonly guid: EpisodeGuid;
     readonly title: string;
     readonly src: string;
     readonly playing: boolean;
@@ -24,11 +25,15 @@ type Episode = {
 }
 
 type Timestamp = {
-
+    readonly type: 'START' | 'STOP';
+    readonly actionType: 'CURRENT_EPISODE_PLAYED' | 'CURRENT_EPISODE_PAUSED';
+    readonly milliseconds: number;
 }
 
+type CurrentETHPriceState = 'NOT_FETCHED' | 'FETCHING' | 'FETCHED';
 type WalletCreationState = 'NOT_CREATED' | 'CREATING' | 'CREATED';
 type EpisodeGuid = string;
+type PodcastGuid = string;
 type USDCents = number;
 type USDollars = number;
 type WEI = number;
@@ -36,7 +41,9 @@ type GWEI = number;
 type ETH = number;
 type EthereumPublicKey = string;
 type Days = number;
+type Minutes = number;
 type Seconds = number;
+type USD = number;
 
 type State = {
     readonly version: number;
@@ -58,11 +65,11 @@ type State = {
         [key: string]: Readonly<Episode>;
     };
     readonly payoutTargetInUSDCents: USDCents;
-    readonly payoutIntervalInDays: number;
-    readonly currentETHPriceInUSDCents: USDCents | null;
-    readonly previousPayoutDateInMilliseconds: Milliseconds | null;
-    readonly nextPayoutDateInMilliseconds: Milliseconds | null;
-    readonly ethereumAddress: EthereumPublicKey | null;
+    readonly payoutIntervalInDays: Days;
+    readonly currentETHPriceInUSDCents: USDCents | 'UNKNOWN';
+    readonly previousPayoutDateInMilliseconds: Milliseconds | 'NEVER';
+    readonly nextPayoutDateInMilliseconds: Milliseconds | 'NEVER';
+    readonly ethereumAddress: EthereumPublicKey | 'NOT_CREATED';
     readonly ethereumBalanceInWEI: WEI;
     readonly warningCheckbox1Checked: boolean;
     readonly warningCheckbox2Checked: boolean;
@@ -74,4 +81,5 @@ type State = {
     readonly playerPlaying: boolean;
     readonly showPlaybackRateMenu: boolean;
     readonly playbackRate: string;
+    readonly currentETHPriceState: CurrentETHPriceState;
 }

@@ -11,7 +11,7 @@ import {
 export const StorePromise: Promise<Readonly<Store<Readonly<State>, Readonly<AnyAction>>>> = prepareStore();
 
 async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<AnyAction>>>> {
-    const version: number = 14;
+    const version: number = 17;
     const persistedState: Readonly<State> = await get('state');
 
     const InitialState: Readonly<State> = persistedState && version === persistedState.version ? persistedState : {
@@ -29,10 +29,10 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
         episodes: {},
         payoutTargetInUSDCents: 1000,
         payoutIntervalInDays: 30,
-        currentETHPriceInUSDCents: null,
-        previousPayoutDateInMilliseconds: null,
-        nextPayoutDateInMilliseconds: null,
-        ethereumAddress: null,
+        currentETHPriceInUSDCents: 'UNKNOWN',
+        previousPayoutDateInMilliseconds: 'NEVER',
+        nextPayoutDateInMilliseconds: 'NEVER',
+        ethereumAddress: 'NOT_CREATED',
         ethereumBalanceInWEI: 0,
         warningCheckbox1Checked: false,
         warningCheckbox2Checked: false,
@@ -43,10 +43,18 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
         podcryptEthereumAddress: '0x0a0d88E64da0CFB51d8D1D5a9A3604647eB3D131',
         playerPlaying: false,
         showPlaybackRateMenu: false,
-        playbackRate: '1'
+        playbackRate: '1',
+        currentETHPriceState: 'NOT_FETCHED'
     };
     
     const RootReducer: (state: Readonly<State> | undefined, action: AnyAction) => Readonly<State> = (state: Readonly<State> = InitialState, action: AnyAction) => {
+        if (action.type === 'SET_CURRENT_ETH_PRICE_STATE') {
+            return {
+                ...state,
+                currentETHPriceState: action.currentETHPriceState
+            };
+        }
+        
         if (action.type === 'SET_PLAYBACK_RATE') {
             return {
                 ...state,
@@ -156,7 +164,7 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
                     [action.podcast.feedUrl]: {
                         ...state.podcasts[action.podcast.feedUrl],
                         ...action.podcast,
-                        episodes: [...(state.podcasts[action.podcast.feedUrl] ? state.podcasts[action.podcast.feedUrl].episodes : []), action.episode.guid]
+                        episodeGuids: [...(state.podcasts[action.podcast.feedUrl] ? state.podcasts[action.podcast.feedUrl].episodeGuids : []), action.episode.guid]
                     }
                 }
             };
@@ -275,7 +283,7 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
                         timestamps: [...state.episodes[state.currentEpisodeGuid].timestamps, {
                             type: 'START',
                             actionType: 'CURRENT_EPISODE_PLAYED',
-                            timestamp: new Date().getTime()
+                            milliseconds: new Date().getTime()
                         }]
                     }
                 }
@@ -294,7 +302,7 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
                         timestamps: [...state.episodes[state.currentEpisodeGuid].timestamps, {
                             type: 'STOP',
                             actionType: 'CURRENT_EPISODE_PAUSED',
-                            timestamp: new Date().getTime()
+                            milliseconds: new Date().getTime()
                         }]
                     }
                 }
@@ -355,10 +363,10 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
             };
         }
 
-        if (action.type === 'SET_CURRENT_ETH_PRICE_IN_USD') {
+        if (action.type === 'SET_CURRENT_ETH_PRICE_IN_USD_CENTS') {
             return {
                 ...state,
-                currentETHPriceInUSD: action.currentETHPriceInUSD
+                currentETHPriceInUSDCents: action.currentETHPriceInUSDCents
             };
         }
 
