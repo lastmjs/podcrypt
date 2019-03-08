@@ -17,8 +17,6 @@ StorePromise.then((Store) => {
 
         const eth = (Store.getState() as any).currentETHPriceInUSD === 'Loading...' ? 'Loading...' : (Store.getState() as any).payoutTargetInUSD / (Store.getState() as any).currentETHPriceInUSD;
         const nextPayoutLocaleDateString = new Date((Store.getState() as any).nextPayoutDateInMilliseconds).toLocaleDateString()
-        const previousPayoutDateInMilliseconds = (Store.getState() as any).previousPayoutDateInMilliseconds;
-        const previousPayoutLocaleDateString = previousPayoutDateInMilliseconds === null ? 'never' : new Date(previousPayoutDateInMilliseconds).toLocaleDateString();
 
         return html`
             <style>
@@ -45,12 +43,12 @@ StorePromise.then((Store) => {
             </style>
     
             <div class="pc-wallet-container">
-                ${(Store.getState() as any).walletCreationState === 'CREATED' ? walletUI(eth, previousPayoutLocaleDateString, nextPayoutLocaleDateString) : (Store.getState() as any).walletCreationState === 'CREATING' ? html`<div>Creating wallet...</div>` : walletWarnings()}
+                ${(Store.getState() as any).walletCreationState === 'CREATED' ? walletUI(eth, nextPayoutLocaleDateString) : (Store.getState() as any).walletCreationState === 'CREATING' ? html`<div>Creating wallet...</div>` : walletWarnings()}
             </div>
         `;
     })
 
-    function walletUI(eth: number | 'Loading...', previousPayoutLocaleDateString: string, nextPayoutLocaleDateString: string) {
+    function walletUI(eth: number | 'Loading...', nextPayoutLocaleDateString: string) {
         return html`
             <h3>Public key</h3>
 
@@ -130,7 +128,7 @@ StorePromise.then((Store) => {
                             <br>
                             <div>$${calculatePayoutAmountForPodcastDuringCurrentInterval(Store.getState(), podcast).toFixed(2)}, ${Math.floor(calculatePercentageOfTotalTimeForPodcastDuringCurrentInterval(Store.getState(), podcast) * 100)}%, ${totalMinutes} min ${totalSecondsRemaining} sec</div>
                             <br>
-                            <div>Last payout: ${previousPayoutLocaleDateString === 'never' ? previousPayoutLocaleDateString : html`<a href="https://ropsten.etherscan.io/tx/${podcast.latestTransactionHash}" target="_blank">${previousPayoutLocaleDateString}</a>`}</div>
+                            <div>Last payout: ${podcast.previousPayoutDateInMilliseconds === null ? 'never' : html`<a href="https://ropsten.etherscan.io/tx/${podcast.latestTransactionHash}" target="_blank">${new Date(podcast.previousPayoutDateInMilliseconds).toLocaleString()}</a>`}</div>
                             <div>Next payout: ${nextPayoutLocaleDateString}</div>
                         </div>
                     </div>
@@ -442,7 +440,11 @@ StorePromise.then((Store) => {
             const valueInETH = valueInUSD / (Store.getState() as any).currentETHPriceInUSD;
             const valueInWEI = Math.floor(valueInETH) * 1e18;
             const valueLessGasPrice = valueInWEI - gasPrice;
-            const value = valueLessGasPrice > 0 ? valueLessGasPrice : 0; // TODO we probably want to stop here and send nothing if the value after gas is zero
+            const value = valueLessGasPrice > 0 ? valueLessGasPrice : 0;
+
+            if (value === 0) {
+                continue;
+            }
 
             const transactionObject = {
                 from: (Store.getState() as any).ethereumAddress,
@@ -460,6 +462,12 @@ StorePromise.then((Store) => {
             console.log('signedTransactionObject', signedTransactionObject);
 
             await signAndSendTransaction(signedTransactionObject, podcast);
+
+            Store.dispatch({
+                type: 'SET_PODCAST_PREVIOUS_PAYOUT_DATE_IN_MILLISECONDS',
+                feedUrl: podcast.feedUrl,
+                previousPayoutDateInMilliseconds: new Date().getTime()
+            });
         }
 
         Store.dispatch({
@@ -473,6 +481,8 @@ StorePromise.then((Store) => {
             type: 'SET_NEXT_PAYOUT_DATE_IN_MILLISECONDS',
             nextPayoutDateInMilliseconds
         });
+
+        await loadEthereumAccountBalance();
     }
 
     async function signAndSendTransaction(signedTransactionObject: any, podcast: any) {
@@ -503,7 +513,9 @@ StorePromise.then((Store) => {
         console.log('currentLocaleDateString', currentLocaleDateString);
         console.log('nextPayoutLocaleDateString', nextPayoutLocaleDateString);
 
-        if (currentLocaleDateString === nextPayoutLocaleDateString) {
+        if (
+            new Date().getTime() >= (Store.getState() as any).nextPayoutDateInMilliseconds
+        ) {
             payout();
         }
     }, 60000);

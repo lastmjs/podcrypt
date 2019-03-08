@@ -81,7 +81,8 @@ StorePromise.then((Store) => {
                         feedUrl: searchResult.feedUrl,
                         title: searchResult.trackName,
                         imageUrl: searchResult.artworkUrl60,
-                        episodes: []
+                        episodes: [],
+                        previousPayoutDateInMilliseconds: null
                     };
 
                     return html`
