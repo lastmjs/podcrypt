@@ -2,6 +2,10 @@ declare var RSSParser: any;
 declare var MediaMetadata: any;
 declare var Web3: any; // TODO the types are available in the web3 repo
 
+type Podcast = {
+
+}
+
 type Episode = {
     guid: string;
     title: string;

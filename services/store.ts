@@ -383,6 +383,16 @@ async function prepareStore() {
             };
         }
 
+        if (action.type === 'SET_PODCAST_PREVIOUS_PAYOUT_DATE_IN_MILLISECONDS') {
+            return {
+                ...state,
+                podcasts: {
+                    ...state.podcasts[action.feedUrl],
+                    previousPayoutDateInMilliseconds: action.previousPayoutDateInMilliseconds
+                }
+            };
+        }
+
         if (action.type === 'SET_WARNING_CHECKBOX_1_CHECKED') {
             return {
                 ...state,
