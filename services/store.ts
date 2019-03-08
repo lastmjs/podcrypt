@@ -387,8 +387,11 @@ async function prepareStore() {
             return {
                 ...state,
                 podcasts: {
-                    ...state.podcasts[action.feedUrl],
-                    previousPayoutDateInMilliseconds: action.previousPayoutDateInMilliseconds
+                    ...state.podcasts,
+                    [action.feedUrl]: {
+                        ...state.podcasts[action.feedUrl],
+                        previousPayoutDateInMilliseconds: action.previousPayoutDateInMilliseconds
+                    }
                 }
             };
         }

@@ -128,7 +128,7 @@ StorePromise.then((Store) => {
                             <br>
                             <div>$${calculatePayoutAmountForPodcastDuringCurrentInterval(Store.getState(), podcast).toFixed(2)}, ${Math.floor(calculatePercentageOfTotalTimeForPodcastDuringCurrentInterval(Store.getState(), podcast) * 100)}%, ${totalMinutes} min ${totalSecondsRemaining} sec</div>
                             <br>
-                            <div>Last payout: ${podcast.previousPayoutDateInMilliseconds === null ? 'never' : html`<a href="https://ropsten.etherscan.io/tx/${podcast.latestTransactionHash}" target="_blank">${new Date(podcast.previousPayoutDateInMilliseconds).toLocaleString()}</a>`}</div>
+                            <div>Last payout: ${podcast.previousPayoutDateInMilliseconds === null ? 'never' : html`<a href="https://ropsten.etherscan.io/tx/${podcast.latestTransactionHash}" target="_blank">${new Date(podcast.previousPayoutDateInMilliseconds).toLocaleDateString()}</a>`}</div>
                             <div>Next payout: ${nextPayoutLocaleDateString}</div>
                         </div>
                     </div>
@@ -436,11 +436,28 @@ StorePromise.then((Store) => {
         
             // const gasPrice = await web3.eth.getGasPrice();
             const gasPrice = 10000000000;
+            
+            console.log('gasPrice', gasPrice);
+
             const valueInUSD = calculatePayoutAmountForPodcastDuringCurrentInterval(Store.getState(), podcast);
+            
+            console.log('valueInUSD', valueInUSD);
+            
             const valueInETH = valueInUSD / (Store.getState() as any).currentETHPriceInUSD;
-            const valueInWEI = Math.floor(valueInETH) * 1e18;
+            
+            console.log('valueInETH', valueInETH);
+            
+            const valueInWEI = Math.floor(valueInETH * 1e18);
+            
+            console.log('valueInWEI', valueInWEI);
+            
             const valueLessGasPrice = valueInWEI - gasPrice;
+            
+            console.log('valueLessGasPrice', valueLessGasPrice);
+            
             const value = valueLessGasPrice > 0 ? valueLessGasPrice : 0;
+
+            console.log('value', value);
 
             if (value === 0) {
                 continue;
