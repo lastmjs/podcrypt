@@ -55,18 +55,24 @@ StorePromise.then((Store) => {
                     @keydown=${(e: any) => searchInputKeyDown(e, element)}
                 >
     
-                ${Object.values((Store.getState() as any).podcasts as ReadonlyArray<any>).map((podcast) => {
-                    return html`
-                        <div class="pc-podcasts-item">
-                            <div>
-                                <img src="${podcast.imageUrl}" width="60" height="60">
-                            </div>
-                            <div class="pc-podcasts-item-text" @click=${() => podcastClick(podcast)}>
-                                ${podcast.title}
-                            </div>
-                        </div>
-                    `;
-                })}
+                ${
+                    Object.values(Store.getState().podcasts).length === 0 ? 
+                    html`<div style="display: flex; align-items: center; justify-content: center; margin-top: 25%; font-size: calc(20px + 1vmin); color: grey">You have no podcasts</div>` :
+                    html`
+                        ${Object.values(Store.getState().podcasts).map((podcast) => {
+                            return html`
+                                <div class="pc-podcasts-item">
+                                    <div>
+                                        <img src="${podcast.imageUrl}" width="60" height="60">
+                                    </div>
+                                    <div class="pc-podcasts-item-text" @click=${() => podcastClick(podcast)}>
+                                        ${podcast.title}
+                                    </div>
+                                </div>
+                            `;
+                        })}
+                    `
+                }
             </div>
         `;
     });
