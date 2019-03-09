@@ -45,11 +45,12 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
         showPlaybackRateMenu: false,
         playbackRate: '1',
         currentETHPriceState: 'NOT_FETCHED',
-        payoutInProgress: false
+        payoutInProgress: false // TODO this is not used for anything currently
     };
     
     const RootReducer: (state: Readonly<State> | undefined, action: AnyAction) => Readonly<State> = (state: Readonly<State> = InitialState, action: AnyAction) => {
-        if (action.type === 'SET_PAYOUT_IN_PROGRSS') {
+        // TODO this is not used for anything currently
+        if (action.type === 'SET_PAYOUT_IN_PROGRESS') {
             return {
                 ...state,
                 payoutInProgress: action.payoutInProgress

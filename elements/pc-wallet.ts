@@ -329,9 +329,15 @@ StorePromise.then((Store) => {
         if (
             new Date().getTime() >= Store.getState().nextPayoutDateInMilliseconds
         ) {
-            if (!Store.getState().payoutInProgress) {
+            // TODO Figure out what to do here
+            // TODO we only want the interval check to kick in if there is no payment in progress
+            // TODO but if there are errors in the payout, and the user refreshes the browser, then
+            // TODO the redux store will say there is a payout in progress, when there is not
+            // TODO we could use a variable just in memory, but that seems messy and I do not want to store state
+            // TODO outside of Redux if at all possible...think about it
+            // if (!Store.getState().payoutInProgress) {
                 payout(Store, ethersProvider, 500);
-            }
+            // }
         }
     }, 60000);
 });

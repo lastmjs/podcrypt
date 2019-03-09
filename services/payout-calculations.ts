@@ -59,6 +59,7 @@ export function getPayoutTargetInETH(Store: Readonly<Store<Readonly<State>, AnyA
 
 export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>, ethersProvider: any, retryDelayInMilliseconds: Milliseconds): Promise<void> {
         
+    // TODO this is not being used for anything
     Store.dispatch({
         type: 'SET_PAYOUT_IN_PROGRESS',
         payoutInProgress: true
@@ -187,6 +188,7 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
 
     await loadEthereumAccountBalance(Store, ethersProvider);
 
+    // TODO this is not being used for anything
     Store.dispatch({
         type: 'SET_PAYOUT_IN_PROGRESS',
         payoutInProgress: false
