@@ -10,6 +10,7 @@ import './pc-privacy';
 import './pc-contact';
 import './pc-about';
 import './pc-not-verified-help';
+import './pc-get-eth';
 import { parseQueryString } from '../services/utilities';
 
 StorePromise.then((Store) => {
@@ -108,6 +109,7 @@ StorePromise.then((Store) => {
                 .podcastEmail=${Store.getState().currentRoute.query.podcastEmail}
                 .feedUrl=${Store.getState().currentRoute.query.feedUrl}
             ></pc-not-verified-help>
+            <pc-get-eth ?hidden=${currentRoute.pathname !== '/get-eth'}></pc-get-eth>
         `;
     });
     
