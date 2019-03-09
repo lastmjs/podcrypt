@@ -143,7 +143,7 @@ StorePromise.then((Store) => {
 
             <br>
 
-            <button @click=${() => payout(Store, ethersProvider)}>Manual payout</button>
+            <button @click=${() => payout(Store, ethersProvider, 500)}>Manual payout</button>
 
             <br>
             <br>
@@ -329,7 +329,9 @@ StorePromise.then((Store) => {
         if (
             new Date().getTime() >= Store.getState().nextPayoutDateInMilliseconds
         ) {
-            payout(Store, ethersProvider);
+            if (!Store.getState().payoutInProgress) {
+                payout(Store, ethersProvider, 500);
+            }
         }
     }, 60000);
 });

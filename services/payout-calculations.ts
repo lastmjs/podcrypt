@@ -5,6 +5,7 @@ import {
 import { calculatePayoutAmountForPodcastDuringCurrentIntervalInWEI } from './podcast-calculations';
 import { loadEthereumAccountBalance } from './balance-calculations';
 import { get } from 'idb-keyval';
+import { wait } from './utilities';
 
 export function getNextPayoutDateInMilliseconds(Store: Readonly<Store<Readonly<State>, AnyAction>>): Milliseconds {
     const previousPayoutDateInMilliseconds: Milliseconds | 'NEVER' = Store.getState().previousPayoutDateInMilliseconds;
@@ -56,8 +57,13 @@ export function getPayoutTargetInETH(Store: Readonly<Store<Readonly<State>, AnyA
     return Store.getState().currentETHPriceInUSDCents === 'UNKNOWN' ? 'Loading...' : Store.getState().payoutTargetInUSDCents / (Store.getState().currentETHPriceInUSDCents as number);
 }
 
-export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>, ethersProvider: any): Promise<void> {
+export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>, ethersProvider: any, retryDelayInMilliseconds: Milliseconds): Promise<void> {
         
+    Store.dispatch({
+        type: 'SET_PAYOUT_IN_PROGRESS',
+        payoutInProgress: true
+    });
+
     const podcasts: ReadonlyArray<Podcast> = Object.values(Store.getState().podcasts);
 
     // TODO if there is a failure with one transaction, we want to keep going with the other transactions
@@ -111,10 +117,14 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
             }
 
             const wallet = new ethers.Wallet(await get('ethereumPrivateKey'), ethersProvider);
+            
+            console.log('getting transaction count')
+            
             const nonce = await ethersProvider.getTransactionCount(wallet.address);
     
+            console.log('nonce', nonce);
+
             const preparedTransaction = {
-                // from: Store.getState().ethereumAddress,
                 to: podcastEthereumAddress,
                 gasLimit: 21000,
                 gasPrice: gasPriceInWEI,
@@ -129,12 +139,21 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
     
             const transaction = await wallet.sendTransaction(preparedTransaction);
     
-            console.log('transaction sent');
+            console.log(`transaction ${transaction.hash} sent`);
+
+            // TODO this isn't working for some reason, check these issues out:
+            // TODO https://github.com/ethers-io/ethers.js/issues/346
+            // TODO https://github.com/ethers-io/ethers.js/issues/451
+            // TODO once those issues are resolved, get rid of the wait below
+            // const receipt = await ethersProvider.waitForTransaction(transaction.hash);
+
+            // console.log(`Transaction ${receipt.hash} mined`);
     
             Store.dispatch({
                 type: 'SET_PODCAST_LATEST_TRANSACTION_HASH',
                 feedUrl: podcast.feedUrl,
                 latestTransactionHash: transaction.hash
+                // latestTransactionHash: receipt.hash
             });
     
             Store.dispatch({
@@ -142,9 +161,15 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
                 feedUrl: podcast.feedUrl,
                 previousPayoutDateInMilliseconds: new Date().getTime()
             });
+
+            await wait(30000);
         }
         catch(error) {
-            console.log('payout', error);
+            console.log('payout error', error);
+            console.log(`retrying in ${retryDelayInMilliseconds * 2}`);
+            await wait(retryDelayInMilliseconds * 2);
+            payout(Store, ethersProvider, retryDelayInMilliseconds * 2);
+            return;
         }
     }
 
@@ -161,4 +186,9 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
     });
 
     await loadEthereumAccountBalance(Store, ethersProvider);
+
+    Store.dispatch({
+        type: 'SET_PAYOUT_IN_PROGRESS',
+        payoutInProgress: false
+    });
 }

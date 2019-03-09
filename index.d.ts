@@ -87,4 +87,5 @@ type State = {
     readonly showPlaybackRateMenu: boolean;
     readonly playbackRate: string;
     readonly currentETHPriceState: CurrentETHPriceState;
+    readonly payoutInProgress: boolean;
 }
