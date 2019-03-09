@@ -9,6 +9,7 @@ import './pc-credits';
 import './pc-privacy';
 import './pc-contact';
 import './pc-about';
+import './pc-not-verified-help';
 import { parseQueryString } from '../services/utilities';
 
 StorePromise.then((Store) => {
@@ -92,16 +93,21 @@ StorePromise.then((Store) => {
             <pc-wallet ?hidden=${currentRoute.pathname !== '/wallet'}></pc-wallet>
             <pc-podcast-overview
                 ?hidden=${currentRoute.pathname !== '/podcast-overview'}
-                .podcast=${decodeURIComponent((Store.getState() as any).currentRoute.query.podcast)}
+                .podcast=${decodeURIComponent(Store.getState().currentRoute.query.podcast)}
             ></pc-podcast-overview>
             <pc-podcast-search-results
                 ?hidden=${currentRoute.pathname !== '/podcast-search-results'}
-                .term=${(Store.getState() as any).currentRoute.query.term}
+                .term=${Store.getState().currentRoute.query.term}
             ></pc-podcast-search-results>
             <pc-credits ?hidden=${currentRoute.pathname !== '/credits'}></pc-credits>
             <pc-privacy ?hidden=${currentRoute.pathname !== '/privacy'}></pc-privacy>
             <pc-contact ?hidden=${currentRoute.pathname !== '/contact'}></pc-contact>
             <pc-about ?hidden=${currentRoute.pathname !== '/about'}></pc-about>
+            <pc-not-verified-help
+                ?hidden=${currentRoute.pathname !== '/not-verified-help'}
+                .podcastEmail=${Store.getState().currentRoute.query.podcastEmail}
+                .feedUrl=${Store.getState().currentRoute.query.feedUrl}
+            ></pc-not-verified-help>
         `;
     });
     

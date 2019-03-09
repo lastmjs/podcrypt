@@ -116,9 +116,9 @@ StorePromise.then((Store) => {
                                 <div>
                                     ${
                                         ethereumAddress === 'NOT_FOUND' ? 
-                                            html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${(e) => { e.stopPropagation(); alert(`No Ethereum address was found for this podcast. You can help by contacting the podcast owner and asking them to add their Ethereum address to their main podcast description.${podcast.email === 'NOT_SET' ? '' : ` Their email is: ${podcast.email}`}`) }}>Not verified - click to help</button>` :
+                                            html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${(e: any) => notVerifiedHelpClick(e, podcast)}>Not verified - click to help</button>` :
                                             ethereumAddress === 'MALFORMED' ?
-                                    html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${(e) => { e.stopPropagation(); alert(`The Ethereum address for this podcast is malformed. You can help by contacting the podcast owner and asking them to add a correctly formatted Ethereum address to their main podcast description.${podcast.email === 'NOT_SET' ? '' : ` Their email is: ${podcast.email}`}`) }}>Not verified - click to help</button>` :
+                                    html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${(e: any) => notVerifiedHelpClick(e, podcast)}>Not verified - click to help</button>` :
                                                 html`<button style="color: green; border: none; padding: 5px; margin: 5px" @click=${(e) => { e.stopPropagation(); alert(`This podcast's Ethereum address: ${podcast.ethereumAddress}`)} }>Verified</button>` }
                                 </div>
 
@@ -152,5 +152,11 @@ StorePromise.then((Store) => {
 
     function episodeDescriptionClick(podcast: any) {
         navigate(Store, `podcast-overview?podcast=${encodeURIComponent(JSON.stringify(podcast))}`);
+    }
+
+    function notVerifiedHelpClick(e: any, podcast: Readonly<Podcast>) {
+        e.stopPropagation();
+
+        navigate(Store, `/not-verified-help?feedUrl=${podcast.feedUrl}&podcastEmail=${podcast.email}`);
     }
 });
