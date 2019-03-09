@@ -155,7 +155,6 @@ StorePromise.then((Store) => {
             </div>
 
             <br>
-            <br>
 
             ${Object.values(Store.getState().podcasts).map((podcast: Podcast) => {
                 const totalTimeForPodcastDuringCurrentIntervalInMilliseconds: Milliseconds = calculateTotalTimeForPodcastDuringCurrentIntervalInMilliseconds(Store.getState(), podcast);
