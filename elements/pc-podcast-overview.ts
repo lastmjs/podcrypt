@@ -5,15 +5,17 @@ import { StorePromise } from '../services/store';
 import { pcContainerStyles } from '../services/css';
 import {
     firstProxy,
-    getRSSFeed
+    getRSSFeed,
+    navigate
 } from '../services/utilities';
+import { parseEthereumAddressFromPodcastDescription } from '../services/payout-calculations';
 
 StorePromise.then((Store) => {
     customElement('pc-podcast-overview', ({ constructing, element, update, props }) => {
     
         if (constructing) {
             return {
-                podcast: null
+                feedUrl: null
             };
         }
     
@@ -52,27 +54,53 @@ StorePromise.then((Store) => {
             </style>
     
             <div class="pc-podcast-overview-container">
-                ${until(getFeed(props.podcast, firstProxy), html`<div style="padding: 5%">Loading...</div>`)}
+                ${until(getFeed(props.feedUrl, firstProxy), html`<div style="padding: 5%">Loading...</div>`)}
             </div>
         `;
     });
     
-    async function getFeed(podcastRaw: any, corsProxy: string): Promise<any> {
-        if (podcastRaw === 'undefined') {
+    async function getFeed(feedUrl: string, corsProxy: string): Promise<any> {    
+        
+        if (
+            feedUrl === null ||
+            feedUrl === undefined
+        ) {
             return;
         }
-    
-        const podcast: Readonly<Podcast> = JSON.parse(podcastRaw);
-    
-        const feed = await getRSSFeed(podcast.feedUrl, corsProxy);
+        
+        const feed = await getRSSFeed(feedUrl, corsProxy);
     
         if (feed === null) {
             return html`<div>Failed to load</div>`;
         }
 
+        const ethereumAddress: EthereumAddress | 'NOT_FOUND' | 'MALFORMED' = feed ? parseEthereumAddressFromPodcastDescription(feed.description) : 'Feed not found';
+        const email: string | 'NOT_SET' = feed.itunes ? feed.itunes.owner ? feed.itunes.owner.email ? feed.itunes.owner.email : 'NOT_SET' : 'NOT_SET' : 'NOT_SET';
+
+        const podcast: Readonly<Podcast> = {
+            feedUrl,
+            title: feed.title,
+            imageUrl: feed.image.url,
+            description: feed.description,
+            episodeGuids: [],
+            previousPayoutDateInMilliseconds: 'NEVER',
+            latestTransactionHash: null,
+            ethereumAddress,
+            email
+        };
+
         return html`
             <h2 style="margin: 0; padding: 5%; box-shadow: 0 4px 2px -2px grey;">${feed.title}</h2>
+            <div>
+                ${
+                    ethereumAddress === 'NOT_FOUND' ? 
+                        html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${() => notVerifiedHelpClick(podcast)}>Not verified - click to help</button>` :
+                        ethereumAddress === 'MALFORMED' ?
+                html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${() => notVerifiedHelpClick(podcast)}>Not verified - click to help</button>` :
+                            html`<button style="color: green; border: none; padding: 5px; margin: 5px" @click=${(e: any) => { e.stopPropagation(); alert(`This podcast's Ethereum address: ${podcast.ethereumAddress}`)} }>Verified</button>` }
+            </div>
             <h4 style="margin: 0; padding: 2%; box-shadow: 0 4px 2px -2px grey;">${feed.description}</h4>
+
             ${feed.items.map((item: any) => {
                 return html`
                     <div class="pc-podcast-overview-episode">
@@ -130,5 +158,9 @@ StorePromise.then((Store) => {
                 ...podcast
             }
         });
+    }
+
+    function notVerifiedHelpClick(podcast: Readonly<Podcast>) {
+        navigate(Store, `/not-verified-help?feedUrl=${podcast.feedUrl}&podcastEmail=${podcast.email}`);
     }
 });

@@ -59,7 +59,7 @@ StorePromise.then((Store) => {
                     return html`
                         <div class="pc-podcasts-item">
                             <div>
-                                <img src="${podcast.imageUrl}">
+                                <img src="${podcast.imageUrl}" width="60" height="60">
                             </div>
                             <div class="pc-podcasts-item-text" @click=${() => podcastClick(podcast)}>
                                 ${podcast.title}
