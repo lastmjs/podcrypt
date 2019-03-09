@@ -49,6 +49,20 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
     };
     
     const RootReducer: (state: Readonly<State> | undefined, action: AnyAction) => Readonly<State> = (state: Readonly<State> = InitialState, action: AnyAction) => {
+        
+        if (action.type === 'SET_PODCAST_ETHEREUM_ADDRESS') {
+            return {
+                ...state,
+                podcasts: {
+                    ...state.podcasts,
+                    [action.feedUrl]: {
+                        ...state.podcasts[action.feedUrl],
+                        ethereumAddress: action.ethereumAddress
+                    }
+                }
+            };
+        }
+        
         // TODO this is not used for anything currently
         if (action.type === 'SET_PAYOUT_IN_PROGRESS') {
             return {

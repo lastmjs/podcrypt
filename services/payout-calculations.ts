@@ -5,7 +5,11 @@ import {
 import { calculatePayoutAmountForPodcastDuringCurrentIntervalInWEI } from './podcast-calculations';
 import { loadEthereumAccountBalance } from './balance-calculations';
 import { get } from 'idb-keyval';
-import { wait } from './utilities';
+import { 
+    wait,
+    getRSSFeed,
+    firstProxy
+} from './utilities';
 
 export function getNextPayoutDateInMilliseconds(Store: Readonly<Store<Readonly<State>, AnyAction>>): Milliseconds {
     const previousPayoutDateInMilliseconds: Milliseconds | 'NEVER' = Store.getState().previousPayoutDateInMilliseconds;
@@ -74,25 +78,26 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
         try {
             const podcast: Podcast = podcasts[i];
 
-            const podcastEthereumAddress: EthereumAddress | 'NOT_FOUND' | 'MALFORMED' = parseEthereumAddressFromPodcastDescription(podcast.description);
-        
-            if (podcastEthereumAddress === 'NOT_FOUND') {
-                Store.dispatch({
-                    type: 'SET_PODCAST_ETHEREUM_ADDRESS',
-                    feedUrl: podcast.feedUrl,
-                    ethereumAddress: 'NOT_FOUND'
-                });
+            const feed = await getRSSFeed(podcast.feedUrl, firstProxy);
 
+            if (!feed) {
+                // TODO if this happens, we should somehow notify the user
+                // TODO add error states and ui stuff for each podcast so the user knows the state of everything
                 continue;
             }
 
-            if (podcastEthereumAddress === 'MALFORMED') {
-                Store.dispatch({
-                    type: 'SET_PODCAST_ETHEREUM_ADDRESS',
-                    feedUrl: podcast.feedUrl,
-                    ethereumAddress: 'NOT_FOUND'
-                });
+            const podcastEthereumAddress: EthereumAddress | 'NOT_FOUND' | 'MALFORMED' = parseEthereumAddressFromPodcastDescription(feed.description);
+        
+            Store.dispatch({
+                type: 'SET_PODCAST_ETHEREUM_ADDRESS',
+                feedUrl: podcast.feedUrl,
+                ethereumAddress: podcastEthereumAddress
+            });
 
+            if (
+                podcastEthereumAddress === 'NOT_FOUND' ||
+                podcastEthereumAddress === 'MALFORMED'
+            ) {
                 continue;
             }
 
@@ -163,7 +168,8 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
                 previousPayoutDateInMilliseconds: new Date().getTime()
             });
 
-            await wait(30000);
+            // TODO I'll just let the retry mechanism kick in to wait long enough to get the nonce
+            // await wait(30000);
         }
         catch(error) {
             console.log('payout error', error);
