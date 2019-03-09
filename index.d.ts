@@ -3,6 +3,10 @@ declare var MediaMetadata: any;
 type Milliseconds = number;
 declare var ethers: any;
 
+type Feed = {
+    
+}
+
 type Podcast = {
     readonly feedUrl: PodcastGuid;
     readonly title: string;
@@ -11,6 +15,8 @@ type Podcast = {
     readonly episodeGuids: ReadonlyArray<EpisodeGuid>;
     readonly previousPayoutDateInMilliseconds: Milliseconds | 'NEVER';
     readonly latestTransactionHash: string | null;
+    readonly ethereumAddress: EthereumAddress | 'NOT_FOUND' | 'MALFORMED';
+    readonly email: string | 'NOT_SET';
 }
 
 type Episode = {
@@ -38,7 +44,7 @@ type USDollars = number;
 type WEI = number;
 type GWEI = number;
 type ETH = number;
-type EthereumPublicKey = string;
+type EthereumAddress = string;
 type Days = number;
 type Minutes = number;
 type Seconds = number;
@@ -68,7 +74,7 @@ type State = {
     readonly currentETHPriceInUSDCents: USDCents | 'UNKNOWN';
     readonly previousPayoutDateInMilliseconds: Milliseconds | 'NEVER';
     readonly nextPayoutDateInMilliseconds: Milliseconds | 'NEVER';
-    readonly ethereumAddress: EthereumPublicKey | 'NOT_CREATED';
+    readonly ethereumAddress: EthereumAddress | 'NOT_CREATED';
     readonly ethereumBalanceInWEI: WEI;
     readonly warningCheckbox1Checked: boolean;
     readonly warningCheckbox2Checked: boolean;
@@ -76,7 +82,7 @@ type State = {
     readonly warningCheckbox4Checked: boolean;
     readonly warningCheckbox5Checked: boolean;
     readonly walletCreationState: WalletCreationState;
-    readonly podcryptEthereumAddress: EthereumPublicKey;
+    readonly podcryptEthereumAddress: EthereumAddress;
     readonly playerPlaying: boolean;
     readonly showPlaybackRateMenu: boolean;
     readonly playbackRate: string;

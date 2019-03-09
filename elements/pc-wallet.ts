@@ -158,6 +158,8 @@ StorePromise.then((Store) => {
                 const payoutAmountForPodcastDuringCurrentIntervalInUSD: USD = calculatePayoutAmountForPodcastDuringCurrentIntervalInUSD(Store.getState(), podcast);
                 const percentageOfTotalTimeForPodcastDuringCurrentInterval: number = calculateProportionOfTotalTimeForPodcastDuringCurrentInterval(Store.getState(), podcast) * 100;
 
+                const ethereumAddress: EthereumAddress | 'NOT_FOUND' | 'MALFORMED' = podcast.ethereumAddress;
+
                 return html`
                     <div class="pc-wallet-podcast-item">
                         <div>
@@ -165,6 +167,14 @@ StorePromise.then((Store) => {
                         </div>
                         <div style="display:flex: flex-direction: column; padding-left: 5%">
                             <div class="pc-wallet-podcast-item-text">${podcast.title}</div>
+                            <div>
+                                ${
+                                    ethereumAddress === 'NOT_FOUND' ? 
+                                        html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${() => alert(`No Ethereum address was found for this podcast. You can help by contacting the podcast owner and asking them to add their Ethereum address to their main podcast description.${podcast.email === 'NOT_SET' ? '' : ` Their email is: ${podcast.email}`}`)}>Not verified - click to help</button>` :
+                                        ethereumAddress === 'MALFORMED' ?
+                                            html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${() => alert(`The Ethereum address for this podcast is malformed. You can help by contacting the podcast owner and asking them to add a correctly formatted Ethereum address to their main podcast description.${podcast.email === 'NOT_SET' ? '' : ` Their email is: ${podcast.email}`}`)}>Not verified - click to help</button>` :
+                                            html`<button style="color: green; border: none; padding: 5px; margin: 5px" @click=${() => alert(`This podcast's Ethereum address: ${podcast.ethereumAddress}`)}>Verified</button>`}
+                            </div>
                             <br>
                             <div>$${payoutAmountForPodcastDuringCurrentIntervalInUSD.toFixed(2)}, ${percentageOfTotalTimeForPodcastDuringCurrentInterval.toFixed(1)}%, ${totalTimeForPodcastDuringCurrentIntervalInMinutes} min ${secondsRemainingForPodcastDuringCurrentInterval} sec</div>
                             <br>

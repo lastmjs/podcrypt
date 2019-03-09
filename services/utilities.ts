@@ -24,3 +24,19 @@ export function navigate(Store: any, path: string) {
         }
     });
 }
+
+export async function getRSSFeed(feedUrl: string, corsProxy: string): Promise<any | null> {
+    try {
+        const feedResponse = await window.fetch(`${corsProxy}${feedUrl}`);
+        const feedRaw = await feedResponse.text();
+        const feed = await new RSSParser().parseString(feedRaw);
+        return feed;
+    }
+    catch(error) {
+        if (corsProxy !== backupProxy) {
+            return await getRSSFeed(feedUrl, backupProxy);
+        }
+
+        return null;
+    }
+}

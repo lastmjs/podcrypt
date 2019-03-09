@@ -27,9 +27,29 @@ export function getNextPayoutDateInMilliseconds(Store: Readonly<Store<Readonly<S
     }
 }
 
-function parseEthereumAddressFromPodcastDescription(podcastDescription: string): string {
-    const testPodcastAccount = '0x81C0bf46ED56216E3f9f0864B46C099B8A3315B3';
-    return testPodcastAccount;
+export function parseEthereumAddressFromPodcastDescription(podcastDescription: string): EthereumAddress | 'NOT_FOUND' | 'MALFORMED' {
+    try {
+        // TODO I took the regex below straight from here: https://www.regextester.com/99711
+        // TODO I am not sure if there are any copyright issues with using it, it seems pretty deminimus and obvious to me
+        const matchInfo: RegExpMatchArray | null = podcastDescription.match(/0x[a-fA-F0-9]{40}/);
+        const ethereumAddressFromPodcastDescription: EthereumAddress = matchInfo !== null ? matchInfo[0] : 'NOT_FOUND';
+        
+        console.log('ethereumAddressFromPodcastDescription', ethereumAddressFromPodcastDescription);
+        
+        if (ethereumAddressFromPodcastDescription === 'NOT_FOUND') {
+            return 'NOT_FOUND';
+        }
+        
+        const verifiedAddress = ethers.utils.getAddress(ethereumAddressFromPodcastDescription);
+        
+        console.log('verifiedAddress', verifiedAddress);
+        
+        return verifiedAddress;        
+    }
+    catch(error) {
+        console.log(error);
+        return 'MALFORMED';
+    }
 }
 
 export function getPayoutTargetInETH(Store: Readonly<Store<Readonly<State>, AnyAction>>): ETH | 'Loading...' {
@@ -47,8 +67,28 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
         try {
             const podcast: Podcast = podcasts[i];
 
-            const podcastEthereumAddress: EthereumPublicKey = parseEthereumAddressFromPodcastDescription(podcast.description);
+            const podcastEthereumAddress: EthereumAddress | 'NOT_FOUND' | 'MALFORMED' = parseEthereumAddressFromPodcastDescription(podcast.description);
         
+            if (podcastEthereumAddress === 'NOT_FOUND') {
+                Store.dispatch({
+                    type: 'SET_PODCAST_ETHEREUM_ADDRESS',
+                    feedUrl: podcast.feedUrl,
+                    ethereumAddress: 'NOT_FOUND'
+                });
+
+                continue;
+            }
+
+            if (podcastEthereumAddress === 'MALFORMED') {
+                Store.dispatch({
+                    type: 'SET_PODCAST_ETHEREUM_ADDRESS',
+                    feedUrl: podcast.feedUrl,
+                    ethereumAddress: 'NOT_FOUND'
+                });
+
+                continue;
+            }
+
             // const gasPrice = await web3.eth.getGasPrice();
             const gasPriceInWEI: WEI = 10000000000;
             
