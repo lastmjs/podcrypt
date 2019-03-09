@@ -11,7 +11,7 @@ import {
 export const StorePromise: Promise<Readonly<Store<Readonly<State>, Readonly<AnyAction>>>> = prepareStore();
 
 async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<AnyAction>>>> {
-    const version: number = 18;
+    const version: number = 19;
     const persistedState: Readonly<State> = await get('state');
 
     const InitialState: Readonly<State> = persistedState && version === persistedState.version ? persistedState : {
@@ -44,10 +44,19 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
         playerPlaying: false,
         showPlaybackRateMenu: false,
         playbackRate: '1',
-        currentETHPriceState: 'NOT_FETCHED'
+        currentETHPriceState: 'NOT_FETCHED',
+        payoutInProgress: false // TODO this is not used for anything currently
     };
     
     const RootReducer: (state: Readonly<State> | undefined, action: AnyAction) => Readonly<State> = (state: Readonly<State> = InitialState, action: AnyAction) => {
+        // TODO this is not used for anything currently
+        if (action.type === 'SET_PAYOUT_IN_PROGRESS') {
+            return {
+                ...state,
+                payoutInProgress: action.payoutInProgress
+            };
+        }
+        
         if (action.type === 'SET_CURRENT_ETH_PRICE_STATE') {
             return {
                 ...state,

@@ -73,7 +73,7 @@ export function getBalanceInETH(Store: Readonly<Store<Readonly<State>, AnyAction
 }
 
 export async function loadEthereumAccountBalance(Store: Readonly<Store<Readonly<State>, AnyAction>>, ethersProvider: any): Promise<void> {
-    const ethereumAddress: EthereumPublicKey | 'NOT_CREATED' = Store.getState().ethereumAddress;
+    const ethereumAddress: EthereumAddress | 'NOT_CREATED' = Store.getState().ethereumAddress;
 
     if (ethereumAddress === 'NOT_CREATED') {
         return;
