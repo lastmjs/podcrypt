@@ -109,6 +109,9 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
             if (netValueInWEI === 0) {
                 continue;
             }
+
+            const wallet = new ethers.Wallet(await get('ethereumPrivateKey'), ethersProvider);
+            const nonce = await ethersProvider.getTransactionCount(wallet.address);
     
             const preparedTransaction = {
                 // from: Store.getState().ethereumAddress,
@@ -116,7 +119,7 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
                 gasLimit: 21000,
                 gasPrice: gasPriceInWEI,
                 value: netValueInWEI,
-                nonce: i + 1
+                nonce
                 // data: web3.utils.asciiToHex('podcrypt') // TODO we might need to increase the gaslimit for this?
             };
     
@@ -124,7 +127,6 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
     
             console.log('signing and sending transaction');
     
-            const wallet = new ethers.Wallet(await get('ethereumPrivateKey'), ethersProvider);
             const transaction = await wallet.sendTransaction(preparedTransaction);
     
             console.log('transaction sent');
