@@ -5,7 +5,7 @@ import './pc-playlist';
 import './pc-wallet';
 import './pc-podcast-overview';
 import './pc-podcast-search-results';
-import './pc-open-source';
+import './pc-credits';
 import './pc-privacy';
 import './pc-contact';
 import './pc-about';
@@ -55,15 +55,26 @@ StorePromise.then((Store) => {
         }
     });
     
-    window.addEventListener('load', () => {
-        Store.dispatch({
-            type: 'CHANGE_CURRENT_ROUTE',
-            currentRoute: {
-                pathname: window.location.pathname,
-                search: window.location.search,
-                query: parseQueryString(window.location.search.slice(1))
-            }
-        });
+    // window.addEventListener('load', () => {
+    //     console.log(window.location);
+    //     Store.dispatch({
+    //         type: 'CHANGE_CURRENT_ROUTE',
+    //         currentRoute: {
+    //             pathname: window.location.pathname,
+    //             search: window.location.search,
+    //             query: parseQueryString(window.location.search.slice(1))
+    //         }
+    //     });
+    // });
+
+    // TODO I do not think we need the window listener anymore, we should just run this whenever the router is loaded for the first time
+    Store.dispatch({
+        type: 'CHANGE_CURRENT_ROUTE',
+        currentRoute: {
+            pathname: window.location.pathname,
+            search: window.location.search,
+            query: parseQueryString(window.location.search.slice(1))
+        }
     });
     
     customElement('pc-router', async ({ constructing, update }) => {
@@ -87,7 +98,7 @@ StorePromise.then((Store) => {
                 ?hidden=${currentRoute.pathname !== '/podcast-search-results'}
                 .term=${(Store.getState() as any).currentRoute.query.term}
             ></pc-podcast-search-results>
-            <pc-open-source ?hidden=${currentRoute.pathname !== '/open-source'}></pc-open-source>
+            <pc-credits ?hidden=${currentRoute.pathname !== '/credits'}></pc-credits>
             <pc-privacy ?hidden=${currentRoute.pathname !== '/privacy'}></pc-privacy>
             <pc-contact ?hidden=${currentRoute.pathname !== '/contact'}></pc-contact>
             <pc-about ?hidden=${currentRoute.pathname !== '/about'}></pc-about>

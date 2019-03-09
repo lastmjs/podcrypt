@@ -103,9 +103,9 @@ StorePromise.then((Store) => {
 
                 <div
                     class="pc-main-menu-item"
-                    @click=${() => menuItemClick(Store, '/open-source')}
+                    @click=${() => menuItemClick(Store, '/credits')}
                 >
-                    Open Source
+                    Credits
                 </div>
             </div>
         `;
