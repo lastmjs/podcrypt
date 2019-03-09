@@ -19,6 +19,7 @@ import {
     getBalanceInETH,
     createWallet
 } from '../services/balance-calculations';
+import { navigate } from '../services/utilities';
 
 const ethersProvider = new ethers.providers.EtherscanProvider('ropsten');
 
@@ -170,9 +171,9 @@ StorePromise.then((Store) => {
                             <div>
                                 ${
                                     ethereumAddress === 'NOT_FOUND' ? 
-                                        html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${() => alert(`No Ethereum address was found for this podcast. You can help by contacting the podcast owner and asking them to add their Ethereum address to their main podcast description.${podcast.email === 'NOT_SET' ? '' : ` Their email is: ${podcast.email}`}`)}>Not verified - click to help</button>` :
+                                        html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${() => notVerifiedHelpClick(podcast)}>Not verified - click to help</button>` :
                                         ethereumAddress === 'MALFORMED' ?
-                                            html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${() => alert(`The Ethereum address for this podcast is malformed. You can help by contacting the podcast owner and asking them to add a correctly formatted Ethereum address to their main podcast description.${podcast.email === 'NOT_SET' ? '' : ` Their email is: ${podcast.email}`}`)}>Not verified - click to help</button>` :
+                                            html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${() => notVerifiedHelpClick(podcast)}>Not verified - click to help</button>` :
                                             html`<button style="color: green; border: none; padding: 5px; margin: 5px" @click=${() => alert(`This podcast's Ethereum address: ${podcast.ethereumAddress}`)}>Verified</button>`}
                             </div>
                             <br>
@@ -241,6 +242,10 @@ StorePromise.then((Store) => {
             <br>
             <button @click=${createWalletClick}>Create Wallet</button>
         `;
+    }
+
+    function notVerifiedHelpClick(podcast: Readonly<Podcast>) {
+        navigate(Store, `/not-verified-help?feedUrl=${podcast.feedUrl}&podcastEmail=${podcast.email}`);
     }
 
     function createWalletClick() {
