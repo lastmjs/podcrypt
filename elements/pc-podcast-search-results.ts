@@ -87,6 +87,7 @@ StorePromise.then((Store) => {
                 ${asyncAppend(await responseJSON.results.map(async (searchResult: any) => {                                        
                     const feed = await getRSSFeed(searchResult.feedUrl, firstProxy);                    
                     
+                    // TODO put the podcast creation function somewhere
                     const ethereumAddress: EthereumAddress | 'NOT_FOUND' | 'MALFORMED' = feed ? parseEthereumAddressFromPodcastDescription(feed.description) : 'Feed not found';
                     const email: string | 'NOT_SET' = feed.itunes ? feed.itunes.owner ? feed.itunes.owner.email ? feed.itunes.owner.email : 'NOT_SET' : 'NOT_SET' : 'NOT_SET';
 
@@ -105,12 +106,12 @@ StorePromise.then((Store) => {
                     return html`
                         <div class="pc-podcast-search-results-item">
                             <div>
-                                <img src="${searchResult.artworkUrl60}">
+                                <img src="${searchResult.artworkUrl60}" width="60" height="60">
                             </div>
 
                             <div
                                 class="pc-podcast-search-results-item-text"
-                                @click=${() => episodeDescriptionClick(podcast)}
+                                @click=${() => episodeDescriptionClick(podcast.feedUrl)}
                             >
                                 ${searchResult.trackName}
                                 <div>
@@ -119,7 +120,7 @@ StorePromise.then((Store) => {
                                             html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${(e: any) => notVerifiedHelpClick(e, podcast)}>Not verified - click to help</button>` :
                                             ethereumAddress === 'MALFORMED' ?
                                     html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${(e: any) => notVerifiedHelpClick(e, podcast)}>Not verified - click to help</button>` :
-                                                html`<button style="color: green; border: none; padding: 5px; margin: 5px" @click=${(e) => { e.stopPropagation(); alert(`This podcast's Ethereum address: ${podcast.ethereumAddress}`)} }>Verified</button>` }
+                                                html`<button style="color: green; border: none; padding: 5px; margin: 5px" @click=${(e: any) => { e.stopPropagation(); alert(`This podcast's Ethereum address: ${podcast.ethereumAddress}`)} }>Verified</button>` }
                                 </div>
 
                             </div>
@@ -143,15 +144,15 @@ StorePromise.then((Store) => {
     // TODO defend against adding podcasts multiple times
     // TODO only send the dynamic information that we need from here
     // TODO put all of the defaults into the redux reducer
-    function subscribeToPodcast(podcast: any) {
+    function subscribeToPodcast(podcast: Readonly<Podcast>) {
         Store.dispatch({
             type: 'SUBSCRIBE_TO_PODCAST',
             podcast
         });
     }
 
-    function episodeDescriptionClick(podcast: any) {
-        navigate(Store, `podcast-overview?podcast=${encodeURIComponent(JSON.stringify(podcast))}`);
+    function episodeDescriptionClick(feedUrl: string) {
+        navigate(Store, `podcast-overview?feedUrl=${feedUrl}`);
     }
 
     function notVerifiedHelpClick(e: any, podcast: Readonly<Podcast>) {

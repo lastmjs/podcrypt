@@ -164,7 +164,7 @@ StorePromise.then((Store) => {
                 return html`
                     <div class="pc-wallet-podcast-item">
                         <div>
-                            <img src="${podcast.imageUrl}">
+                            <img src="${podcast.imageUrl}" width="60" height="60">
                         </div>
                         <div style="display:flex: flex-direction: column; padding-left: 5%">
                             <div class="pc-wallet-podcast-item-text">${podcast.title}</div>

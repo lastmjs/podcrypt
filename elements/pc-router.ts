@@ -93,7 +93,7 @@ StorePromise.then((Store) => {
             <pc-wallet ?hidden=${currentRoute.pathname !== '/wallet'}></pc-wallet>
             <pc-podcast-overview
                 ?hidden=${currentRoute.pathname !== '/podcast-overview'}
-                .podcast=${decodeURIComponent(Store.getState().currentRoute.query.podcast)}
+                .feedUrl=${Store.getState().currentRoute.query.feedUrl}
             ></pc-podcast-overview>
             <pc-podcast-search-results
                 ?hidden=${currentRoute.pathname !== '/podcast-search-results'}
