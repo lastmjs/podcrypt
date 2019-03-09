@@ -1,6 +1,6 @@
 // TODO zwitterion needs to change to not say window.process, use self.process or something like that
 
-const CACHE_NAME = 'PODCRYPT_CACHE_V1';
+const CACHE_NAME = 'PODCRYPT_CACHE_V2';
 const urlsToCache = [
     '/index.html'
 ];
