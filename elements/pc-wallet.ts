@@ -152,7 +152,7 @@ StorePromise.then((Store) => {
 
             ${Object.values(Store.getState().podcasts).map((podcast: Podcast) => {
                 const totalTimeForPodcastDuringCurrentIntervalInMilliseconds: Milliseconds = calculateTotalTimeForPodcastDuringCurrentIntervalInMilliseconds(Store.getState(), podcast);
-                const totalTimeForPodcastDuringCurrentIntervalInMinutes: Minutes = Math.round(totalTimeForPodcastDuringCurrentIntervalInMilliseconds / 60000);
+                const totalTimeForPodcastDuringCurrentIntervalInMinutes: Minutes = Math.floor(totalTimeForPodcastDuringCurrentIntervalInMilliseconds / 60000);
                 const secondsRemainingForPodcastDuringCurrentInterval: Seconds = Math.round((totalTimeForPodcastDuringCurrentIntervalInMilliseconds % 60000) / 1000);
 
                 const payoutAmountForPodcastDuringCurrentIntervalInUSD: USD = calculatePayoutAmountForPodcastDuringCurrentIntervalInUSD(Store.getState(), podcast);
