@@ -83,14 +83,14 @@ StorePromise.then((Store) => {
                     style="display: flex; flex-direction: column; align-items: center; justify-content: center;"
                 >
                     <div style="font-size: calc(30px + 1vmin);">${getBalanceInUSD(Store)}</div>
-                    <div style="font-size: calc(15px + 1vmin);">USD</div>
+                    <div style="font-size: calc(15px + 1vmin); color: grey">USD</div>
                 </div>
 
                 <div
                     style="display: flex; flex-direction: column; align-items: center; justify-content: center;"
                 >
                     <div style="font-size: calc(30px + 1vmin);">${getBalanceInETH(Store)}</div>
-                    <div style="font-size: calc(15px + 1vmin);">ETH</div>
+                    <div style="font-size: calc(15px + 1vmin); color: grey">ETH</div>
                 </div>
             </div>
 
@@ -112,14 +112,14 @@ StorePromise.then((Store) => {
                             max="100"
                         >
                     </div>
-                    <div style="font-size: calc(15px + 1vmin);">USD</div>
+                    <div style="font-size: calc(15px + 1vmin); color: grey">USD</div>
                 </div>
 
                 <div
                     style="display: flex; flex-direction: column; align-items: center; justify-content: center;"
                 >
                     <div style="font-size: calc(30px + 1vmin);">${payoutTargetInETH}</div>
-                    <div style="font-size: calc(15px + 1vmin);">ETH</div>
+                    <div style="font-size: calc(15px + 1vmin); color: grey">ETH</div>
                 </div>
 
                 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
@@ -131,12 +131,12 @@ StorePromise.then((Store) => {
                         min="1"
                         max="30"
                     >
-                    <div style="font-size: calc(15px + 1vmin);">Days</div>
+                    <div style="font-size: calc(15px + 1vmin); color: grey">Days</div>
                 </div>
 
                 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
                     <div style="font-size: calc(25px + 1vmin);">${nextPayoutLocaleDateString}</div>
-                    <div style="font-size: calc(15px + 1vmin);">Next payout</div>
+                    <div style="font-size: calc(15px + 1vmin); color: grey">Next payout</div>
                 </div>
 
             </div>
@@ -147,10 +147,10 @@ StorePromise.then((Store) => {
 
             <div style="display: flex; align-items: center; justify-content: center">
                 <div style="display: flex; justify-content: center; align-items: center; margin: calc(10px + 1vmin)">
-                    <button style="font-size: calc(15px + 1vmin); border: none; background-color: white; box-shadow: 0px 0px 1px grey; padding: calc(10px + 1vmin);">Get ETH</button>
+                    <button @click=${() => navigate(Store, '/get-eth')} style="font-size: calc(15px + 1vmin); border: none; background-color: white; box-shadow: 0px 0px 1px grey; padding: calc(10px + 1vmin);">Get ETH</button>
                 </div>
                 <div style="display: flex; justify-content: center; align-items: center; margin: calc(10px + 1vmin)">
-                    <button @click=${() => payout(Store, ethersProvider, 500)} style="font-size: calc(15px + 1vmin); border: none; background-color: white; box-shadow: 0px 0px 1px grey; padding: calc(10px + 1vmin);">Manual payout</button>
+                    <button @click=${() => payout(Store, ethersProvider, 500)} style="font-size: calc(15px + 1vmin); border: none; background-color: white; box-shadow: 0px 0px 1px grey; padding: calc(10px + 1vmin);">Pay now</button>
                 </div>
             </div>
 
