@@ -5,7 +5,6 @@ import {
 import { calculatePayoutAmountForPodcastDuringCurrentIntervalInWEI } from './podcast-calculations';
 import { loadEthereumAccountBalance } from './balance-calculations';
 import { get } from 'idb-keyval';
-import WEB3 from 'web3/types/index';
 
 export function getNextPayoutDateInMilliseconds(Store: Readonly<Store<Readonly<State>, AnyAction>>): Milliseconds {
     const previousPayoutDateInMilliseconds: Milliseconds | 'NEVER' = Store.getState().previousPayoutDateInMilliseconds;
@@ -37,7 +36,7 @@ export function getPayoutTargetInETH(Store: Readonly<Store<Readonly<State>, AnyA
     return Store.getState().currentETHPriceInUSDCents === 'UNKNOWN' ? 'Loading...' : Store.getState().payoutTargetInUSDCents / (Store.getState().currentETHPriceInUSDCents as number);
 }
 
-export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>, web3: WEB3): Promise<void> {
+export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>, ethersProvider: any): Promise<void> {
         
     const podcasts: ReadonlyArray<Podcast> = Object.values(Store.getState().podcasts);
 
@@ -45,55 +44,65 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
     // TODO we want the previous payment sent even if some transactions fail...or do we?
     // TODO we should probably set the previous transaction payment sent field on podcasts in particular?
     for (let i=0; i < podcasts.length; i++) {
-        const podcast: Podcast = podcasts[i];
+        try {
+            const podcast: Podcast = podcasts[i];
 
-        const podcastEthereumAddress: EthereumPublicKey = parseEthereumAddressFromPodcastDescription(podcast.description);
+            const podcastEthereumAddress: EthereumPublicKey = parseEthereumAddressFromPodcastDescription(podcast.description);
+        
+            // const gasPrice = await web3.eth.getGasPrice();
+            const gasPriceInWEI: WEI = 10000000000;
+            
+            console.log('gasPriceInWEI', gasPriceInWEI);
     
-        // const gasPrice = await web3.eth.getGasPrice();
-        const gasPriceInWEI: WEI = 10000000000;
-        
-        console.log('gasPriceInWEI', gasPriceInWEI);
-
-        const valueInWEI: WEI = calculatePayoutAmountForPodcastDuringCurrentIntervalInWEI(Store.getState(), podcast);
-
-        console.log('valueInWEI', valueInWEI);
-        
-        const valueLessGasPriceInWEI: WEI = valueInWEI - gasPriceInWEI;
-        
-        console.log('valueLessGasPriceInWEI', valueLessGasPriceInWEI);
-        
-        const netValueInWEI: WEI = valueLessGasPriceInWEI > 0 ? valueLessGasPriceInWEI : 0;
-
-        console.log('netValueInWEI', netValueInWEI);
-
-        if (netValueInWEI === 0) {
-            continue;
+            const valueInWEI: WEI = calculatePayoutAmountForPodcastDuringCurrentIntervalInWEI(Store.getState(), podcast);
+    
+            console.log('valueInWEI', valueInWEI);
+            
+            const valueLessGasPriceInWEI: WEI = valueInWEI - gasPriceInWEI;
+            
+            console.log('valueLessGasPriceInWEI', valueLessGasPriceInWEI);
+            
+            const netValueInWEI: WEI = valueLessGasPriceInWEI > 0 ? valueLessGasPriceInWEI : 0;
+    
+            console.log('netValueInWEI', netValueInWEI);
+    
+            if (netValueInWEI === 0) {
+                continue;
+            }
+    
+            const preparedTransaction = {
+                // from: Store.getState().ethereumAddress,
+                to: podcastEthereumAddress,
+                gasLimit: 21000,
+                gasPrice: gasPriceInWEI,
+                value: netValueInWEI
+                // data: web3.utils.asciiToHex('podcrypt') // TODO we might need to increase the gaslimit for this?
+            };
+    
+            console.log('preparedTransaction', preparedTransaction);
+    
+            console.log('signing and sending transaction');
+    
+            const wallet = new ethers.Wallet(await get('ethereumPrivateKey'), ethersProvider);
+            const transaction = await wallet.sendTransaction(preparedTransaction);
+    
+            console.log('transaction sent');
+    
+            Store.dispatch({
+                type: 'SET_PODCAST_LATEST_TRANSACTION_HASH',
+                feedUrl: podcast.feedUrl,
+                latestTransactionHash: transaction.hash
+            });
+    
+            Store.dispatch({
+                type: 'SET_PODCAST_PREVIOUS_PAYOUT_DATE_IN_MILLISECONDS',
+                feedUrl: podcast.feedUrl,
+                previousPayoutDateInMilliseconds: new Date().getTime()
+            });
         }
-
-        const transactionObject = {
-            from: Store.getState().ethereumAddress,
-            to: podcastEthereumAddress,
-            gas: 21000,
-            gasPrice: gasPriceInWEI.toString(),
-            value: netValueInWEI
-            // data: web3.utils.asciiToHex('podcrypt') // TODO we might need to increase the gaslimit for this?
-        };
-
-        console.log('transactionObject', transactionObject);
-
-        const signedTransactionObject = await web3.eth.accounts.signTransaction(transactionObject, await get('ethereumPrivateKey'));
-
-        console.log('signedTransactionObject', signedTransactionObject);
-
-        await signAndSendTransaction(Store, web3, signedTransactionObject, podcast);
-
-        console.log('transaction sent');
-
-        Store.dispatch({
-            type: 'SET_PODCAST_PREVIOUS_PAYOUT_DATE_IN_MILLISECONDS',
-            feedUrl: podcast.feedUrl,
-            previousPayoutDateInMilliseconds: new Date().getTime()
-        });
+        catch(error) {
+            console.log('payout', error);
+        }
     }
 
     Store.dispatch({
@@ -108,27 +117,5 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
         nextPayoutDateInMilliseconds
     });
 
-    await loadEthereumAccountBalance(Store, web3);
-}
-
-async function signAndSendTransaction(Store: Readonly<Store<Readonly<State>, AnyAction>>, web3: WEB3, signedTransactionObject: any, podcast: Readonly<Podcast>): Promise<void> {
-    return new Promise((resolve, reject) => {
-        // TODO use async await if possible?
-        web3.eth.sendSignedTransaction(signedTransactionObject.rawTransaction, (error: Error, transactionHash: string) => {
-            console.log('error', error);
-            console.log('transactionHash', transactionHash);
-            Store.dispatch({
-                type: 'SET_PODCAST_LATEST_TRANSACTION_HASH',
-                feedUrl: podcast.feedUrl,
-                latestTransactionHash: transactionHash
-            });
-
-            resolve();
-        })
-        .catch((error: any) => {
-            // TODO we need to update web3 to the latest version to get rid of this error
-            // TODO once that happens, consider using await again
-            console.log('This error should go away once we update web3', error);
-        });    
-    });
+    await loadEthereumAccountBalance(Store, ethersProvider);
 }

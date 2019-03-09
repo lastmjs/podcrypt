@@ -1,8 +1,7 @@
 declare var RSSParser: any;
 declare var MediaMetadata: any;
-declare var Web3: any; // TODO the types are available in the web3 repo
-
 type Milliseconds = number;
+declare var ethers: any;
 
 type Podcast = {
     readonly feedUrl: PodcastGuid;
@@ -10,7 +9,7 @@ type Podcast = {
     readonly description: string;
     readonly imageUrl: string;
     readonly episodeGuids: ReadonlyArray<EpisodeGuid>;
-    readonly previousPayoutDateInMilliseconds: Milliseconds | 'never';
+    readonly previousPayoutDateInMilliseconds: Milliseconds | 'NEVER';
     readonly latestTransactionHash: string | null;
 }
 

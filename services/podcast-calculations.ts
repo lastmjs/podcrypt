@@ -13,7 +13,7 @@ export function calculatePayoutAmountForPodcastDuringCurrentIntervalInWEI(state:
 
 export function calculatePayoutAmountForPodcastDuringCurrentIntervalInUSD(state: Readonly<State>, podcast: Readonly<Podcast>): USD {    
     const payoutForPodcastInUSDCents: USDCents = calculatePayoutAmountForPodcastDuringCurrentIntervalInUSDCents(state, podcast);
-    const payoutForPodcastInUSD: USD = payoutForPodcastInUSDCents * 100;
+    const payoutForPodcastInUSD: USD = payoutForPodcastInUSDCents / 100;
     return payoutForPodcastInUSD;
 }
 
@@ -28,7 +28,7 @@ function calculatePayoutAmountForPodcastDuringCurrentIntervalInUSDCents(state: R
 export function calculateTotalTimeForPodcastDuringCurrentIntervalInMilliseconds(state: Readonly<State>, podcast: Readonly<Podcast>): Milliseconds {
     return podcast.episodeGuids.reduce((result: number, episodeGuid: EpisodeGuid) => {
         const episode: Readonly<Episode> = state.episodes[episodeGuid];
-        const timestampsDuringCurrentInterval: ReadonlyArray<Timestamp> = getTimestampsDuringCurrentInterval(state, episode.timestamps);
+        const timestampsDuringCurrentInterval: ReadonlyArray<Timestamp> = getTimestampsDuringCurrentInterval(podcast, episode.timestamps);
 
         return result + timestampsDuringCurrentInterval.reduce((result: number, timestamp: Readonly<Timestamp>, index: number) => {
             const nextTimestamp: Readonly<Timestamp> = timestampsDuringCurrentInterval[index + 1];
@@ -82,8 +82,10 @@ function calculateTotalTimeDuringCurrentIntervalInMilliseconds(state: Readonly<S
     }, 0);
 }
 
-function getTimestampsDuringCurrentInterval(state: Readonly<State>, timestamps: ReadonlyArray<Timestamp>): ReadonlyArray<Timestamp> {
+function getTimestampsDuringCurrentInterval(podcast: Readonly<Podcast>, timestamps: ReadonlyArray<Timestamp>): ReadonlyArray<Timestamp> {
+    const previousPayoutDateInMilliseconds: Milliseconds = podcast.previousPayoutDateInMilliseconds === 'NEVER' ? 0 : podcast.previousPayoutDateInMilliseconds;
+    
     return timestamps.filter((timestamp: Readonly<Timestamp>) => {
-        return timestamp.milliseconds > state.previousPayoutDateInMilliseconds && timestamp.milliseconds <= new Date().getTime();
+        return timestamp.milliseconds > previousPayoutDateInMilliseconds && timestamp.milliseconds <= new Date().getTime();
     });
 }

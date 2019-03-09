@@ -19,17 +19,15 @@ import {
     getBalanceInETH,
     createWallet
 } from '../services/balance-calculations';
-import WEB3 from 'web3/types/index';
 
-// TODO we will need a backup node
-const web3: WEB3 = new Web3('https://ropsten-rpc.linkpool.io/');
+const ethersProvider = new ethers.providers.EtherscanProvider('ropsten');
 
 StorePromise.then((Store) => {
     customElement('pc-wallet', ({ constructing, update }) => {
         if (constructing) {
             Store.subscribe(update);
 
-            loadEthereumAccountBalance(Store, web3);
+            loadEthereumAccountBalance(Store, ethersProvider);
             loadCurrentETHPriceInUSDCents(Store);
         }
 
@@ -145,7 +143,7 @@ StorePromise.then((Store) => {
 
             <br>
 
-            <button @click=${() => payout(Store, web3)}>Manual payout</button>
+            <button @click=${() => payout(Store, ethersProvider)}>Manual payout</button>
 
             <br>
             <br>
@@ -154,7 +152,6 @@ StorePromise.then((Store) => {
 
             ${Object.values(Store.getState().podcasts).map((podcast: Podcast) => {
                 const totalTimeForPodcastDuringCurrentIntervalInMilliseconds: Milliseconds = calculateTotalTimeForPodcastDuringCurrentIntervalInMilliseconds(Store.getState(), podcast);
-                // const totalTimeForPodcastDuringCurrentIntervalInSeconds: Seconds = Math.round(totalTimeForPodcastDuringCurrentIntervalInMilliseconds / 1000);
                 const totalTimeForPodcastDuringCurrentIntervalInMinutes: Minutes = Math.round(totalTimeForPodcastDuringCurrentIntervalInMilliseconds / 60000);
                 const secondsRemainingForPodcastDuringCurrentInterval: Seconds = Math.round((totalTimeForPodcastDuringCurrentIntervalInMilliseconds % 60000) / 1000);
 
@@ -169,9 +166,9 @@ StorePromise.then((Store) => {
                         <div style="display:flex: flex-direction: column; padding-left: 5%">
                             <div class="pc-wallet-podcast-item-text">${podcast.title}</div>
                             <br>
-                            <div>$${payoutAmountForPodcastDuringCurrentIntervalInUSD}, ${percentageOfTotalTimeForPodcastDuringCurrentInterval}%, ${totalTimeForPodcastDuringCurrentIntervalInMinutes} min ${secondsRemainingForPodcastDuringCurrentInterval} sec</div>
+                            <div>$${payoutAmountForPodcastDuringCurrentIntervalInUSD.toFixed(2)}, ${percentageOfTotalTimeForPodcastDuringCurrentInterval.toFixed(1)}%, ${totalTimeForPodcastDuringCurrentIntervalInMinutes} min ${secondsRemainingForPodcastDuringCurrentInterval} sec</div>
                             <br>
-                            <div>Last payout: ${podcast.previousPayoutDateInMilliseconds === 'never' ? 'never' : html`<a href="https://ropsten.etherscan.io/tx/${podcast.latestTransactionHash}" target="_blank">${new Date(podcast.previousPayoutDateInMilliseconds).toLocaleDateString()}</a>`}</div>
+                            <div>Last payout: ${podcast.previousPayoutDateInMilliseconds === 'NEVER' ? 'never' : html`<a href="https://ropsten.etherscan.io/tx/${podcast.latestTransactionHash}" target="_blank">${new Date(podcast.previousPayoutDateInMilliseconds).toLocaleDateString()}</a>`}</div>
                             <div>Next payout: ${nextPayoutLocaleDateString}</div>
                         </div>
                     </div>
@@ -248,7 +245,7 @@ StorePromise.then((Store) => {
             alert('Silly you, you must understand');
         }
         else {
-            createWallet(Store, web3);
+            createWallet(Store, ethersProvider);
         }
     }
 
@@ -322,7 +319,7 @@ StorePromise.then((Store) => {
         if (
             new Date().getTime() >= Store.getState().nextPayoutDateInMilliseconds
         ) {
-            payout(Store, web3);
+            payout(Store, ethersProvider);
         }
     }, 60000);
 });

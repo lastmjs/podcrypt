@@ -4,23 +4,22 @@ import {
 } from 'redux';
 import { set } from 'idb-keyval';
 import { getNextPayoutDateInMilliseconds } from './payout-calculations';
-import WEB3 from 'web3/types/index';
 
-export async function createWallet(Store: Readonly<Store<Readonly<State>, AnyAction>>, web3: WEB3): Promise<void> {
+export async function createWallet(Store: Readonly<Store<Readonly<State>, AnyAction>>, ethersProvider: any): Promise<void> {
     Store.dispatch({
         type: 'SET_WALLET_CREATION_STATE',
         walletCreationState: 'CREATING'
     });
 
     // TODO we might want some backup nodes
-    const newAccount = await web3.eth.accounts.create();
+    const newWallet = ethers.Wallet.createRandom();
 
     // TODO we will probably need some more hardcore security than this
-    await set('ethereumPrivateKey', newAccount.privateKey);
+    await set('ethereumPrivateKey', newWallet.privateKey);
 
     Store.dispatch({
         type: 'SET_ETHEREUM_ADDRESS',
-        ethereumAddress: newAccount.address
+        ethereumAddress: newWallet.address
     });
 
     Store.dispatch({
@@ -28,7 +27,7 @@ export async function createWallet(Store: Readonly<Store<Readonly<State>, AnyAct
         walletCreationState: 'CREATED'
     });
 
-    await loadEthereumAccountBalance(Store, web3);
+    await loadEthereumAccountBalance(Store, ethersProvider);
 
     const nextPayoutDateInMilliseconds: Milliseconds = getNextPayoutDateInMilliseconds(Store);
 
@@ -73,14 +72,14 @@ export function getBalanceInETH(Store: Readonly<Store<Readonly<State>, AnyAction
     return Store.getState().ethereumBalanceInWEI / 1e18;
 }
 
-export async function loadEthereumAccountBalance(Store: Readonly<Store<Readonly<State>, AnyAction>>, web3: WEB3): Promise<void> {
+export async function loadEthereumAccountBalance(Store: Readonly<Store<Readonly<State>, AnyAction>>, ethersProvider: any): Promise<void> {
     const ethereumAddress: EthereumPublicKey | 'NOT_CREATED' = Store.getState().ethereumAddress;
 
     if (ethereumAddress === 'NOT_CREATED') {
         return;
     }
 
-    const ethereumBalanceInWEI: WEI = parseFloat(await web3.eth.getBalance(ethereumAddress));
+    const ethereumBalanceInWEI: WEI = parseFloat(await ethersProvider.getBalance(ethereumAddress));
 
     Store.dispatch({
         type: 'SET_ETHEREUM_BALANCE_IN_WEI',
@@ -110,6 +109,8 @@ export async function loadCurrentETHPriceInUSDCents(Store: Readonly<Store<Readon
 export async function getCurrentETHPriceInUSDCents(): Promise<number | 'UNKNOWN'> {
     // TODO do not use this api until reviewing and complying with the terms
     // window.fetch('https://api.coinbase.com/v2/exchange-rates?currency=ETH').then((result) => result.json()).then((result) => console.log(result))
+
+    // etherscan would probably be good to use as a backup for price: https://api.etherscan.io/api?module=stats&action=ethprice
 
     // TODO use the backup requeset system here...perhaps create a backup request system
     try {
