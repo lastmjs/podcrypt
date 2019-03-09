@@ -116,7 +116,7 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
                 gasLimit: 21000,
                 gasPrice: gasPriceInWEI,
                 value: netValueInWEI,
-                nonce: i
+                nonce: i + 1
                 // data: web3.utils.asciiToHex('podcrypt') // TODO we might need to increase the gaslimit for this?
             };
     
