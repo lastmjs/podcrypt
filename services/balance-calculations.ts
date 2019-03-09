@@ -68,8 +68,8 @@ export function getBalanceInUSD(Store: Readonly<Store<Readonly<State>, AnyAction
     return 'unknown';
 }
 
-export function getBalanceInETH(Store: Readonly<Store<Readonly<State>, AnyAction>>) {
-    return Store.getState().ethereumBalanceInWEI / 1e18;
+export function getBalanceInETH(Store: Readonly<Store<Readonly<State>, AnyAction>>): string {
+    return (Store.getState().ethereumBalanceInWEI / 1e18).toFixed(2);
 }
 
 export async function loadEthereumAccountBalance(Store: Readonly<Store<Readonly<State>, AnyAction>>, ethersProvider: any): Promise<void> {

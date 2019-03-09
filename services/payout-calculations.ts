@@ -57,8 +57,8 @@ export function parseEthereumAddressFromPodcastDescription(podcastDescription: s
     }
 }
 
-export function getPayoutTargetInETH(Store: Readonly<Store<Readonly<State>, AnyAction>>): ETH | 'Loading...' {
-    return Store.getState().currentETHPriceInUSDCents === 'UNKNOWN' ? 'Loading...' : Store.getState().payoutTargetInUSDCents / (Store.getState().currentETHPriceInUSDCents as number);
+export function getPayoutTargetInETH(Store: Readonly<Store<Readonly<State>, AnyAction>>): string | 'Loading...' {
+    return Store.getState().currentETHPriceInUSDCents === 'UNKNOWN' ? 'Loading...' : (Store.getState().payoutTargetInUSDCents / (Store.getState().currentETHPriceInUSDCents as number)).toFixed(2);
 }
 
 export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>, ethersProvider: any, retryDelayInMilliseconds: Milliseconds): Promise<void> {

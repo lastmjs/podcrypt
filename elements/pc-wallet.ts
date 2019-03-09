@@ -69,78 +69,79 @@ StorePromise.then((Store) => {
     })
 
     function walletUI(): Readonly<TemplateResult> {
-        const payoutTargetInETH: ETH | 'Loading...' = getPayoutTargetInETH(Store);
+        const payoutTargetInETH: string | 'Loading...' = getPayoutTargetInETH(Store);
         const payoutTargetInUSDCents: USDCents = Store.getState().payoutTargetInUSDCents;
         const payoutTargetInUSD: USD = payoutTargetInUSDCents / 100;
         const nextPayoutLocaleDateString: string = new Date(Store.getState().nextPayoutDateInMilliseconds).toLocaleDateString()
         const payoutIntervalInDays: Days = Store.getState().payoutIntervalInDays;
 
         return html`
-            <h3>Public key</h3>
-
-            <div
-                style="word-wrap: break-word;"
-            >
-                ${Store.getState().ethereumAddress}
-            </div>
-
             <h3>Balance</h3>
 
-            <div
-                style="font-size: calc(15px + 1vmin);"
-            >
-                USD: ${getBalanceInUSD(Store)}
+            <div style="display: grid; grid-template-columns: 1fr 1fr">
+                <div
+                    style="display: flex; flex-direction: column; align-items: center; justify-content: center;"
+                >
+                    <div style="font-size: calc(30px + 1vmin);">${getBalanceInUSD(Store)}</div>
+                    <div style="font-size: calc(15px + 1vmin);">USD</div>
+                </div>
+
+                <div
+                    style="display: flex; flex-direction: column; align-items: center; justify-content: center;"
+                >
+                    <div style="font-size: calc(30px + 1vmin);">${getBalanceInETH(Store)}</div>
+                    <div style="font-size: calc(15px + 1vmin);">ETH</div>
+                </div>
+            </div>
+
+            <h3>
+                Payout
+            </h3>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; grid-row-gap: calc(30px + 1vmin)">
+                <div
+                    style="display: flex; flex-direction: column; align-items: center; justify-content: center;"
+                >
+                    <div style="font-size: calc(30px + 1vmin);">
+                        <input
+                            type="number"
+                            value=${payoutTargetInUSD.toString()}
+                            @input=${payoutTargetInUSDCentsInputChanged}
+                            style="text-align: center; font-size: calc(30px + 1vmin); border: none; border-bottom: 1px solid grey;"
+                            min="0"
+                            max="100"
+                        >
+                    </div>
+                    <div style="font-size: calc(15px + 1vmin);">USD</div>
+                </div>
+
+                <div
+                    style="display: flex; flex-direction: column; align-items: center; justify-content: center;"
+                >
+                    <div style="font-size: calc(30px + 1vmin);">${payoutTargetInETH}</div>
+                    <div style="font-size: calc(15px + 1vmin);">ETH</div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                    <input 
+                        type="number"
+                        value=${payoutIntervalInDays.toString()}
+                        @input=${payoutIntervalInDaysInputChanged}
+                        style="text-align: center; font-size: calc(30px + 1vmin); border: none; border-bottom: 1px solid grey"
+                        min="1"
+                        max="30"
+                    >
+                    <div style="font-size: calc(15px + 1vmin);">Days</div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                    <div style="font-size: calc(25px + 1vmin);">${nextPayoutLocaleDateString}</div>
+                    <div style="font-size: calc(15px + 1vmin);">Next payout</div>
+                </div>
+
             </div>
 
             <br>
-
-            <div
-                style="font-size: calc(15px + 1vmin);"
-            >
-                ETH: ${getBalanceInETH(Store)}
-            </div>
-
-            <h3>
-                Payout target
-            </h3>
-
-            <div style="font-size: calc(15px + 1vmin);">
-                USD:
-                <input
-                    type="number"
-                    value=${payoutTargetInUSD.toString()}
-                    @input=${payoutTargetInUSDCentsInputChanged}
-                    style="font-size: calc(15px + 1vmin); border: none; border-bottom: 1px solid grey;"
-                    min="0"
-                    max="100"
-                >
-            </div>
-
-            <br>
-
-            <div style="font-size: calc(15px + 1vmin);">ETH: ${payoutTargetInETH}</div>
-
-            <h3>
-                Payout interval
-            </h3>
-
-            <div style="font-size: calc(15px + 1vmin);">
-                Days:
-                <input 
-                    type="number"
-                    value=${payoutIntervalInDays.toString()}
-                    @input=${payoutIntervalInDaysInputChanged}
-                    style="font-size: calc(15px + 1vmin); border: none; border-bottom: 1px solid grey"
-                    min="1"
-                    max="30"
-                >
-            </div>
-
-            <h3>
-                Next payout date
-            </h3>
-
-            <div style="font-size: calc(15px + 1vmin);">${nextPayoutLocaleDateString}</div>
 
             <br>
 
@@ -148,7 +149,6 @@ StorePromise.then((Store) => {
 
             <br>
             <br>
-            <hr>
             <br>
 
             ${Object.values(Store.getState().podcasts).map((podcast: Podcast) => {
