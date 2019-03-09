@@ -10,22 +10,27 @@ self.addEventListener('install', (event) => {
         caches
         .open(CACHE_NAME)
         .then((cache) => {
-            console.log('Opened cache', cache);
             return cache.addAll(urlsToCache);
         })
     );
 });
 
 self.addEventListener('fetch', (event) => {
-    event.respondWith(
-        caches
-        .match(event.request)
-        .then((response) => {
-            console.log(response);
-            if (response) {
-                return response;
-            }
-            return fetch(event.request);
-        })
-    );
+    // TODO Figure out why audio requests have a destination of video
+    // We do not respond to media requests because service workers don't currently support Range headers or 206 partial content responses
+    if (
+        event.request.destination !== 'audio' &&
+        event.request.destination !== 'video'
+    ) {
+        event.respondWith(
+            caches
+            .match(event.request)
+            .then((response) => {
+                if (response) {
+                    return response;
+                }
+                return fetch(event.request);
+            })
+        );
+    }
 });
