@@ -145,9 +145,15 @@ StorePromise.then((Store) => {
 
             <br>
 
-            <button @click=${() => payout(Store, ethersProvider, 500)}>Manual payout</button>
+            <div style="display: flex; align-items: center; justify-content: center">
+                <div style="display: flex; justify-content: center; align-items: center; margin: calc(10px + 1vmin)">
+                    <button style="font-size: calc(15px + 1vmin); border: none; background-color: white; box-shadow: 0px 0px 1px grey; padding: calc(10px + 1vmin);">Get ETH</button>
+                </div>
+                <div style="display: flex; justify-content: center; align-items: center; margin: calc(10px + 1vmin)">
+                    <button @click=${() => payout(Store, ethersProvider, 500)} style="font-size: calc(15px + 1vmin); border: none; background-color: white; box-shadow: 0px 0px 1px grey; padding: calc(10px + 1vmin);">Manual payout</button>
+                </div>
+            </div>
 
-            <br>
             <br>
             <br>
 
