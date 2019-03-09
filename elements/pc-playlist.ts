@@ -58,48 +58,54 @@ StorePromise.then((Store) => {
             </style>
 
             <div class="pc-playlist-container">
-                ${(Store.getState() as any).playlist.map((episodeGuid: any, index: any) => {
-                    const episode = (Store.getState() as any).episodes[episodeGuid];
-                    const currentPlaylistIndex = (Store.getState() as any).currentPlaylistIndex;
-                    const currentlyPlaying = currentPlaylistIndex === index;
+                ${
+                    Store.getState().playlist.length === 0 ?
+                    html`<div style="display: flex; align-items: center; justify-content: center; margin-top: 25%; font-size: calc(20px + 1vmin); color: grey">Your playlist is empty</div>` :
+                    html`
+                        ${Store.getState().playlist.map((episodeGuid: any, index: any) => {
+                            const episode = (Store.getState() as any).episodes[episodeGuid];
+                            const currentPlaylistIndex = (Store.getState() as any).currentPlaylistIndex;
+                            const currentlyPlaying = currentPlaylistIndex === index;
 
-                    return html`
-                        <div
-                            class="pc-playlist-item" style="${currentlyPlaying ? 'background-color: rgba(0, 0, 0, .05)' : ''}"
-                        >
-                            <div class="pc-playlist-item-arrows-container">
-                                <i 
-                                    class="material-icons pc-playlist-item-arrow"
-                                    @click=${() => moveEpisodeUp(index)}
-                                    title="Move episode up"
-                                >keyboard_arrow_up</i>
+                            return html`
+                                <div
+                                    class="pc-playlist-item" style="${currentlyPlaying ? 'background-color: rgba(0, 0, 0, .05)' : ''}"
+                                >
+                                    <div class="pc-playlist-item-arrows-container">
+                                        <i 
+                                            class="material-icons pc-playlist-item-arrow"
+                                            @click=${() => moveEpisodeUp(index)}
+                                            title="Move episode up"
+                                        >keyboard_arrow_up</i>
 
-                                <i 
-                                    class="material-icons pc-playlist-item-arrow"
-                                    @click=${() => moveEpisodeDown(index)}
-                                    title="Move episode down"
-                                >keyboard_arrow_down</i>
-                            </div>
-                            <div class="pc-playlist-item-title">${episode.finishedListening ? '*' : ''} ${episode.title}</div>
-                            <div class="pc-playlist-item-controls-container">
-                                ${
-                                    episode.playing ? 
-                                    html`<i class="material-icons pc-playlist-item-audio-control" @click=${pauseEpisode} title="Pause episode">pause</i>` : 
-                                    html`<i class="material-icons pc-playlist-item-audio-control" @click=${() => playEpisode(index)} title="Resume episode">play_arrow</i>`
-                                }
+                                        <i 
+                                            class="material-icons pc-playlist-item-arrow"
+                                            @click=${() => moveEpisodeDown(index)}
+                                            title="Move episode down"
+                                        >keyboard_arrow_down</i>
+                                    </div>
+                                    <div class="pc-playlist-item-title">${episode.finishedListening ? '*' : ''} ${episode.title}</div>
+                                    <div class="pc-playlist-item-controls-container">
+                                        ${
+                                            episode.playing ? 
+                                            html`<i class="material-icons pc-playlist-item-audio-control" @click=${pauseEpisode} title="Pause episode">pause</i>` : 
+                                            html`<i class="material-icons pc-playlist-item-audio-control" @click=${() => playEpisode(index)} title="Resume episode">play_arrow</i>`
+                                        }
 
-                                <!--TODO we need a three dots menu for the extra stuff here, like deleting-->
-                                <i 
-                                    class="material-icons"
-                                    style="font-size: 15px; cursor: pointer; position: absolute; top: 5px; right: 5px"
-                                    @click=${() => removeEpisodeFromPlaylist(index)}
-                                    title="Remove episode from playlist"
-                                >delete
-                                </i>                                
-                            </div>
-                        </div>
-                    `;
-                })}
+                                        <!--TODO we need a three dots menu for the extra stuff here, like deleting-->
+                                        <i 
+                                            class="material-icons"
+                                            style="font-size: 15px; cursor: pointer; position: absolute; top: 5px; right: 5px"
+                                            @click=${() => removeEpisodeFromPlaylist(index)}
+                                            title="Remove episode from playlist"
+                                        >delete
+                                        </i>                                
+                                    </div>
+                                </div>
+                            `;
+                        })}
+                    `
+                }
             </div>
         `;
     });
