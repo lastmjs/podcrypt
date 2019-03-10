@@ -1,11 +1,5 @@
-import { customElement, html } from 'functional-element';
-import { StorePromise } from '../services/store';
-import './pc-router';
-import './pc-main-menu';
-import './pc-player';
-import './pc-hamburger';
-
 // TODO put the service worker back in once we figure out caching, 206, Range header, and playback issues
+// This must come first because some dependencies might depend on dependencies imported in index.html,which is cached
 if ('serviceWorker' in window.navigator) {
     window.addEventListener('load', async () => {
         try {     
@@ -17,6 +11,13 @@ if ('serviceWorker' in window.navigator) {
         }
     });
 }
+
+import { customElement, html } from 'functional-element';
+import { StorePromise } from '../services/store';
+import './pc-router';
+import './pc-main-menu';
+import './pc-player';
+import './pc-hamburger';
 
 // TODO I do not like how we have to do this to get the store...top level await would be really nice
 StorePromise.then((Store) => {
