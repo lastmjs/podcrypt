@@ -1,15 +1,17 @@
 // TODO put the service worker back in once we figure out caching, 206, Range header, and playback issues
 // This must come first because some dependencies might depend on dependencies imported in index.html,which is cached
 if ('serviceWorker' in window.navigator) {
-    window.addEventListener('load', async () => {
+    // window.addEventListener('load', async () => {
+    (async () => {
         try {     
-            await window.navigator.serviceWorker.register('/service-worker.ts');
+            window.navigator.serviceWorker.register('/service-worker.ts');
             console.log('service worker registration successful');
         }
         catch(error) {
             console.log(error);
         }
-    });
+    })();
+    // });
 }
 
 import { customElement, html } from 'functional-element';
