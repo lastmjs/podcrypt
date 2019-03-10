@@ -17,14 +17,36 @@ StorePromise.then((Store) => {
 
     // this listens for browser navigation through the forward and backward navigation arrows, I believe
     window.addEventListener('popstate', (e) => {
-        Store.dispatch({
-            type: 'CHANGE_CURRENT_ROUTE',
-            currentRoute: {
-                pathname: window.location.pathname,
-                search: window.location.search,
-                query: parseQueryString(window.location.search.slice(1))
-            }
-        });
+
+        // If we are going back to the playlist, and the playlist has changed since we were there
+        // then we do not want the url that we were at to be honored. So, just set it to the current playing episode
+        if (window.location.pathname === '/playlist') {
+            const currentEpisode: Readonly<Episode> = Store.getState().episodes[Store.getState().currentEpisodeGuid];
+
+            Store.dispatch({
+                type: 'CHANGE_CURRENT_ROUTE',
+                currentRoute: {
+                    pathname: window.location.pathname,
+                    search: `?feedUrl=${currentEpisode.feedUrl}&episodeGuid=${currentEpisode.guid}`,
+                    query: {
+                        feedUrl: currentEpisode.feedUrl,
+                        episodeGuid: currentEpisode.guid
+                    }
+                }
+            });
+            
+            history.replaceState({}, '', `${(Store.getState() as any).currentRoute.pathname}${(Store.getState() as any).currentRoute.search ? `${(Store.getState() as any).currentRoute.search}` : ''}`);
+        }
+        else {
+            Store.dispatch({
+                type: 'CHANGE_CURRENT_ROUTE',
+                currentRoute: {
+                    pathname: window.location.pathname,
+                    search: window.location.search,
+                    query: parseQueryString(window.location.search.slice(1))
+                }
+            });
+        }
     });
     
     // this listens for anchor tag clicks
@@ -57,19 +79,6 @@ StorePromise.then((Store) => {
         }
     });
     
-    // window.addEventListener('load', () => {
-    //     console.log(window.location);
-    //     Store.dispatch({
-    //         type: 'CHANGE_CURRENT_ROUTE',
-    //         currentRoute: {
-    //             pathname: window.location.pathname,
-    //             search: window.location.search,
-    //             query: parseQueryString(window.location.search.slice(1))
-    //         }
-    //     });
-    // });
-
-    // TODO I do not think we need the window listener anymore, we should just run this whenever the router is loaded for the first time
     Store.dispatch({
         type: 'CHANGE_CURRENT_ROUTE',
         currentRoute: {
