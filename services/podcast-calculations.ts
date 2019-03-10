@@ -1,3 +1,18 @@
+export function calculatePayoutAmountForPodcryptDuringCurrentIntervalInWEI(state: Readonly<State>): WEI {    
+    const payoutTargetInUSDCents: USDCents = state.payoutTargetInUSDCents;    
+    const payoutForPodcryptInUSDCents: USDCents = (state.podcryptPayoutPercentage * payoutTargetInUSDCents) / 100;
+    const currentETHPriceInUSDCents: USDCents | 'UNKNOWN' = state.currentETHPriceInUSDCents;
+    
+    if (currentETHPriceInUSDCents === 'UNKNOWN') {
+        return 0;
+    }
+
+    const payoutForPodcryptInWEI: WEI = (payoutForPodcryptInUSDCents / currentETHPriceInUSDCents) * 1e18;
+
+    return payoutForPodcryptInWEI;
+}
+
+
 export function calculatePayoutAmountForPodcastDuringCurrentIntervalInWEI(state: Readonly<State>, podcast: Readonly<Podcast>): WEI {    
     const payoutForPodcastInUSDCents: USDCents = calculatePayoutAmountForPodcastDuringCurrentIntervalInUSDCents(state, podcast);
     const currentETHPriceInUSDCents: USDCents | 'UNKNOWN' = state.currentETHPriceInUSDCents;

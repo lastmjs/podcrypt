@@ -54,6 +54,20 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
     
     const RootReducer: (state: Readonly<State> | undefined, action: AnyAction) => Readonly<State> = (state: Readonly<State> = InitialState, action: AnyAction) => {
         
+        if (action.type === 'SET_PODCRYPT_LATEST_TRANSACTION_HASH') {
+            return {
+                ...state,
+                podcryptLatestTransactionHash: action.podcryptLatestTransactionHash
+            };
+        }
+
+        if (action.type === 'SET_PODCRYPT_PREVIOUS_PAYOUT_DATE_IN_MILLISECONDS') {
+            return {
+                ...state,
+                podcryptPreviousPayoutDateInMilliseconds: action.podcryptPreviousPayoutDateInMilliseconds
+            };
+        }
+        
         if (action.type === 'SET_PODCAST_ETHEREUM_ADDRESS') {
             return {
                 ...state,
