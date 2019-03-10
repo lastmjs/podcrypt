@@ -20,6 +20,7 @@ import {
     createWallet
 } from '../services/balance-calculations';
 import { navigate } from '../services/utilities';
+import '../node_modules/ethers/dist/ethers.min.js';
 
 const ethersProvider = new ethers.providers.EtherscanProvider('ropsten');
 
