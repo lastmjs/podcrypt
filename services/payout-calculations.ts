@@ -2,7 +2,10 @@ import {
     Store,
     AnyAction
 } from 'redux';
-import { calculatePayoutAmountForPodcastDuringCurrentIntervalInWEI } from './podcast-calculations';
+import {
+    calculatePayoutAmountForPodcastDuringCurrentIntervalInWEI,
+    calculatePayoutAmountForPodcryptDuringCurrentIntervalInWEI
+} from './podcast-calculations';
 import { loadEthereumAccountBalance } from './balance-calculations';
 import { get } from 'idb-keyval';
 import { 
@@ -103,22 +106,24 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
 
             // const gasPrice = await web3.eth.getGasPrice();
             const gasPriceInWEI: WEI = 10000000000;
-            
-            console.log('gasPriceInWEI', gasPriceInWEI);
+            const gasPriceInWEIBigNumber = ethers.utils.bigNumberify(gasPriceInWEI.toString());
+
+            console.log('gasPriceInWEIBigNumber', gasPriceInWEIBigNumber.toString());
     
             const valueInWEI: WEI = calculatePayoutAmountForPodcastDuringCurrentIntervalInWEI(Store.getState(), podcast);
-    
-            console.log('valueInWEI', valueInWEI);
+            const valueInWEIBigNumber = ethers.utils.bigNumberify(valueInWEI.toString());
             
-            const valueLessGasPriceInWEI: WEI = valueInWEI - gasPriceInWEI;
+            console.log('valueInWEIBigNumber', valueInWEIBigNumber.toString());
             
-            console.log('valueLessGasPriceInWEI', valueLessGasPriceInWEI);
+            const valueLessGasPriceInWEIBigNumber = valueInWEIBigNumber.sub(gasPriceInWEIBigNumber);
             
-            const netValueInWEI: WEI = valueLessGasPriceInWEI > 0 ? valueLessGasPriceInWEI : 0;
+            console.log('valueLessGasPriceInWEIBigNumber', valueLessGasPriceInWEIBigNumber.toString());
+            
+            const netValueInWEIBigNumber = valueLessGasPriceInWEIBigNumber.gt(0) ? valueLessGasPriceInWEIBigNumber : 0;
     
-            console.log('netValueInWEI', netValueInWEI);
+            console.log('netValueInWEIBigNumber', netValueInWEIBigNumber.toString());
     
-            if (netValueInWEI === 0) {
+            if (netValueInWEIBigNumber.eq(0)) {
                 continue;
             }
 
@@ -133,8 +138,8 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
             const preparedTransaction = {
                 to: podcastEthereumAddress,
                 gasLimit: 21000,
-                gasPrice: gasPriceInWEI,
-                value: netValueInWEI,
+                gasPrice: gasPriceInWEIBigNumber,
+                value: netValueInWEIBigNumber,
                 nonce
                 // data: web3.utils.asciiToHex('podcrypt') // TODO we might need to increase the gaslimit for this?
             };
@@ -172,12 +177,84 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
             // await wait(30000);
         }
         catch(error) {
-            console.log('payout error', error);
+            console.log('podcast payout error', error);
             console.log(`retrying in ${retryDelayInMilliseconds * 2}`);
             await wait(retryDelayInMilliseconds * 2);
             payout(Store, ethersProvider, retryDelayInMilliseconds * 2);
             return;
         }
+    }
+
+    try {
+        const gasPriceInWEI: WEI = 10000000000;
+        const gasPriceInWEIBigNumber = ethers.utils.bigNumberify(gasPriceInWEI.toString());    
+
+        console.log('gasPriceInWEIBigNumber', gasPriceInWEIBigNumber.toString());
+
+        const valueInWEI: WEI = calculatePayoutAmountForPodcryptDuringCurrentIntervalInWEI(Store.getState());
+        const valueInWEIBigNumber = ethers.utils.bigNumberify(valueInWEI.toString());
+
+        console.log('valueInWEIBigNumber', valueInWEIBigNumber.toString());
+        
+        const valueLessGasPriceInWEIBigNumber = valueInWEIBigNumber.sub(gasPriceInWEIBigNumber);
+        
+        console.log('valueLessGasPriceInWEIBigNumber', valueLessGasPriceInWEIBigNumber.toString());
+        
+        const netValueInWEIBigNumber = valueLessGasPriceInWEIBigNumber.gt(0) ? valueLessGasPriceInWEIBigNumber : 0;
+
+        console.log('netValueInWEIBigNumber', netValueInWEIBigNumber.toString());
+
+        if (!netValueInWEIBigNumber.eq(0)) {
+            const wallet = new ethers.Wallet(await get('ethereumPrivateKey'), ethersProvider);
+        
+            console.log('getting transaction count')
+            
+            const nonce = await ethersProvider.getTransactionCount(wallet.address);
+    
+            console.log('nonce', nonce);
+    
+            const preparedTransaction = {
+                to: Store.getState().podcryptEthereumAddress,
+                gasLimit: 21000,
+                gasPrice: gasPriceInWEIBigNumber,
+                value: netValueInWEIBigNumber,
+                nonce
+                // data: web3.utils.asciiToHex('podcrypt') // TODO we might need to increase the gaslimit for this?
+            };
+    
+            console.log('preparedTransaction', preparedTransaction);
+    
+            console.log('signing and sending transaction');
+    
+            const transaction = await wallet.sendTransaction(preparedTransaction);
+    
+            console.log(`transaction ${transaction.hash} sent`);
+    
+            // TODO this isn't working for some reason, check these issues out:
+            // TODO https://github.com/ethers-io/ethers.js/issues/346
+            // TODO https://github.com/ethers-io/ethers.js/issues/451
+            // TODO once those issues are resolved, get rid of the wait below
+            // const receipt = await ethersProvider.waitForTransaction(transaction.hash);
+    
+            // console.log(`Transaction ${receipt.hash} mined`);
+    
+            Store.dispatch({
+                type: 'SET_PODCRYPT_LATEST_TRANSACTION_HASH',
+                podcryptLatestTransactionHash: transaction.hash
+            });
+    
+            Store.dispatch({
+                type: 'SET_PODCRYPT_PREVIOUS_PAYOUT_DATE_IN_MILLISECONDS',
+                podcryptPreviousPayoutDateInMilliseconds: new Date().getTime()
+            });
+        }
+    }
+    catch(error) {
+        console.log('podcrypt payout error', error);
+        console.log(`retrying in ${retryDelayInMilliseconds * 2}`);
+        await wait(retryDelayInMilliseconds * 2);
+        payout(Store, ethersProvider, retryDelayInMilliseconds * 2);
+        return;
     }
 
     Store.dispatch({

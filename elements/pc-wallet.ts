@@ -191,6 +191,20 @@ StorePromise.then((Store) => {
                     </div>
                 `;
             })}
+
+            <div class="pc-wallet-podcast-item">
+                <div>
+                    <img src="podcrypt-logo-transparent.png" width="60" height="60">
+                </div>
+                <div style="display:flex: flex-direction: column; padding-left: 5%">
+                    <div class="pc-wallet-podcast-item-text">Podcrypt</div>
+                    <br>
+                    <div>$${(((Store.getState().payoutTargetInUSDCents * Store.getState().podcryptPayoutPercentage) / 100) / 100).toFixed(2)}, ${Store.getState().podcryptPayoutPercentage}%</div>
+                    <br>
+                    <div>Last payout: ${Store.getState().previousPayoutDateInMilliseconds === 'NEVER' ? 'never' : html`<a href="https://ropsten.etherscan.io/tx/${Store.getState().podcryptLatestTransactionHash}" target="_blank">${new Date(Store.getState().previousPayoutDateInMilliseconds).toLocaleDateString()}</a>`}</div>
+                    <div>Next payout: ${nextPayoutLocaleDateString}</div>
+                </div>
+            </div>
 <!-- 
             <div class="pc-wallet-podcast-item">
                 <h4>Podcrypt</h4>
