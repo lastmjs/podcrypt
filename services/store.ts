@@ -11,7 +11,7 @@ import {
 export const StorePromise: Promise<Readonly<Store<Readonly<State>, Readonly<AnyAction>>>> = prepareStore();
 
 async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<AnyAction>>>> {
-    const version: number = 19;
+    const version: number = 20;
     const persistedState: Readonly<State> = await get('state');
 
     const InitialState: Readonly<State> = persistedState && version === persistedState.version ? persistedState : {
@@ -45,7 +45,8 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
         showPlaybackRateMenu: false,
         playbackRate: '1',
         currentETHPriceState: 'NOT_FETCHED',
-        payoutInProgress: false // TODO this is not used for anything currently
+        payoutInProgress: false, // TODO this is not used for anything currently
+        preparingPlaylist: false
     };
     
     const RootReducer: (state: Readonly<State> | undefined, action: AnyAction) => Readonly<State> = (state: Readonly<State> = InitialState, action: AnyAction) => {
@@ -131,6 +132,13 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
                         ...action.podcast
                     }
                 }
+            };
+        }
+
+        if (action.type === 'SET_PREPARING_PLAYLIST') {
+            return {
+                ...state,
+                preparingPlaylist: action.preparingPlaylist
             };
         }
 
@@ -383,6 +391,17 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
     
                     return episodeGuid;
                 })
+            };
+        }
+
+        if (action.type === 'SET_CURRENT_EPISODE') {
+            const newCurrentPlaylistIndex: number = state.playlist.indexOf(action.episode.guid);
+            const newCurrentEpisodeGuid: EpisodeGuid = action.episode.guid;
+
+            return {
+                ...state,
+                currentPlaylistIndex: newCurrentPlaylistIndex,
+                currentEpisodeGuid: newCurrentEpisodeGuid
             };
         }
 

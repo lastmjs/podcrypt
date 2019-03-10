@@ -4,13 +4,9 @@ import { pcContainerStyles } from '../services/css';
 import { until } from 'lit-html/directives/until.js'; // TODO perhaps functional-element should export everything from lit-html so that I can grab it all from functional-element instead of here
 import { 
     navigate,
-    getRSSFeed,
-    firstProxy
+    createPodcast
 } from '../services/utilities';
 import { asyncAppend } from 'lit-html/directives/async-append';
-import {
-    parseEthereumAddressFromPodcastDescription
-} from '../services/payout-calculations'
 
 StorePromise.then((Store) => {
     customElement('pc-podcast-search-results', ({ constructing, props }) => {
@@ -84,24 +80,12 @@ StorePromise.then((Store) => {
         }
         else {
             return html`
-                ${asyncAppend(await responseJSON.results.map(async (searchResult: any) => {                                        
-                    const feed = await getRSSFeed(searchResult.feedUrl, firstProxy);                    
-                    
-                    // TODO put the podcast creation function somewhere
-                    const ethereumAddress: EthereumAddress | 'NOT_FOUND' | 'MALFORMED' = feed ? parseEthereumAddressFromPodcastDescription(feed.description) : 'Feed not found';
-                    const email: string | 'NOT_SET' = feed.itunes ? feed.itunes.owner ? feed.itunes.owner.email ? feed.itunes.owner.email : 'NOT_SET' : 'NOT_SET' : 'NOT_SET';
+                ${asyncAppend(await responseJSON.results.map(async (searchResult: any) => {   
+                    const podcast: Readonly<Podcast | null> = await createPodcast(searchResult.feedUrl);
 
-                    const podcast: Readonly<Podcast> = {
-                        feedUrl: searchResult.feedUrl,
-                        title: searchResult.trackName,
-                        description: feed ? feed.description : 'Feed not found',
-                        imageUrl: searchResult.artworkUrl60,
-                        episodeGuids: [],
-                        previousPayoutDateInMilliseconds: 'NEVER',
-                        latestTransactionHash: null,
-                        ethereumAddress,
-                        email
-                    };
+                    if (podcast === null) {
+                        return html`<div>Podcast could not be loaded</div>`;
+                    }
 
                     return html`
                         <div class="pc-podcast-search-results-item">
@@ -116,9 +100,9 @@ StorePromise.then((Store) => {
                                 ${searchResult.trackName}
                                 <div>
                                     ${
-                                        ethereumAddress === 'NOT_FOUND' ? 
+                                        podcast.ethereumAddress === 'NOT_FOUND' ? 
                                             html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${(e: any) => notVerifiedHelpClick(e, podcast)}>Not verified - click to help</button>` :
-                                            ethereumAddress === 'MALFORMED' ?
+                                            podcast.ethereumAddress === 'MALFORMED' ?
                                     html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${(e: any) => notVerifiedHelpClick(e, podcast)}>Not verified - click to help</button>` :
                                                 html`<button style="color: green; border: none; padding: 5px; margin: 5px" @click=${(e: any) => { e.stopPropagation(); alert(`This podcast's Ethereum address: ${podcast.ethereumAddress}`)} }>Verified</button>` }
                                 </div>
