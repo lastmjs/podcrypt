@@ -3,7 +3,12 @@ import { pcContainerStyles } from '../services/css';
 import { StorePromise } from '../services/store';
 
 StorePromise.then((Store) => {
-    customElement('pc-get-eth', () => {
+    customElement('pc-get-eth', ({ constructing, update }) => {
+
+        if (constructing) {
+            Store.subscribe(update);
+        }
+
         return html`
             <style>
                 .pc-get-eth-container {
