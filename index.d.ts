@@ -92,4 +92,7 @@ type State = {
     readonly currentETHPriceState: CurrentETHPriceState;
     readonly payoutInProgress: boolean; //TODO this is not used for anything currently
     readonly preparingPlaylist: boolean;
+    readonly podcryptPayoutPercentage: number;
+    readonly podcryptPreviousPayoutDateInMilliseconds: Milliseconds | 'NEVER';
+    readonly podcryptLatestTransactionHash: string | null;
 }

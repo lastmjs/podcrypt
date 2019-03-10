@@ -64,16 +64,23 @@ export function calculateTotalTimeForPodcastDuringCurrentIntervalInMilliseconds(
     }, 0);
 }
 
+// TODO this is not truly the proportion of total time, more the proportion of the donation, since Podcrypt may take a piece of the proportion, and by default will
 export function calculateProportionOfTotalTimeForPodcastDuringCurrentInterval(state: Readonly<State>, podcast: Readonly<Podcast>): number {
-    const totalTimeDuringCurrentIntervalInMilliseconds: Milliseconds = calculateTotalTimeDuringCurrentIntervalInMilliseconds(state);
-
-    if (totalTimeDuringCurrentIntervalInMilliseconds === 0) {
+    const grossTotalTimeDuringCurrentIntervalInMilliseconds: Milliseconds = calculateTotalTimeDuringCurrentIntervalInMilliseconds(state);
+    
+    if (grossTotalTimeDuringCurrentIntervalInMilliseconds === 0) {
         return 0;
     }
 
+    const podcryptPayoutPercentage: number = state.podcryptPayoutPercentage;
+
+    // const podcryptPortionOfGrossTotalTimeDuringCurrentIntervalInMilliseconds: Milliseconds = grossTotalTimeDuringCurrentIntervalInMilliseconds + ((grossTotalTimeDuringCurrentIntervalInMilliseconds * podcryptPayoutPercentage) / 100);
+    // const netTotalTimeDuringCurrentIntervalInMilliseconds: Milliseconds = grossTotalTimeDuringCurrentIntervalInMilliseconds + ((grossTotalTimeDuringCurrentIntervalInMilliseconds * podcryptPayoutPercentage) / 100);
+    const netTotalTimeDuringCurrentIntervalInMilliseconds: Milliseconds = grossTotalTimeDuringCurrentIntervalInMilliseconds / ((100 - podcryptPayoutPercentage) / 100);
+
     const totalTimeForPodcastDuringCurrentIntervalInMilliseconds: Milliseconds = calculateTotalTimeForPodcastDuringCurrentIntervalInMilliseconds(state, podcast);
 
-    return totalTimeForPodcastDuringCurrentIntervalInMilliseconds / totalTimeDuringCurrentIntervalInMilliseconds;
+    return totalTimeForPodcastDuringCurrentIntervalInMilliseconds / netTotalTimeDuringCurrentIntervalInMilliseconds;
 }
 
 function calculateTotalTimeDuringCurrentIntervalInMilliseconds(state: Readonly<State>): Milliseconds {

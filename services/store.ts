@@ -11,7 +11,7 @@ import {
 export const StorePromise: Promise<Readonly<Store<Readonly<State>, Readonly<AnyAction>>>> = prepareStore();
 
 async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<AnyAction>>>> {
-    const version: number = 20;
+    const version: number = 21;
     const persistedState: Readonly<State> = await get('state');
 
     const InitialState: Readonly<State> = persistedState && version === persistedState.version ? persistedState : {
@@ -46,7 +46,10 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
         playbackRate: '1',
         currentETHPriceState: 'NOT_FETCHED',
         payoutInProgress: false, // TODO this is not used for anything currently
-        preparingPlaylist: false
+        preparingPlaylist: false,
+        podcryptPayoutPercentage: 10,
+        podcryptPreviousPayoutDateInMilliseconds: 'NEVER',
+        podcryptLatestTransactionHash: null
     };
     
     const RootReducer: (state: Readonly<State> | undefined, action: AnyAction) => Readonly<State> = (state: Readonly<State> = InitialState, action: AnyAction) => {
