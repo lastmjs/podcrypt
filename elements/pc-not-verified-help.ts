@@ -11,8 +11,6 @@ StorePromise.then((Store) => {
                 feedUrl: null
             };
         }
-
-        console.log(props);
     
         return html`
             <style>

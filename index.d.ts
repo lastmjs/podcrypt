@@ -11,7 +11,7 @@ type Podcast = {
     readonly feedUrl: PodcastGuid;
     readonly title: string;
     readonly description: string;
-    readonly imageUrl: string;
+    readonly imageUrl: string | 'NOT_FOUND';
     readonly episodeGuids: ReadonlyArray<EpisodeGuid>;
     readonly previousPayoutDateInMilliseconds: Milliseconds | 'NEVER';
     readonly latestTransactionHash: string | null;
@@ -21,12 +21,14 @@ type Podcast = {
 
 type Episode = {
     readonly guid: EpisodeGuid;
+    readonly feedUrl: FeedUrl;
     readonly title: string;
     readonly src: string;
     readonly playing: boolean;
     readonly finishedListening: boolean;
     readonly progress: number;
     readonly timestamps: ReadonlyArray<Timestamp>;
+    readonly isoDate: string;
 }
 
 type Timestamp = {
@@ -49,6 +51,7 @@ type Days = number;
 type Minutes = number;
 type Seconds = number;
 type USD = number;
+type FeedUrl = string;
 
 type State = {
     readonly version: number;
@@ -88,4 +91,5 @@ type State = {
     readonly playbackRate: string;
     readonly currentETHPriceState: CurrentETHPriceState;
     readonly payoutInProgress: boolean; //TODO this is not used for anything currently
+    readonly preparingPlaylist: boolean;
 }

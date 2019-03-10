@@ -90,7 +90,11 @@ StorePromise.then((Store) => {
     
         return html`
             <pc-podcasts ?hidden=${currentRoute.pathname !== '/'}></pc-podcasts>
-            <pc-playlist ?hidden=${currentRoute.pathname !== '/playlist'}></pc-playlist>
+            <pc-playlist
+                ?hidden=${currentRoute.pathname !== '/playlist'}
+                .feedUrl=${currentRoute.query.feedUrl}
+                .episodeGuid=${currentRoute.query.episodeGuid}
+            ></pc-playlist>
             <pc-wallet ?hidden=${currentRoute.pathname !== '/wallet'}></pc-wallet>
             <pc-podcast-overview
                 ?hidden=${currentRoute.pathname !== '/podcast-overview'}

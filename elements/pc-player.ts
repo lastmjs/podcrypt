@@ -1,5 +1,6 @@
 import { customElement, html } from 'functional-element';
 import { StorePromise } from '../services/store';
+import { navigate } from '../services/utilities';
 
 StorePromise.then((Store) => {
     customElement('pc-player', ({ constructing, update, element }) => {
@@ -252,6 +253,11 @@ StorePromise.then((Store) => {
         Store.dispatch({
             type: 'CURRENT_EPISODE_COMPLETED'
         });
+
+        if (Store.getState().currentRoute.pathname === '/playlist') {
+            const episode: Readonly<Episode> = Store.getState().episodes[Store.getState().currentEpisodeGuid];
+            navigate(Store, `/playlist?feedUrl=${episode.feedUrl}&episodeGuid=${episode.guid}`);
+        }
     }
     
     function timeUpdated(e: any) {

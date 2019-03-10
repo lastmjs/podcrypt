@@ -86,6 +86,6 @@ StorePromise.then((Store) => {
     }
 
     function podcastClick(podcast: any) {
-        navigate(Store, `podcast-overview?podcast=${encodeURIComponent(JSON.stringify(podcast))}`);
+        navigate(Store, `podcast-overview?feedUrl=${podcast.feedUrl}`);
     }
 });
