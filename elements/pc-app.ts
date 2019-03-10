@@ -1,3 +1,4 @@
+// TODO figure out service workers...nothing I am doing is working
 // TODO put the service worker back in once we figure out caching, 206, Range header, and playback issues
 // This must come first because some dependencies might depend on dependencies imported in index.html,which is cached
 if ('serviceWorker' in window.navigator) {
