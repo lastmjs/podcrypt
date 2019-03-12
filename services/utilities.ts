@@ -3,6 +3,9 @@ import { parseEthereumAddressFromPodcastDescription } from './payout-calculation
 export const firstProxy = 'https://cors-anywhere.herokuapp.com/';
 export const backupProxy = 'https://jsonp.afeld.me/?url=';
 
+export const cryptonatorAPIEndpoint: CryptonatorETHPriceAPIEndpoint = `https://api.cryptonator.com/api/ticker/eth-usd`;
+export const etherscanAPIEndpoint: EtherscanETHPriceAPIEndpoint = `https://api.etherscan.io/api?module=stats&action=ethprice`;
+
 export function parseQueryString(queryString: string) {
     return queryString.split('&').reduce((result, keyAndValue) => {
         const keyAndValueArray = keyAndValue.split('=');

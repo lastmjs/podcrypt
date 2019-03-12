@@ -11,7 +11,7 @@ import {
 export const StorePromise: Promise<Readonly<Store<Readonly<State>, Readonly<AnyAction>>>> = prepareStore();
 
 async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<AnyAction>>>> {
-    const version: number = 21;
+    const version: number = 22;
     const persistedState: Readonly<State> = await get('state');
 
     const InitialState: Readonly<State> = persistedState && version === persistedState.version ? persistedState : {
@@ -27,13 +27,13 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
         currentPlaylistIndex: 0,
         podcasts: {},
         episodes: {},
-        payoutTargetInUSDCents: 1000,
-        payoutIntervalInDays: 30,
+        payoutTargetInUSDCents: '1000',
+        payoutIntervalInDays: '30',
         currentETHPriceInUSDCents: 'UNKNOWN',
         previousPayoutDateInMilliseconds: 'NEVER',
         nextPayoutDateInMilliseconds: 'NEVER',
         ethereumAddress: 'NOT_CREATED',
-        ethereumBalanceInWEI: 0,
+        ethereumBalanceInWEI: '0',
         warningCheckbox1Checked: false,
         warningCheckbox2Checked: false,
         warningCheckbox3Checked: false,
@@ -47,7 +47,7 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
         currentETHPriceState: 'NOT_FETCHED',
         payoutInProgress: false, // TODO this is not used for anything currently
         preparingPlaylist: false,
-        podcryptPayoutPercentage: 10,
+        podcryptPayoutPercentage: '10',
         podcryptPreviousPayoutDateInMilliseconds: 'NEVER',
         podcryptLatestTransactionHash: null
     };
@@ -161,8 +161,8 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
 
         // TODO we need timestamps potentially
         if (action.type === 'PLAY_PREVIOUS_EPISODE') {
-            const nextPlaylistIndex = state.currentPlaylistIndex - 1 >= 0 ? state.currentPlaylistIndex - 1 : 0;
-            const nextCurrentEpisodeGuid = state.playlist[nextPlaylistIndex];
+            const nextPlaylistIndex: number = state.currentPlaylistIndex - 1 >= 0 ? state.currentPlaylistIndex - 1 : 0;
+            const nextCurrentEpisodeGuid: EpisodeGuid = state.playlist[nextPlaylistIndex];
 
             return {
                 ...state,
@@ -173,8 +173,8 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
 
         // TODO we need timestamps potentially
         if (action.type === 'PLAY_NEXT_EPISODE') {
-            const nextPlaylistIndex = state.currentPlaylistIndex + 1 < state.playlist.length - 1 ? state.currentPlaylistIndex + 1 : state.playlist.length - 1;
-            const nextCurrentEpisodeGuid = state.playlist[nextPlaylistIndex];
+            const nextPlaylistIndex: number = state.currentPlaylistIndex + 1 < state.playlist.length - 1 ? state.currentPlaylistIndex + 1 : state.playlist.length - 1;
+            const nextCurrentEpisodeGuid: EpisodeGuid = state.playlist[nextPlaylistIndex];
 
             return {
                 ...state,
@@ -219,8 +219,8 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
         }
     
         if (action.type === 'PLAY_EPISODE_FROM_PLAYLIST') {
-            const newCurrentPlaylistIndex = action.playlistIndex;
-            const newCurrentEpisodeGuid = state.playlist[newCurrentPlaylistIndex];
+            const newCurrentPlaylistIndex: number = action.playlistIndex;
+            const newCurrentEpisodeGuid: EpisodeGuid = state.playlist[newCurrentPlaylistIndex];
     
             if (newCurrentEpisodeGuid === state.currentEpisodeGuid) {
                 return {
@@ -268,8 +268,8 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
         }
     
         if (action.type === 'CURRENT_EPISODE_COMPLETED') {
-            const nextPlaylistIndex = state.currentPlaylistIndex + 1;
-            const nextEpisodeGuid = state.playlist[nextPlaylistIndex];
+            const nextPlaylistIndex: number = state.currentPlaylistIndex + 1;
+            const nextEpisodeGuid: EpisodeGuid = state.playlist[nextPlaylistIndex];
     
             if (!nextEpisodeGuid) {
                 return {
@@ -331,7 +331,7 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
                         timestamps: [...state.episodes[state.currentEpisodeGuid].timestamps, {
                             type: 'START',
                             actionType: 'CURRENT_EPISODE_PLAYED',
-                            milliseconds: new Date().getTime()
+                            milliseconds: new Date().getTime().toString()
                         }]
                     }
                 }
@@ -350,7 +350,7 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
                         timestamps: [...state.episodes[state.currentEpisodeGuid].timestamps, {
                             type: 'STOP',
                             actionType: 'CURRENT_EPISODE_PAUSED',
-                            milliseconds: new Date().getTime()
+                            milliseconds: new Date().getTime().toString()
                         }]
                     }
                 }

@@ -17,20 +17,20 @@ import {
 export function getNextPayoutDateInMilliseconds(Store: Readonly<Store<Readonly<State>, AnyAction>>): Milliseconds {
     const previousPayoutDateInMilliseconds: Milliseconds | 'NEVER' = Store.getState().previousPayoutDateInMilliseconds;
     const payoutIntervalInDays: Days = Store.getState().payoutIntervalInDays;
-    const oneDayInSeconds: Seconds = 86400;
-    const oneDayInMilliseconds: Milliseconds = oneDayInSeconds * 1000;
-    const payoutIntervalInMilliseconds: Milliseconds = oneDayInMilliseconds * payoutIntervalInDays;
+    const oneDayInSeconds: Seconds = '86400';
+    const oneDayInMilliseconds: Milliseconds = ethers.utils.bigNumberify(oneDayInSeconds).mul(ethers.utils.bigNumberify(1000));
+    const payoutIntervalInMilliseconds: Milliseconds = ethers.utils.bigNumberify(oneDayInMilliseconds).mul(ethers.utils.bigNumberify(payoutIntervalInDays));
 
     if (previousPayoutDateInMilliseconds === 'NEVER') {
         const nextPayoutDate: Date = new Date(new Date().getTime() + payoutIntervalInMilliseconds);
         const nextPayoutDateRoundedToNearestStartOfDay: Date = new Date(nextPayoutDate.getFullYear(), nextPayoutDate.getMonth(), nextPayoutDate.getDate());
-        const nextPayoutDateInMilliseconds: Milliseconds = nextPayoutDateRoundedToNearestStartOfDay.getTime();
+        const nextPayoutDateInMilliseconds: Milliseconds = nextPayoutDateRoundedToNearestStartOfDay.getTime().toString();
         return nextPayoutDateInMilliseconds;
     }
     else {
         const nextPayoutDate: Date = new Date(previousPayoutDateInMilliseconds + payoutIntervalInMilliseconds);
         const nextPayoutDateRoundedToNearestStartOfDay: Date = new Date(nextPayoutDate.getFullYear(), nextPayoutDate.getMonth(), nextPayoutDate.getDate());
-        const nextPayoutDateInMilliseconds = nextPayoutDateRoundedToNearestStartOfDay.getTime();
+        const nextPayoutDateInMilliseconds = nextPayoutDateRoundedToNearestStartOfDay.getTime().toString();
         return nextPayoutDateInMilliseconds;   
     }
 }
@@ -61,7 +61,15 @@ export function parseEthereumAddressFromPodcastDescription(podcastDescription: s
 }
 
 export function getPayoutTargetInETH(Store: Readonly<Store<Readonly<State>, AnyAction>>): string | 'Loading...' {
-    return Store.getState().currentETHPriceInUSDCents === 'UNKNOWN' ? 'Loading...' : (Store.getState().payoutTargetInUSDCents / (Store.getState().currentETHPriceInUSDCents as number)).toFixed(2);
+    // TODO make sure all decimal places are fixed and that you know what they are to pass into formatUnits
+    const payoutTargetInUSDCentsBigNumber: BigNumber = ethers.utils.parseUnits(Store.getState().payoutTargetInUSDCents, 6);
+    console.log('payoutTargetInUSDCentsBigNumber', payoutTargetInUSDCentsBigNumber.toString());
+    const currentETHPriceInUSDCentsBigNumber: BigNumber = ethers.utils.parseUnits(Store.getState().currentETHPriceInUSDCents, 6);
+    console.log('currentETHPriceInUSDCentsBigNumber', currentETHPriceInUSDCentsBigNumber.toString());
+    const payoutTargetInETHBigNumber: BigNumber = payoutTargetInUSDCentsBigNumber.div(currentETHPriceInUSDCentsBigNumber);
+    console.log('payoutTargetInETHBigNumber', payoutTargetInETHBigNumber.toString());
+
+    return Store.getState().currentETHPriceInUSDCents === 'UNKNOWN' ? 'Loading...' : parseFloat(ethers.utils.formatUnits(payoutTargetInETHBigNumber, 6)).toFixed(2);
 }
 
 export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>, ethersProvider: any, retryDelayInMilliseconds: Milliseconds): Promise<void> {

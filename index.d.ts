@@ -1,6 +1,5 @@
 declare var RSSParser: any;
 declare var MediaMetadata: any;
-type Milliseconds = number;
 declare var ethers: any;
 
 type Feed = {
@@ -13,7 +12,7 @@ type Podcast = {
     readonly description: string;
     readonly imageUrl: string | 'NOT_FOUND';
     readonly episodeGuids: ReadonlyArray<EpisodeGuid>;
-    readonly previousPayoutDateInMilliseconds: Milliseconds | 'NEVER';
+    readonly previousPayoutDateInMilliseconds: string | 'NEVER';
     readonly latestTransactionHash: string | null;
     readonly ethereumAddress: EthereumAddress | 'NOT_FOUND' | 'MALFORMED';
     readonly email: string | 'NOT_SET';
@@ -26,7 +25,7 @@ type Episode = {
     readonly src: string;
     readonly playing: boolean;
     readonly finishedListening: boolean;
-    readonly progress: number;
+    readonly progress: string;
     readonly timestamps: ReadonlyArray<Timestamp>;
     readonly isoDate: string;
 }
@@ -34,24 +33,31 @@ type Episode = {
 type Timestamp = {
     readonly type: 'START' | 'STOP';
     readonly actionType: 'CURRENT_EPISODE_PLAYED' | 'CURRENT_EPISODE_PAUSED';
-    readonly milliseconds: number;
+    readonly milliseconds: string;
 }
 
+type CryptonatorETHPriceAPIEndpoint = `https://api.cryptonator.com/api/ticker/eth-usd`;
+type EtherscanETHPriceAPIEndpoint = `https://api.etherscan.io/api?module=stats&action=ethprice`;
+type BigNumber = any;
+type FeedUrl = string;
+type EthereumAddress = string;
 type CurrentETHPriceState = 'NOT_FETCHED' | 'FETCHING' | 'FETCHED';
 type WalletCreationState = 'NOT_CREATED' | 'CREATING' | 'CREATED';
 type EpisodeGuid = string;
 type PodcastGuid = string;
-type USDCents = number;
-type USDollars = number;
-type WEI = number;
-type GWEI = number;
-type ETH = number;
-type EthereumAddress = string;
-type Days = number;
-type Minutes = number;
-type Seconds = number;
-type USD = number;
-type FeedUrl = string;
+type Percent = string;
+
+type USDollars = string;
+type USDCents = string;
+
+type ETH = BigNumber;
+type GWEI = string;
+type WEI = string;
+
+type Days = string;
+type Minutes = string;
+type Seconds = string;
+type Milliseconds = string;
 
 type State = {
     readonly version: number;
@@ -92,7 +98,7 @@ type State = {
     readonly currentETHPriceState: CurrentETHPriceState;
     readonly payoutInProgress: boolean; //TODO this is not used for anything currently
     readonly preparingPlaylist: boolean;
-    readonly podcryptPayoutPercentage: number;
+    readonly podcryptPayoutPercentage: Percent;
     readonly podcryptPreviousPayoutDateInMilliseconds: Milliseconds | 'NEVER';
     readonly podcryptLatestTransactionHash: string | null;
 }

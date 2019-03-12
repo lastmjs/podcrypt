@@ -4,6 +4,11 @@ import {
 } from 'redux';
 import { set } from 'idb-keyval';
 import { getNextPayoutDateInMilliseconds } from './payout-calculations';
+import {
+    cryptonatorAPIEndpoint,
+    etherscanAPIEndpoint
+} from './utilities';
+import BigNumber from "../node_modules/bignumber.js/bignumber";
 
 export async function createWallet(Store: Readonly<Store<Readonly<State>, AnyAction>>, ethersProvider: any): Promise<void> {
     Store.dispatch({
@@ -61,15 +66,19 @@ export function getBalanceInUSD(Store: Readonly<Store<Readonly<State>, AnyAction
         currentETHPriceState === 'FETCHED' &&
         currentETHPriceInUSDCents !== 'UNKNOWN'
     ) {
-        const ethereumBalanceInETH: ETH = Store.getState().ethereumBalanceInWEI / 1e18;
-        return ((ethereumBalanceInETH * currentETHPriceInUSDCents) / 100).toFixed(2);
+        const ethereumBalanceInWEIBigNumber: BigNumber = ethers.utils.parseEther(ethers.utils.formatEther(Store.getState().ethereumBalanceInWEI));
+        const currentETHPriceInUSDCentsBigNumber: BigNumber = ethers.utils.parseUnits(Store.getState().currentETHPriceInUSDCents, 6); // TODO handle rounding correctly, I don't know if the 6 decimal places will always be the case
+        // TODO seems really messy, the 18 + 6 part and the rounding from calculating currentETHPriceInUSDCents...figure that out
+        return parseFloat(ethers.utils.formatUnits(ethereumBalanceInWEIBigNumber.mul(currentETHPriceInUSDCentsBigNumber).div(100), 18 + 6)).toFixed(2);
     }
 
     return 'unknown';
 }
 
-export function getBalanceInETH(Store: Readonly<Store<Readonly<State>, AnyAction>>): string {
-    return (Store.getState().ethereumBalanceInWEI / 1e18).toFixed(2);
+export function getBalanceInETH(Store: Readonly<Store<Readonly<State>, AnyAction>>): ETH {
+    const balanceInETH: ETH = ethers.utils.formatEther(Store.getState().ethereumBalanceInWEI);
+    const balanceInETHFormatted: ETH = parseFloat(balanceInETH).toFixed(2); // I think it is okay to use normal number calculations here because I am only displaying the balanace, not using it in other calculations
+    return balanceInETHFormatted;
 }
 
 export async function loadEthereumAccountBalance(Store: Readonly<Store<Readonly<State>, AnyAction>>, ethersProvider: any): Promise<void> {
@@ -79,7 +88,7 @@ export async function loadEthereumAccountBalance(Store: Readonly<Store<Readonly<
         return;
     }
 
-    const ethereumBalanceInWEI: WEI = parseFloat(await ethersProvider.getBalance(ethereumAddress));
+    const ethereumBalanceInWEI: WEI = (await ethersProvider.getBalance(ethereumAddress)).toString();
 
     Store.dispatch({
         type: 'SET_ETHEREUM_BALANCE_IN_WEI',
@@ -106,21 +115,48 @@ export async function loadCurrentETHPriceInUSDCents(Store: Readonly<Store<Readon
     });
 }
 
-export async function getCurrentETHPriceInUSDCents(): Promise<number | 'UNKNOWN'> {
+export async function getCurrentETHPriceInUSDCents(attemptNumber: number = 0): Promise<USDCents | 'UNKNOWN'> {
     // TODO do not use this api until reviewing and complying with the terms
+    // TODO If we want a third backup, we could use this
     // window.fetch('https://api.coinbase.com/v2/exchange-rates?currency=ETH').then((result) => result.json()).then((result) => console.log(result))
-
-    // etherscan would probably be good to use as a backup for price: https://api.etherscan.io/api?module=stats&action=ethprice
-
-    // TODO use the backup requeset system here...perhaps create a backup request system
     try {
-        const ethPriceResponse: Readonly<Response> = await window.fetch(`https://api.cryptonator.com/api/ticker/eth-usd`);
-        const ethPriceJSON = await ethPriceResponse.json();
-        const currentETHPriceInUSD: number = ethPriceJSON.ticker.price;
-        const currentETHPriceInUSDCents: number = Math.round(currentETHPriceInUSD * 100);
-        return currentETHPriceInUSDCents;    
-    }
-    catch(error) {
+        if (attemptNumber === 0) {
+            return await getCryptonatorCurrentETHPriceInUSDCents();
+        }
+
+        if (attemptNumber === 1) {
+            return await getEtherscanCurrentETHPriceInUSDCents();
+        }
+
         return 'UNKNOWN';
     }
+    catch(error) {
+        console.log('getCurrentETHPriceInUSDCents error', error);
+        return await getCurrentETHPriceInUSDCents(attemptNumber + 1);
+    }
+}
+
+async function getCryptonatorCurrentETHPriceInUSDCents(): Promise<USDCents> {
+    const ethPriceJSON: any = await getCurrentETHPriceJSON(cryptonatorAPIEndpoint);
+    const currentETHPriceInUSD: USDollars = ethPriceJSON.ticker.price;
+    return getETHPriceInUSDCents(currentETHPriceInUSD, 8);
+}
+
+async function getEtherscanCurrentETHPriceInUSDCents(): Promise<USDCents> {
+    const ethPriceJSON: any = await getCurrentETHPriceJSON(etherscanAPIEndpoint);
+    const currentETHPriceInUSD: USDollars = ethPriceJSON.result.ethusd;
+    return getETHPriceInUSDCents(currentETHPriceInUSD, 2);
+}
+
+async function getCurrentETHPriceJSON(apiEndpoint: CryptonatorETHPriceAPIEndpoint | EtherscanETHPriceAPIEndpoint) {
+    const ethPriceResponse: Readonly<Response> = await window.fetch(apiEndpoint);
+    const ethPriceJSON: any = await ethPriceResponse.json();
+    return ethPriceJSON;
+}
+
+// TODO handle rounding correctly
+function getETHPriceInUSDCents(ethPrice: string, decimalPlaces: number) {
+    const currentETHPriceInUSDBigNumber: BigNumber = ethers.utils.parseUnits(ethPrice, decimalPlaces);
+    const currentETHPriceInUSDCents: USDCents = ethers.utils.formatUnits(currentETHPriceInUSDBigNumber.mul(100), decimalPlaces);
+    return currentETHPriceInUSDCents;
 }
