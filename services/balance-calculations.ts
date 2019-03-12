@@ -66,19 +66,17 @@ export function getBalanceInUSD(Store: Readonly<Store<Readonly<State>, AnyAction
         currentETHPriceState === 'FETCHED' &&
         currentETHPriceInUSDCents !== 'UNKNOWN'
     ) {
-        const ethereumBalanceInWEIBigNumber: BigNumber = ethers.utils.parseEther(ethers.utils.formatEther(Store.getState().ethereumBalanceInWEI));
-        const currentETHPriceInUSDCentsBigNumber: BigNumber = ethers.utils.parseUnits(Store.getState().currentETHPriceInUSDCents, 6); // TODO handle rounding correctly, I don't know if the 6 decimal places will always be the case
-        // TODO seems really messy, the 18 + 6 part and the rounding from calculating currentETHPriceInUSDCents...figure that out
-        return parseFloat(ethers.utils.formatUnits(ethereumBalanceInWEIBigNumber.mul(currentETHPriceInUSDCentsBigNumber).div(100), 18 + 6)).toFixed(2);
+        return new BigNumber(Store.getState().ethereumBalanceInWEI)
+                .multipliedBy(Store.getState().currentETHPriceInUSDCents)
+                .dividedBy(new BigNumber(1e20)) // TODO can 1e20 be reliably converted to a bignumber?
+                .toFixed(2);
     }
 
     return 'unknown';
 }
 
 export function getBalanceInETH(Store: Readonly<Store<Readonly<State>, AnyAction>>): ETH {
-    const balanceInETH: ETH = ethers.utils.formatEther(Store.getState().ethereumBalanceInWEI);
-    const balanceInETHFormatted: ETH = parseFloat(balanceInETH).toFixed(2); // I think it is okay to use normal number calculations here because I am only displaying the balanace, not using it in other calculations
-    return balanceInETHFormatted;
+    return new BigNumber(Store.getState().ethereumBalanceInWEI).dividedBy(new BigNumber(1e18)).toFixed(2);
 }
 
 export async function loadEthereumAccountBalance(Store: Readonly<Store<Readonly<State>, AnyAction>>, ethersProvider: any): Promise<void> {
@@ -139,24 +137,19 @@ export async function getCurrentETHPriceInUSDCents(attemptNumber: number = 0): P
 async function getCryptonatorCurrentETHPriceInUSDCents(): Promise<USDCents> {
     const ethPriceJSON: any = await getCurrentETHPriceJSON(cryptonatorAPIEndpoint);
     const currentETHPriceInUSD: USDollars = ethPriceJSON.ticker.price;
-    return getETHPriceInUSDCents(currentETHPriceInUSD, 8);
+    const currentETHPriceInUSDCents: USDCents = new BigNumber(currentETHPriceInUSD).multipliedBy(100).toFixed(0);    
+    return currentETHPriceInUSDCents;
 }
 
 async function getEtherscanCurrentETHPriceInUSDCents(): Promise<USDCents> {
     const ethPriceJSON: any = await getCurrentETHPriceJSON(etherscanAPIEndpoint);
     const currentETHPriceInUSD: USDollars = ethPriceJSON.result.ethusd;
-    return getETHPriceInUSDCents(currentETHPriceInUSD, 2);
+    const currentETHPriceInUSDCents: USDCents = new BigNumber(currentETHPriceInUSD).multipliedBy(100).toFixed(0);
+    return currentETHPriceInUSDCents;
 }
 
 async function getCurrentETHPriceJSON(apiEndpoint: CryptonatorETHPriceAPIEndpoint | EtherscanETHPriceAPIEndpoint) {
     const ethPriceResponse: Readonly<Response> = await window.fetch(apiEndpoint);
     const ethPriceJSON: any = await ethPriceResponse.json();
     return ethPriceJSON;
-}
-
-// TODO handle rounding correctly
-function getETHPriceInUSDCents(ethPrice: string, decimalPlaces: number) {
-    const currentETHPriceInUSDBigNumber: BigNumber = ethers.utils.parseUnits(ethPrice, decimalPlaces);
-    const currentETHPriceInUSDCents: USDCents = ethers.utils.formatUnits(currentETHPriceInUSDBigNumber.mul(100), decimalPlaces);
-    return currentETHPriceInUSDCents;
 }

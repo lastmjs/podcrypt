@@ -38,7 +38,6 @@ type Timestamp = {
 
 type CryptonatorETHPriceAPIEndpoint = `https://api.cryptonator.com/api/ticker/eth-usd`;
 type EtherscanETHPriceAPIEndpoint = `https://api.etherscan.io/api?module=stats&action=ethprice`;
-type BigNumber = any;
 type FeedUrl = string;
 type EthereumAddress = string;
 type CurrentETHPriceState = 'NOT_FETCHED' | 'FETCHING' | 'FETCHED';
