@@ -80,8 +80,6 @@ StorePromise.then((Store) => {
         const balanceInUSD: USDollars | 'Loading...' = getBalanceInUSD(Store) === 'Loading...' ? 'Loading...' : getBalanceInUSD(Store) === 'unknown' ? 'unknown' : new BigNumber(getBalanceInUSD(Store)).toFixed(2);
         const balanceInETH: ETH = new BigNumber(getBalanceInETH(Store)).toFixed(4);
 
-        console.log('balanceInETH', balanceInETH);
-
         return html`
             <h3>Balance</h3>
 

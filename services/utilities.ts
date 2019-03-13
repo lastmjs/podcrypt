@@ -1,5 +1,5 @@
-export const firstProxy = 'https://cors-anywhere.herokuapp.com/';
-export const backupProxy = 'https://jsonp.afeld.me/?url=';
+export const corsAnywhereProxy = 'https://cors-anywhere.herokuapp.com/';
+export const jsonpProxy = 'https://jsonp.afeld.me/?url=';
 
 export const cryptonatorAPIEndpoint: CryptonatorETHPriceAPIEndpoint = `https://api.cryptonator.com/api/ticker/eth-usd`;
 export const etherscanAPIEndpoint: EtherscanETHPriceAPIEndpoint = `https://api.etherscan.io/api?module=stats&action=ethprice`;
@@ -28,19 +28,33 @@ export function navigate(Store: any, path: string) {
     });
 }
 
-export async function getRSSFeed(feedUrl: string, corsProxy: string): Promise<any | null> {
+export async function getRSSFeed(feedUrl: string, attemptNumber: number = 0): Promise<any | null> {
     try {
-        const feedResponse = await window.fetch(`${corsProxy}${feedUrl}`);
-        const feedRaw = await feedResponse.text();
-        const feed = await new RSSParser().parseString(feedRaw);
-        return feed;
-    }
-    catch(error) {
-        if (corsProxy !== backupProxy) {
-            return await getRSSFeed(feedUrl, backupProxy);
+        if (attemptNumber === 0) {
+            const feedResponse = await window.fetch(`${feedUrl}`);
+            const feedRaw = await feedResponse.text();
+            const feed = await new RSSParser().parseString(feedRaw);
+            return feed;
+        }
+
+        if (attemptNumber === 1) {
+            const feedResponse = await window.fetch(`${corsAnywhereProxy}${feedUrl}`);
+            const feedRaw = await feedResponse.text();
+            const feed = await new RSSParser().parseString(feedRaw);
+            return feed;
+        }
+
+        if (attemptNumber === 2) {
+            const feedResponse = await window.fetch(`${jsonpProxy}${feedUrl}`);
+            const feedRaw = await feedResponse.text();
+            const feed = await new RSSParser().parseString(feedRaw);
+            return feed;
         }
 
         return null;
+    }
+    catch(error) {
+        return await getRSSFeed(feedUrl, attemptNumber + 1);
     }
 }
 
@@ -83,7 +97,7 @@ async function getFeed(feedUrl: string, feed?: any): Promise<any | null> {
             return feed;
         }
         else {
-            const feed = await getRSSFeed(feedUrl, firstProxy);                    
+            const feed = await getRSSFeed(feedUrl);                    
             return feed;
         }        
     }

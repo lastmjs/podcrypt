@@ -4,7 +4,6 @@ import { pcContainerStyles } from '../services/css';
 import { 
     navigate,
     getRSSFeed,
-    firstProxy,
     createPodcast
 } from '../services/utilities';
 
@@ -220,7 +219,7 @@ StorePromise.then((Store) => {
             if (!Store.getState().episodes[props.episodeGuid]) {
                 // TODO grabbing the feed is not optimized...we will be grabbing it multiple times potentially
                 // TODO if the podcast also does not yet exist in Redux
-                const feed = await getRSSFeed(props.feedUrl, firstProxy);
+                const feed = await getRSSFeed(props.feedUrl);
                 const episodeItem = feed.items.filter((item: any) => {
                     return item.guid === props.episodeGuid;
                 })[0];

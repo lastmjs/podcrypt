@@ -4,7 +4,6 @@ import { until } from 'lit-html/directives/until.js'; // TODO perhaps functional
 import { StorePromise } from '../services/store';
 import { pcContainerStyles } from '../services/css';
 import {
-    firstProxy,
     getRSSFeed,
     navigate,
     createPodcast
@@ -54,12 +53,12 @@ StorePromise.then((Store) => {
             </style>
     
             <div class="pc-podcast-overview-container">
-                ${until(getFeed(props.feedUrl, firstProxy), html`<div style="padding: 5%">Loading...</div>`)}
+                ${until(getFeed(props.feedUrl), html`<div style="padding: 5%">Loading...</div>`)}
             </div>
         `;
     });
     
-    async function getFeed(feedUrl: string, corsProxy: string): Promise<any> {    
+    async function getFeed(feedUrl: string): Promise<any> {    
         
         if (
             feedUrl === null ||
@@ -68,7 +67,7 @@ StorePromise.then((Store) => {
             return;
         }
 
-        const feed = await getRSSFeed(feedUrl, firstProxy);
+        const feed = await getRSSFeed(feedUrl);
         
         if (feed === null) {
             return html`<div>Failed to load</div>`;
