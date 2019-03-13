@@ -1,5 +1,3 @@
-import { parseEthereumAddressFromPodcastDescription } from './payout-calculations';
-
 export const firstProxy = 'https://cors-anywhere.herokuapp.com/';
 export const backupProxy = 'https://jsonp.afeld.me/?url=';
 
@@ -92,5 +90,30 @@ async function getFeed(feedUrl: string, feed?: any): Promise<any | null> {
     catch(error) {
         console.log('getFeed error', error);
         return null;
+    }
+}
+
+export function parseEthereumAddressFromPodcastDescription(podcastDescription: string): EthereumAddress | 'NOT_FOUND' | 'MALFORMED' {
+    try {
+        // TODO I took the regex below straight from here: https://www.regextester.com/99711
+        // TODO I am not sure if there are any copyright issues with using it, it seems pretty deminimus and obvious to me
+        const matchInfo: RegExpMatchArray | null = podcastDescription.match(/0x[a-fA-F0-9]{40}/);
+        const ethereumAddressFromPodcastDescription: EthereumAddress = matchInfo !== null ? matchInfo[0] : 'NOT_FOUND';
+        
+        console.log('ethereumAddressFromPodcastDescription', ethereumAddressFromPodcastDescription);
+        
+        if (ethereumAddressFromPodcastDescription === 'NOT_FOUND') {
+            return 'NOT_FOUND';
+        }
+        
+        const verifiedAddress = ethers.utils.getAddress(ethereumAddressFromPodcastDescription);
+        
+        console.log('verifiedAddress', verifiedAddress);
+        
+        return verifiedAddress;        
+    }
+    catch(error) {
+        console.log(error);
+        return 'MALFORMED';
     }
 }

@@ -7,7 +7,6 @@ import {
     firstProxy,
     createPodcast
 } from '../services/utilities';
-import { parseEthereumAddressFromPodcastDescription } from '../services/payout-calculations';
 
 StorePromise.then((Store) => {
     // TODO we might be repeating a lot of code, think about making a component for the episode items
@@ -235,7 +234,7 @@ StorePromise.then((Store) => {
                     src: episodeItem.enclosure.url,
                     finishedListening: false,
                     playing: false,
-                    progress: 0,
+                    progress: '0',
                     isoDate: episodeItem.isoDate,
                     timestamps: []
                 };

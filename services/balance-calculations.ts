@@ -68,15 +68,14 @@ export function getBalanceInUSD(Store: Readonly<Store<Readonly<State>, AnyAction
     ) {
         return new BigNumber(Store.getState().ethereumBalanceInWEI)
                 .multipliedBy(Store.getState().currentETHPriceInUSDCents)
-                .dividedBy(new BigNumber(1e20)) // TODO can 1e20 be reliably converted to a bignumber?
-                .toFixed(2);
+                .dividedBy(new BigNumber(1e20)).toString(); // TODO can 1e20 be reliably converted to a bignumber?
     }
 
     return 'unknown';
 }
 
 export function getBalanceInETH(Store: Readonly<Store<Readonly<State>, AnyAction>>): ETH {
-    return new BigNumber(Store.getState().ethereumBalanceInWEI).dividedBy(new BigNumber(1e18)).toFixed(2);
+    return new BigNumber(Store.getState().ethereumBalanceInWEI).dividedBy(new BigNumber(1e18)).toString();
 }
 
 export async function loadEthereumAccountBalance(Store: Readonly<Store<Readonly<State>, AnyAction>>, ethersProvider: any): Promise<void> {
@@ -100,7 +99,7 @@ export async function loadCurrentETHPriceInUSDCents(Store: Readonly<Store<Readon
         currentETHPriceState: 'FETCHING'
     });
 
-    const currentETHPriceInUSDCents: USDCents | 'UNKNOWN' = await getCurrentETHPriceInUSDCents();
+    const currentETHPriceInUSDCents: USDCents | 'UNKNOWN' = new BigNumber(await getCurrentETHPriceInUSDCents()).toString();
 
     Store.dispatch({
         type: 'SET_CURRENT_ETH_PRICE_IN_USD_CENTS',
@@ -137,14 +136,14 @@ export async function getCurrentETHPriceInUSDCents(attemptNumber: number = 0): P
 async function getCryptonatorCurrentETHPriceInUSDCents(): Promise<USDCents> {
     const ethPriceJSON: any = await getCurrentETHPriceJSON(cryptonatorAPIEndpoint);
     const currentETHPriceInUSD: USDollars = ethPriceJSON.ticker.price;
-    const currentETHPriceInUSDCents: USDCents = new BigNumber(currentETHPriceInUSD).multipliedBy(100).toFixed(0);    
+    const currentETHPriceInUSDCents: USDCents = new BigNumber(currentETHPriceInUSD).multipliedBy(100).toString();    
     return currentETHPriceInUSDCents;
 }
 
 async function getEtherscanCurrentETHPriceInUSDCents(): Promise<USDCents> {
     const ethPriceJSON: any = await getCurrentETHPriceJSON(etherscanAPIEndpoint);
     const currentETHPriceInUSD: USDollars = ethPriceJSON.result.ethusd;
-    const currentETHPriceInUSDCents: USDCents = new BigNumber(currentETHPriceInUSD).multipliedBy(100).toFixed(0);
+    const currentETHPriceInUSDCents: USDCents = new BigNumber(currentETHPriceInUSD).multipliedBy(100).toString();
     return currentETHPriceInUSDCents;
 }
 

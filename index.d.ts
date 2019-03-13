@@ -45,11 +45,12 @@ type WalletCreationState = 'NOT_CREATED' | 'CREATING' | 'CREATED';
 type EpisodeGuid = string;
 type PodcastGuid = string;
 type Percent = string;
+type Proportion = string;
 
 type USDollars = string;
 type USDCents = string;
 
-type ETH = BigNumber;
+type ETH = string;
 type GWEI = string;
 type WEI = string;
 

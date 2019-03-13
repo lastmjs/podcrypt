@@ -1,6 +1,7 @@
 import { customElement, html } from 'functional-element';
 import { StorePromise } from '../services/store';
 import { navigate } from '../services/utilities';
+import BigNumber from 'bignumber.js';
 
 StorePromise.then((Store) => {
     customElement('pc-player', ({ constructing, update, element }) => {
@@ -273,7 +274,7 @@ StorePromise.then((Store) => {
     
         Store.dispatch({
             type: 'UPDATE_CURRENT_EPISODE_PROGRESS',
-            progress
+            progress: new BigNumber(progress).toString()
         });
     }
     

@@ -11,7 +11,7 @@ import {
 export const StorePromise: Promise<Readonly<Store<Readonly<State>, Readonly<AnyAction>>>> = prepareStore();
 
 async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<AnyAction>>>> {
-    const version: number = 22;
+    const version: number = 23;
     const persistedState: Readonly<State> = await get('state');
 
     const InitialState: Readonly<State> = persistedState && version === persistedState.version ? persistedState : {
@@ -279,7 +279,7 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
                         [state.currentEpisodeGuid]: {
                             ...state.episodes[state.currentEpisodeGuid],
                             finishedListening: true,
-                            progress: 0,
+                            progress: '0',
                             playing: false
                         }
                     }
@@ -295,7 +295,7 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
                     [state.currentEpisodeGuid]: {
                         ...state.episodes[state.currentEpisodeGuid],
                         finishedListening: true,
-                        progress: 0,
+                        progress: '0',
                         playing: false
                     },
                     [nextEpisodeGuid]: {

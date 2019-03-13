@@ -13,63 +13,33 @@ import {
     getRSSFeed,
     firstProxy
 } from './utilities';
+import BigNumber from "../node_modules/bignumber.js/bignumber";
+import { parseEthereumAddressFromPodcastDescription } from './utilities';
 
 export function getNextPayoutDateInMilliseconds(Store: Readonly<Store<Readonly<State>, AnyAction>>): Milliseconds {
     const previousPayoutDateInMilliseconds: Milliseconds | 'NEVER' = Store.getState().previousPayoutDateInMilliseconds;
     const payoutIntervalInDays: Days = Store.getState().payoutIntervalInDays;
     const oneDayInSeconds: Seconds = '86400';
-    const oneDayInMilliseconds: Milliseconds = ethers.utils.bigNumberify(oneDayInSeconds).mul(ethers.utils.bigNumberify(1000));
-    const payoutIntervalInMilliseconds: Milliseconds = ethers.utils.bigNumberify(oneDayInMilliseconds).mul(ethers.utils.bigNumberify(payoutIntervalInDays));
+    const oneDayInMilliseconds: Milliseconds = new BigNumber(oneDayInSeconds).multipliedBy(1000).toString();
+    const payoutIntervalInMilliseconds: Milliseconds = new BigNumber(oneDayInMilliseconds).multipliedBy(payoutIntervalInDays).toString();
 
     if (previousPayoutDateInMilliseconds === 'NEVER') {
-        const nextPayoutDate: Date = new Date(new Date().getTime() + payoutIntervalInMilliseconds);
+        const nextPayoutDate: Date = new Date(new BigNumber(new Date().getTime()).plus(new BigNumber(payoutIntervalInMilliseconds)).toNumber());
         const nextPayoutDateRoundedToNearestStartOfDay: Date = new Date(nextPayoutDate.getFullYear(), nextPayoutDate.getMonth(), nextPayoutDate.getDate());
         const nextPayoutDateInMilliseconds: Milliseconds = nextPayoutDateRoundedToNearestStartOfDay.getTime().toString();
         return nextPayoutDateInMilliseconds;
     }
     else {
-        const nextPayoutDate: Date = new Date(previousPayoutDateInMilliseconds + payoutIntervalInMilliseconds);
+        const nextPayoutDate: Date = new Date(new BigNumber(previousPayoutDateInMilliseconds).plus(new BigNumber(payoutIntervalInMilliseconds)).toNumber());
         const nextPayoutDateRoundedToNearestStartOfDay: Date = new Date(nextPayoutDate.getFullYear(), nextPayoutDate.getMonth(), nextPayoutDate.getDate());
         const nextPayoutDateInMilliseconds = nextPayoutDateRoundedToNearestStartOfDay.getTime().toString();
         return nextPayoutDateInMilliseconds;   
     }
 }
 
-export function parseEthereumAddressFromPodcastDescription(podcastDescription: string): EthereumAddress | 'NOT_FOUND' | 'MALFORMED' {
-    try {
-        // TODO I took the regex below straight from here: https://www.regextester.com/99711
-        // TODO I am not sure if there are any copyright issues with using it, it seems pretty deminimus and obvious to me
-        const matchInfo: RegExpMatchArray | null = podcastDescription.match(/0x[a-fA-F0-9]{40}/);
-        const ethereumAddressFromPodcastDescription: EthereumAddress = matchInfo !== null ? matchInfo[0] : 'NOT_FOUND';
-        
-        console.log('ethereumAddressFromPodcastDescription', ethereumAddressFromPodcastDescription);
-        
-        if (ethereumAddressFromPodcastDescription === 'NOT_FOUND') {
-            return 'NOT_FOUND';
-        }
-        
-        const verifiedAddress = ethers.utils.getAddress(ethereumAddressFromPodcastDescription);
-        
-        console.log('verifiedAddress', verifiedAddress);
-        
-        return verifiedAddress;        
-    }
-    catch(error) {
-        console.log(error);
-        return 'MALFORMED';
-    }
-}
-
 export function getPayoutTargetInETH(Store: Readonly<Store<Readonly<State>, AnyAction>>): string | 'Loading...' {
-    // TODO make sure all decimal places are fixed and that you know what they are to pass into formatUnits
-    const payoutTargetInUSDCentsBigNumber: BigNumber = ethers.utils.parseUnits(Store.getState().payoutTargetInUSDCents, 6);
-    console.log('payoutTargetInUSDCentsBigNumber', payoutTargetInUSDCentsBigNumber.toString());
-    const currentETHPriceInUSDCentsBigNumber: BigNumber = ethers.utils.parseUnits(Store.getState().currentETHPriceInUSDCents, 6);
-    console.log('currentETHPriceInUSDCentsBigNumber', currentETHPriceInUSDCentsBigNumber.toString());
-    const payoutTargetInETHBigNumber: BigNumber = payoutTargetInUSDCentsBigNumber.div(currentETHPriceInUSDCentsBigNumber);
-    console.log('payoutTargetInETHBigNumber', payoutTargetInETHBigNumber.toString());
-
-    return Store.getState().currentETHPriceInUSDCents === 'UNKNOWN' ? 'Loading...' : parseFloat(ethers.utils.formatUnits(payoutTargetInETHBigNumber, 6)).toFixed(2);
+    const payoutTargetInETH: ETH = new BigNumber(Store.getState().payoutTargetInUSDCents).dividedBy(new BigNumber(Store.getState().currentETHPriceInUSDCents)).toString();
+    return Store.getState().currentETHPriceInUSDCents === 'UNKNOWN' ? 'Loading...' : payoutTargetInETH;
 }
 
 export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>, ethersProvider: any, retryDelayInMilliseconds: Milliseconds): Promise<void> {
@@ -113,21 +83,21 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
             }
 
             // const gasPrice = await web3.eth.getGasPrice();
-            const gasPriceInWEI: WEI = 10000000000;
-            const gasPriceInWEIBigNumber = ethers.utils.bigNumberify(gasPriceInWEI.toString());
+            const gasPriceInWEI: WEI = '10000000000';
+            const gasPriceInWEIBigNumber = new BigNumber(gasPriceInWEI);
 
             console.log('gasPriceInWEIBigNumber', gasPriceInWEIBigNumber.toString());
     
-            const valueInWEI: WEI = calculatePayoutAmountForPodcastDuringCurrentIntervalInWEI(Store.getState(), podcast);
-            const valueInWEIBigNumber = ethers.utils.bigNumberify(valueInWEI.toString());
+            const valueInWEI: WEI = new BigNumber(calculatePayoutAmountForPodcastDuringCurrentIntervalInWEI(Store.getState(), podcast)).toFixed(0);
+            const valueInWEIBigNumber: BigNumber = new BigNumber(valueInWEI);
             
             console.log('valueInWEIBigNumber', valueInWEIBigNumber.toString());
             
-            const valueLessGasPriceInWEIBigNumber = valueInWEIBigNumber.sub(gasPriceInWEIBigNumber);
+            const valueLessGasPriceInWEIBigNumber: BigNumber = valueInWEIBigNumber.minus(gasPriceInWEIBigNumber);
             
             console.log('valueLessGasPriceInWEIBigNumber', valueLessGasPriceInWEIBigNumber.toString());
             
-            const netValueInWEIBigNumber = valueLessGasPriceInWEIBigNumber.gt(0) ? valueLessGasPriceInWEIBigNumber : 0;
+            const netValueInWEIBigNumber: BigNumber = valueLessGasPriceInWEIBigNumber.gt(0) ? valueLessGasPriceInWEIBigNumber : new BigNumber(0);
     
             console.log('netValueInWEIBigNumber', netValueInWEIBigNumber.toString());
     
@@ -146,8 +116,8 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
             const preparedTransaction = {
                 to: podcastEthereumAddress,
                 gasLimit: 21000,
-                gasPrice: gasPriceInWEIBigNumber,
-                value: netValueInWEIBigNumber,
+                gasPrice: ethers.utils.bigNumberify(gasPriceInWEIBigNumber.toString()),
+                value: ethers.utils.bigNumberify(netValueInWEIBigNumber.toString()),
                 nonce
                 // data: web3.utils.asciiToHex('podcrypt') // TODO we might need to increase the gaslimit for this?
             };
@@ -186,29 +156,29 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
         }
         catch(error) {
             console.log('podcast payout error', error);
-            console.log(`retrying in ${retryDelayInMilliseconds * 2}`);
-            await wait(retryDelayInMilliseconds * 2);
-            payout(Store, ethersProvider, retryDelayInMilliseconds * 2);
+            console.log(`retrying in ${new BigNumber(retryDelayInMilliseconds).multipliedBy(2)}`);
+            await wait(new BigNumber(retryDelayInMilliseconds).multipliedBy(2).toNumber());
+            payout(Store, ethersProvider, new BigNumber(retryDelayInMilliseconds).multipliedBy(2).toFixed(0));
             return;
         }
     }
 
     try {
-        const gasPriceInWEI: WEI = 10000000000;
-        const gasPriceInWEIBigNumber = ethers.utils.bigNumberify(gasPriceInWEI.toString());    
+        const gasPriceInWEI: WEI = '10000000000';
+        const gasPriceInWEIBigNumber: BigNumber = new BigNumber(gasPriceInWEI);    
 
         console.log('gasPriceInWEIBigNumber', gasPriceInWEIBigNumber.toString());
 
-        const valueInWEI: WEI = calculatePayoutAmountForPodcryptDuringCurrentIntervalInWEI(Store.getState());
-        const valueInWEIBigNumber = ethers.utils.bigNumberify(valueInWEI.toString());
+        const valueInWEI: WEI = new BigNumber(calculatePayoutAmountForPodcryptDuringCurrentIntervalInWEI(Store.getState())).toFixed(0);
+        const valueInWEIBigNumber: BigNumber = new BigNumber(valueInWEI);
 
         console.log('valueInWEIBigNumber', valueInWEIBigNumber.toString());
         
-        const valueLessGasPriceInWEIBigNumber = valueInWEIBigNumber.sub(gasPriceInWEIBigNumber);
+        const valueLessGasPriceInWEIBigNumber = valueInWEIBigNumber.minus(gasPriceInWEIBigNumber);
         
         console.log('valueLessGasPriceInWEIBigNumber', valueLessGasPriceInWEIBigNumber.toString());
         
-        const netValueInWEIBigNumber = valueLessGasPriceInWEIBigNumber.gt(0) ? valueLessGasPriceInWEIBigNumber : 0;
+        const netValueInWEIBigNumber: BigNumber = valueLessGasPriceInWEIBigNumber.gt(0) ? valueLessGasPriceInWEIBigNumber : new BigNumber(0);
 
         console.log('netValueInWEIBigNumber', netValueInWEIBigNumber.toString());
 
@@ -224,8 +194,8 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
             const preparedTransaction = {
                 to: Store.getState().podcryptEthereumAddress,
                 gasLimit: 21000,
-                gasPrice: gasPriceInWEIBigNumber,
-                value: netValueInWEIBigNumber,
+                gasPrice: ethers.utils.bigNumberify(gasPriceInWEIBigNumber.toString()),
+                value: ethers.utils.bigNumberify(netValueInWEIBigNumber.toString()),
                 nonce
                 // data: web3.utils.asciiToHex('podcrypt') // TODO we might need to increase the gaslimit for this?
             };
@@ -259,9 +229,9 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
     }
     catch(error) {
         console.log('podcrypt payout error', error);
-        console.log(`retrying in ${retryDelayInMilliseconds * 2}`);
-        await wait(retryDelayInMilliseconds * 2);
-        payout(Store, ethersProvider, retryDelayInMilliseconds * 2);
+        console.log(`retrying in ${new BigNumber(retryDelayInMilliseconds).multipliedBy(2)}`);
+        await wait(new BigNumber(retryDelayInMilliseconds).multipliedBy(2).toNumber());
+        payout(Store, ethersProvider, new BigNumber(retryDelayInMilliseconds).multipliedBy(2).toFixed(0));
         return;
     }
 
