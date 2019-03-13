@@ -51,7 +51,7 @@ StorePromise.then((Store) => {
                     id="search-input"
                     class="pc-podcasts-search-input"
                     type="text"
-                    placeholder="Search for podcasts"
+                    placeholder="Search or enter feed URL"
                     @keydown=${(e: any) => searchInputKeyDown(e, element)}
                 >
     

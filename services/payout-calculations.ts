@@ -10,8 +10,7 @@ import { loadEthereumAccountBalance } from './balance-calculations';
 import { get } from 'idb-keyval';
 import { 
     wait,
-    getRSSFeed,
-    firstProxy
+    getRSSFeed
 } from './utilities';
 import BigNumber from "../node_modules/bignumber.js/bignumber";
 import { parseEthereumAddressFromPodcastDescription } from './utilities';
@@ -59,7 +58,7 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
         try {
             const podcast: Podcast = podcasts[i];
 
-            const feed = await getRSSFeed(podcast.feedUrl, firstProxy);
+            const feed = await getRSSFeed(podcast.feedUrl);
 
             if (!feed) {
                 // TODO if this happens, we should somehow notify the user

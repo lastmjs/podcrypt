@@ -9,11 +9,12 @@ import {
 import { asyncAppend } from 'lit-html/directives/async-append';
 
 StorePromise.then((Store) => {
-    customElement('pc-podcast-search-results', ({ constructing, props }) => {
+    customElement('pc-podcast-search-results', ({ constructing, props, update }) => {
 
         if (constructing) {
             return {
-                term: null
+                term: null,
+                rssFeed: false
             };
         }
 
@@ -55,17 +56,41 @@ StorePromise.then((Store) => {
             </style>
 
             <div class="pc-podcast-search-results">
-                ${until(searchForPodcasts(props.term), html`<div style="padding: 5%">Loading...</div>`)}
+                ${until(searchForPodcasts(props.term, props.rssFeed, update), html`<div style="padding: 5%">Loading...</div>`)}
             </div>
         `;
     });
 
-    async function searchForPodcasts(term: string) {
+    async function searchForPodcasts(term: string, rssFeed: boolean, update: any) {
         if (
             term === null ||
             term === undefined
         ) {
+            if (rssFeed === true) {
+                // TODO this is really ugly and I do not like it...
+                // TODO we need to figure out a way to navigate elegantly, maybe this is okay, seems to work for now
+                update({
+                    term: null,
+                    rssFeed: false
+                });
+                navigate(Store, '/');
+            }
+
             return;
+        }
+
+        if (
+            rssFeed === false &&
+            (
+                term.startsWith('https://') ||
+                term.startsWith('http://')
+            )
+        ) {
+            update({
+                term: null,
+                rssFeed: true
+            });
+            navigate(Store, `/podcast-overview?feedUrl=${term}`);
         }
 
         const response = await window.fetch(`https://itunes.apple.com/search?country=US&media=podcast&term=${term}`);
