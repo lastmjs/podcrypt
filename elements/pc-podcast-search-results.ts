@@ -1,23 +1,34 @@
 import { customElement, html } from 'functional-element';
 import { StorePromise } from '../services/store';
 import { pcContainerStyles } from '../services/css';
-import { until } from 'lit-html/directives/until.js'; // TODO perhaps functional-element should export everything from lit-html so that I can grab it all from functional-element instead of here
 import { 
     navigate,
     createPodcast
 } from '../services/utilities';
-import { asyncAppend } from 'lit-html/directives/async-append';
 import './pc-loading';
 
 StorePromise.then((Store) => {
-    customElement('pc-podcast-search-results', ({ constructing, props, update }) => {
+    customElement('pc-podcast-search-results', ({ constructing, connecting, props, update }) => {
 
         if (constructing) {
             return {
                 term: null,
-                rssFeed: false
+                previousTerm: null,
+                rssFeed: false,
+                loaded: false,
+                searchResultsUI: ''
             };
         }
+
+        if (props.term !== props.previousTerm) {
+            update({
+                ...props,
+                previousTerm: props.term,
+                loaded: false
+            });
+        }
+
+        searchForPodcasts(props, update);
 
         return html`
             <style>
@@ -57,21 +68,28 @@ StorePromise.then((Store) => {
             </style>
 
             <div class="pc-podcast-search-results">
-                ${until(searchForPodcasts(props.term, props.rssFeed, update), html`<pc-loading></pc-loading>`)}
+                <pc-loading
+                    .hidden=${props.loaded}
+                    .prefix=${"pc-podcast-search-results-"}
+                ></pc-loading>
+                ${props.searchResultsUI}
             </div>
         `;
     });
 
-    async function searchForPodcasts(term: string, rssFeed: boolean, update: any) {
+    async function searchForPodcasts(props: any, update: any) {
+
         if (
-            term === null ||
-            term === undefined
+            props.term === null ||
+            props.term === undefined
         ) {
-            if (rssFeed === true) {
+            if (props.rssFeed === true) {
                 // TODO this is really ugly and I do not like it...
                 // TODO we need to figure out a way to navigate elegantly, maybe this is okay, seems to work for now
                 update({
+                    ...props,
                     term: null,
+                    previousTerm: props.term,
                     rssFeed: false
                 });
                 navigate(Store, '/');
@@ -81,28 +99,39 @@ StorePromise.then((Store) => {
         }
 
         if (
-            rssFeed === false &&
+            props.rssFeed === false &&
             (
-                term.startsWith('https://') ||
-                term.startsWith('http://')
+                props.term.startsWith('https://') ||
+                props.term.startsWith('http://')
             )
         ) {
             update({
+                ...props,
                 term: null,
+                previousTerm: props.term,
                 rssFeed: true
             });
-            navigate(Store, `/podcast-overview?feedUrl=${term}`);
+            navigate(Store, `/podcast-overview?feedUrl=${props.term}`);
         }
 
-        const response = await window.fetch(`https://itunes.apple.com/search?country=US&media=podcast&term=${term}`);
+        if (props.loaded) {
+            return;
+        }
+
+        const response = await window.fetch(`https://itunes.apple.com/search?country=US&media=podcast&term=${props.term}`);
         const responseJSON = await response.json();
 
         if (responseJSON.results.length === 0) {
-            return html`
-                <div style="padding: 5%">
-                    No results
-                </div>
-            `;
+            update({
+                ...props,
+                loaded: true,
+                previousTerm: props.term,
+                searchResultsUI: html`
+                    <div style="padding: 5%">
+                        No results
+                    </div>
+                `
+            });
         }
         else {
             const podcastFeedResultsPromises = responseJSON.results.map(async (searchResult: any) => {   
@@ -149,9 +178,14 @@ StorePromise.then((Store) => {
 
             const podcastFeedResults = await Promise.all(podcastFeedResultsPromises);
 
-            return html`
-                ${podcastFeedResults}
-            `;
+            update({
+                ...props,
+                loaded: true,
+                previousTerm: props.term,
+                searchResultsUI: html`
+                    ${podcastFeedResults}
+                `
+            });
         }
     }
 
