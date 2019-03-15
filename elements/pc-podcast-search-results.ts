@@ -96,7 +96,7 @@ StorePromise.then((Store) => {
 
         const response = await window.fetch(`https://itunes.apple.com/search?country=US&media=podcast&term=${term}`);
         const responseJSON = await response.json();
-    
+
         if (responseJSON.results.length === 0) {
             return html`
                 <div style="padding: 5%">
@@ -105,48 +105,52 @@ StorePromise.then((Store) => {
             `;
         }
         else {
-            return html`
-                ${asyncAppend(await responseJSON.results.map(async (searchResult: any) => {   
-                    const podcast: Readonly<Podcast | null> = await createPodcast(searchResult.feedUrl);
+            const podcastFeedResultsPromises = responseJSON.results.map(async (searchResult: any) => {   
+                const podcast: Readonly<Podcast | null> = await createPodcast(searchResult.feedUrl);
 
-                    if (podcast === null) {
-                        return html`<div>Podcast could not be loaded</div>`;
-                    }
+                if (podcast === null) {
+                    return html`<div>Podcast could not be loaded</div>`;
+                }
 
-                    return html`
-                        <div class="pc-podcast-search-results-item">
-                            <div>
-                                <img src="${searchResult.artworkUrl60}" width="60" height="60">
-                            </div>
-
-                            <div
-                                class="pc-podcast-search-results-item-text"
-                                @click=${() => episodeDescriptionClick(podcast.feedUrl)}
-                            >
-                                ${searchResult.trackName}
-                                <div>
-                                    ${
-                                        podcast.ethereumAddress === 'NOT_FOUND' ? 
-                                            html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${(e: any) => notVerifiedHelpClick(e, podcast)}>Not verified - click to help</button>` :
-                                            podcast.ethereumAddress === 'MALFORMED' ?
-                                    html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${(e: any) => notVerifiedHelpClick(e, podcast)}>Not verified - click to help</button>` :
-                                                html`<button style="color: green; border: none; padding: 5px; margin: 5px" @click=${(e: any) => { e.stopPropagation(); alert(`This podcast's Ethereum address: ${podcast.ethereumAddress}`)} }>Verified</button>` }
-                                </div>
-
-                            </div>
-
-                            <div class="pc-podcast-search-results-item-controls-container">
-                                <i 
-                                    class="material-icons"
-                                    style="font-size: 25px; cursor: pointer"
-                                    @click=${() => subscribeToPodcast(podcast)}
-                                >
-                                    library_add
-                                </i>  
-                            </div>
+                return html`
+                    <div class="pc-podcast-search-results-item">
+                        <div>
+                            <img src="${searchResult.artworkUrl60}" width="60" height="60">
                         </div>
-                    `;
-                }))}
+
+                        <div
+                            class="pc-podcast-search-results-item-text"
+                            @click=${() => episodeDescriptionClick(podcast.feedUrl)}
+                        >
+                            ${searchResult.trackName}
+                            <div>
+                                ${
+                                    podcast.ethereumAddress === 'NOT_FOUND' ? 
+                                        html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${(e: any) => notVerifiedHelpClick(e, podcast)}>Not verified - click to help</button>` :
+                                        podcast.ethereumAddress === 'MALFORMED' ?
+                                html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${(e: any) => notVerifiedHelpClick(e, podcast)}>Not verified - click to help</button>` :
+                                            html`<button style="color: green; border: none; padding: 5px; margin: 5px" @click=${(e: any) => { e.stopPropagation(); alert(`This podcast's Ethereum address: ${podcast.ethereumAddress}`)} }>Verified</button>` }
+                            </div>
+
+                        </div>
+
+                        <div class="pc-podcast-search-results-item-controls-container">
+                            <i 
+                                class="material-icons"
+                                style="font-size: 25px; cursor: pointer"
+                                @click=${() => subscribeToPodcast(podcast)}
+                            >
+                                library_add
+                            </i>  
+                        </div>
+                    </div>
+                `;
+            });
+
+            const podcastFeedResults = await Promise.all(podcastFeedResultsPromises);
+
+            return html`
+                ${podcastFeedResults}
             `;
         }
     }
