@@ -8,13 +8,12 @@ import {
 import './pc-loading';
 
 StorePromise.then((Store) => {
-    customElement('pc-podcast-search-results', ({ constructing, connecting, props, update }) => {
+    customElement('pc-podcast-search-results', ({ constructing, props, update }) => {
 
         if (constructing) {
             return {
                 term: null,
                 previousTerm: null,
-                rssFeed: false,
                 loaded: false,
                 searchResultsUI: ''
             };
@@ -81,45 +80,13 @@ StorePromise.then((Store) => {
 
         if (
             props.term === null ||
-            props.term === undefined
+            props.term === undefined ||
+            props.loaded === true
         ) {
-            if (props.rssFeed === true) {
-                // TODO this is really ugly and I do not like it...
-                // TODO we need to figure out a way to navigate elegantly, maybe this is okay, seems to work for now
-                update({
-                    ...props,
-                    term: null,
-                    previousTerm: props.term,
-                    rssFeed: false
-                });
-                navigate(Store, '/');
-            }
-
             return;
         }
 
-        if (
-            props.rssFeed === false &&
-            (
-                props.term.startsWith('https://') ||
-                props.term.startsWith('http://')
-            )
-        ) {
-            update({
-                ...props,
-                term: null,
-                previousTerm: props.term,
-                rssFeed: true
-            });
-            navigate(Store, `/podcast-overview?feedUrl=${props.term}`);
-        }
-
-        if (props.loaded) {
-            return;
-        }
-
-        const response = await window.fetch(`https://itunes.apple.com/search?country=US&media=podcast&term=${props.term}`);
-        const responseJSON = await response.json();
+        const responseJSON = await getResponseJSON(props.term);
 
         if (responseJSON.results.length === 0) {
             update({
@@ -186,6 +153,24 @@ StorePromise.then((Store) => {
                     ${podcastFeedResults}
                 `
             });
+        }
+    }
+
+    async function getResponseJSON(term: string) {
+        if (
+            term.startsWith('https://') ||
+            term.startsWith('http://')
+        ) {
+            return {
+                results: [{
+                    feedUrl: term
+                }]
+            };
+        }
+        else {
+            const response = await window.fetch(`https://itunes.apple.com/search?country=US&media=podcast&term=${props.term}`);
+            const responseJSON = await response.json();
+            return responseJSON;
         }
     }
 
