@@ -111,14 +111,14 @@ StorePromise.then((Store) => {
                 return html`
                     <div class="pc-podcast-search-results-item">
                         <div>
-                            <img src="${searchResult.artworkUrl60}" width="60" height="60">
+                            <img src="${podcast.imageUrl}" width="60" height="60">
                         </div>
 
                         <div
                             class="pc-podcast-search-results-item-text"
-                            @click=${() => episodeDescriptionClick(podcast.feedUrl)}
+                            @click=${() => podcastTitleClick(podcast.feedUrl)}
                         >
-                            ${searchResult.trackName}
+                            ${podcast.title}
                             <div>
                                 ${
                                     podcast.ethereumAddress === 'NOT_FOUND' ? 
@@ -168,7 +168,7 @@ StorePromise.then((Store) => {
             };
         }
         else {
-            const response = await window.fetch(`https://itunes.apple.com/search?country=US&media=podcast&term=${props.term}`);
+            const response = await window.fetch(`https://itunes.apple.com/search?country=US&media=podcast&term=${term}`);
             const responseJSON = await response.json();
             return responseJSON;
         }
@@ -184,7 +184,7 @@ StorePromise.then((Store) => {
         });
     }
 
-    function episodeDescriptionClick(feedUrl: string) {
+    function podcastTitleClick(feedUrl: string) {
         navigate(Store, `podcast-overview?feedUrl=${feedUrl}`);
     }
 
