@@ -1,23 +1,33 @@
 import { customElement, html } from 'functional-element';
 import '../node_modules/rss-parser/dist/rss-parser.min.js';
-import { until } from 'lit-html/directives/until.js'; // TODO perhaps functional-element should export everything from lit-html so that I can grab it all from functional-element instead of here
 import { StorePromise } from '../services/store';
 import { pcContainerStyles } from '../services/css';
 import {
-    firstProxy,
     getRSSFeed,
     navigate,
     createPodcast
 } from '../services/utilities';
+import './pc-loading';
 
 StorePromise.then((Store) => {
     customElement('pc-podcast-overview', ({ constructing, element, update, props }) => {
     
         if (constructing) {
             return {
-                feedUrl: null
+                feedUrl: null,
+                feedUI: html`Loading...`,
+                loaded: false,
+                once: false
             };
         }
+
+        if (props.once === false) {
+            getFeed(props.feedUrl, {
+                ...props,
+                once: true
+            }, update);
+        }
+
     
         return html`
             <style>
@@ -52,14 +62,18 @@ StorePromise.then((Store) => {
                     cursor: pointer;
                 }
             </style>
-    
+
             <div class="pc-podcast-overview-container">
-                ${until(getFeed(props.feedUrl, firstProxy), html`<div style="padding: 5%">Loading...</div>`)}
+                <pc-loading
+                    .hidden=${props.loaded}
+                    .prefix=${"pc-podcast-overview-"}
+                ></pc-loading>
+                ${props.feedUI}
             </div>
         `;
     });
     
-    async function getFeed(feedUrl: string, corsProxy: string): Promise<any> {    
+    async function getFeed(feedUrl: string, props: any, update: any): Promise<any> {    
         
         if (
             feedUrl === null ||
@@ -68,7 +82,7 @@ StorePromise.then((Store) => {
             return;
         }
 
-        const feed = await getRSSFeed(feedUrl, firstProxy);
+        const feed = await getRSSFeed(feedUrl);
         
         if (feed === null) {
             return html`<div>Failed to load</div>`;
@@ -80,38 +94,42 @@ StorePromise.then((Store) => {
             return html`<div>Failed to load</div>`;
         }
 
-        return html`
-            <h2 style="margin: 0; padding: 5%; box-shadow: 0 4px 2px -2px grey;">${feed.title}</h2>
-            <div>
-                ${
-                    podcast.ethereumAddress === 'NOT_FOUND' ? 
-                        html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${() => notVerifiedHelpClick(podcast)}>Not verified - click to help</button>` :
-                        podcast.ethereumAddress === 'MALFORMED' ?
-                html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${() => notVerifiedHelpClick(podcast)}>Not verified - click to help</button>` :
-                            html`<button style="color: green; border: none; padding: 5px; margin: 5px" @click=${(e: any) => { e.stopPropagation(); alert(`This podcast's Ethereum address: ${podcast.ethereumAddress}`)} }>Verified</button>` }
-            </div>
-            <h4 style="margin: 0; padding: 2%; box-shadow: 0 4px 2px -2px grey;">${feed.description}</h4>
+        update({
+            ...props,
+            loaded: true,
+            feedUI: html`
+                <h2 style="margin: 0; padding: 5%; box-shadow: 0 4px 2px -2px grey;">${feed.title}</h2>
+                <div>
+                    ${
+                        podcast.ethereumAddress === 'NOT_FOUND' ? 
+                            html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${() => notVerifiedHelpClick(podcast)}>Not verified - click to help</button>` :
+                            podcast.ethereumAddress === 'MALFORMED' ?
+                    html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${() => notVerifiedHelpClick(podcast)}>Not verified - click to help</button>` :
+                                html`<button style="color: green; border: none; padding: 5px; margin: 5px" @click=${(e: any) => { e.stopPropagation(); alert(`This podcast's Ethereum address: ${podcast.ethereumAddress}`)} }>Verified</button>` }
+                </div>
+                <h4 style="margin: 0; padding: 2%; box-shadow: 0 4px 2px -2px grey;">${feed.description}</h4>
 
-            ${feed.items.map((item: any) => {
-                return html`
-                    <div class="pc-podcast-overview-episode">
-                        <div class="pc-podcast-overview-episode-title">
-                            <div>${item.title}</div>
-                            <br>
-                            <div style="font-size: calc(10px + 1vmin); font-weight: normal">${new Date(item.isoDate).toLocaleDateString()}</div>
-                        </div>
+                ${feed.items.map((item: any) => {
+                    return html`
+                        <div class="pc-podcast-overview-episode">
+                            <div class="pc-podcast-overview-episode-title">
+                                <div>${item.title}</div>
+                                <br>
+                                <div style="font-size: calc(10px + 1vmin); font-weight: normal">${new Date(item.isoDate).toLocaleDateString()}</div>
+                            </div>
 
-                        <div class="pc-podcast-overview-episode-controls-container">
-                            <i 
-                                class="material-icons pc-podcast-overview-episode-add-control"
-                                @click=${() => addEpisodeToPlaylist(podcast, item)}
-                            >playlist_add
-                            </i>  
+                            <div class="pc-podcast-overview-episode-controls-container">
+                                <i 
+                                    class="material-icons pc-podcast-overview-episode-add-control"
+                                    @click=${() => addEpisodeToPlaylist(podcast, item)}
+                                >playlist_add
+                                </i>  
+                            </div>
                         </div>
-                    </div>
-                `;
-            })}
-        `;    
+                    `;
+                })}
+            `
+        });
     }
     
     // TODO really this should add to the playlist and start the playlist

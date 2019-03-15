@@ -4,14 +4,26 @@ import { pcContainerStyles } from '../services/css';
 import { 
     navigate
 } from '../services/utilities';
+import './pc-loading';
 
 StorePromise.then((Store) => {
-    customElement('pc-podcasts', ({ constructing, element, update, props }) => {
+    customElement('pc-podcasts', ({ constructing, connecting, element, update, props }) => {
+
         if (constructing) {
             Store.subscribe(update);
             return {
-                searchResults: []
+                searchResults: [],
+                loaded: false
             };
+        }
+
+        if (connecting) {
+            setTimeout(() => {
+                update({
+                    ...props,
+                    loaded: true
+                });
+            });
         }
     
         return html`
@@ -47,11 +59,13 @@ StorePromise.then((Store) => {
             </style>
     
             <div class="pc-podcasts-container">
+                <pc-loading .hidden=${props.loaded} .prefix=${"pc-podcasts-"}></pc-loading>
+
                 <input
                     id="search-input"
                     class="pc-podcasts-search-input"
                     type="text"
-                    placeholder="Search for podcasts"
+                    placeholder="Search or enter feed URL"
                     @keydown=${(e: any) => searchInputKeyDown(e, element)}
                 >
     

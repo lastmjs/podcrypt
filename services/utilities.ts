@@ -1,7 +1,8 @@
-import { parseEthereumAddressFromPodcastDescription } from './payout-calculations';
+export const corsAnywhereProxy = 'https://cors-anywhere.herokuapp.com/';
+export const jsonpProxy = 'https://jsonp.afeld.me/?url=';
 
-export const firstProxy = 'https://cors-anywhere.herokuapp.com/';
-export const backupProxy = 'https://jsonp.afeld.me/?url=';
+export const cryptonatorAPIEndpoint: CryptonatorETHPriceAPIEndpoint = `https://api.cryptonator.com/api/ticker/eth-usd`;
+export const etherscanAPIEndpoint: EtherscanETHPriceAPIEndpoint = `https://api.etherscan.io/api?module=stats&action=ethprice`;
 
 export function parseQueryString(queryString: string) {
     return queryString.split('&').reduce((result, keyAndValue) => {
@@ -27,19 +28,33 @@ export function navigate(Store: any, path: string) {
     });
 }
 
-export async function getRSSFeed(feedUrl: string, corsProxy: string): Promise<any | null> {
+export async function getRSSFeed(feedUrl: string, attemptNumber: number = 0): Promise<any | null> {
     try {
-        const feedResponse = await window.fetch(`${corsProxy}${feedUrl}`);
-        const feedRaw = await feedResponse.text();
-        const feed = await new RSSParser().parseString(feedRaw);
-        return feed;
-    }
-    catch(error) {
-        if (corsProxy !== backupProxy) {
-            return await getRSSFeed(feedUrl, backupProxy);
+        if (attemptNumber === 0) {
+            const feedResponse = await window.fetch(`${feedUrl}`);
+            const feedRaw = await feedResponse.text();
+            const feed = await new RSSParser().parseString(feedRaw);
+            return feed;
+        }
+
+        if (attemptNumber === 1) {
+            const feedResponse = await window.fetch(`${corsAnywhereProxy}${feedUrl}`);
+            const feedRaw = await feedResponse.text();
+            const feed = await new RSSParser().parseString(feedRaw);
+            return feed;
+        }
+
+        if (attemptNumber === 2) {
+            const feedResponse = await window.fetch(`${jsonpProxy}${feedUrl}`);
+            const feedRaw = await feedResponse.text();
+            const feed = await new RSSParser().parseString(feedRaw);
+            return feed;
         }
 
         return null;
+    }
+    catch(error) {
+        return await getRSSFeed(feedUrl, attemptNumber + 1);
     }
 }
 
@@ -82,12 +97,37 @@ async function getFeed(feedUrl: string, feed?: any): Promise<any | null> {
             return feed;
         }
         else {
-            const feed = await getRSSFeed(feedUrl, firstProxy);                    
+            const feed = await getRSSFeed(feedUrl);                    
             return feed;
         }        
     }
     catch(error) {
         console.log('getFeed error', error);
         return null;
+    }
+}
+
+export function parseEthereumAddressFromPodcastDescription(podcastDescription: string): EthereumAddress | 'NOT_FOUND' | 'MALFORMED' {
+    try {
+        // TODO I took the regex below straight from here: https://www.regextester.com/99711
+        // TODO I am not sure if there are any copyright issues with using it, it seems pretty deminimus and obvious to me
+        const matchInfo: RegExpMatchArray | null = podcastDescription.match(/0x[a-fA-F0-9]{40}/);
+        const ethereumAddressFromPodcastDescription: EthereumAddress = matchInfo !== null ? matchInfo[0] : 'NOT_FOUND';
+        
+        console.log('ethereumAddressFromPodcastDescription', ethereumAddressFromPodcastDescription);
+        
+        if (ethereumAddressFromPodcastDescription === 'NOT_FOUND') {
+            return 'NOT_FOUND';
+        }
+        
+        const verifiedAddress = ethers.utils.getAddress(ethereumAddressFromPodcastDescription);
+        
+        console.log('verifiedAddress', verifiedAddress);
+        
+        return verifiedAddress;        
+    }
+    catch(error) {
+        console.log(error);
+        return 'MALFORMED';
     }
 }

@@ -1,7 +1,24 @@
 import { customElement, html } from "functional-element";
 import { pcContainerStyles } from '../services/css';
+import './pc-loading';
 
-customElement('pc-privacy', () => {
+customElement('pc-privacy', ({ constructing, connecting, update, props }) => {
+
+    if (constructing) {
+        return {
+            loaded: false
+        };
+    }
+
+    if (connecting) {
+        setTimeout(() => {
+            update({
+                ...props,
+                loaded: true
+            });
+        });
+    }
+
     return html`
         <style>
             .pc-privacy-container {
@@ -10,6 +27,11 @@ customElement('pc-privacy', () => {
         </style>
 
         <div class="pc-privacy-container">
+            <pc-loading
+                .hidden=${props.loaded}
+                .prefix=${"pc-privacy-"}
+            ></pc-loading>
+
             <h2>Privacy</h2>
 
             <p>Podcrypt's privacy philosophy is to collect as little personal data from its users as is feasible.</p>
