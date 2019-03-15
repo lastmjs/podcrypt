@@ -15,19 +15,21 @@ StorePromise.then((Store) => {
         if (constructing) {
             return {
                 feedUrl: null,
+                previousFeedUrl: null,
                 feedUI: html`Loading...`,
                 loaded: false,
                 once: false
             };
         }
 
-        if (props.once === false) {
-            getFeed(props.feedUrl, {
+        if (props.feedUrl !== props.previousFeedUrl) {
+            update({
                 ...props,
-                once: true
-            }, update);
+                previousFeedUrl: props.feedUrl,
+                loaded: false
+            });
+            getFeed(props.feedUrl, props, update);
         }
-
     
         return html`
             <style>
@@ -97,6 +99,7 @@ StorePromise.then((Store) => {
         update({
             ...props,
             loaded: true,
+            previousFeedUrl: feedUrl,
             feedUI: html`
                 <h2 style="margin: 0; padding: 5%; box-shadow: 0 4px 2px -2px grey;">${feed.title}</h2>
                 <div>

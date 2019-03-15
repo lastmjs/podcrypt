@@ -1,12 +1,10 @@
 import { customElement, html } from 'functional-element';
 import { StorePromise } from '../services/store';
 import { pcContainerStyles } from '../services/css';
-import { until } from 'lit-html/directives/until.js'; // TODO perhaps functional-element should export everything from lit-html so that I can grab it all from functional-element instead of here
 import { 
     navigate,
     createPodcast
 } from '../services/utilities';
-import { asyncAppend } from 'lit-html/directives/async-append';
 import './pc-loading';
 
 StorePromise.then((Store) => {
@@ -15,9 +13,21 @@ StorePromise.then((Store) => {
         if (constructing) {
             return {
                 term: null,
-                rssFeed: false
+                previousTerm: null,
+                loaded: false,
+                searchResultsUI: ''
             };
         }
+
+        if (props.term !== props.previousTerm) {
+            update({
+                ...props,
+                previousTerm: props.term,
+                loaded: false
+            });
+        }
+
+        searchForPodcasts(props, update);
 
         return html`
             <style>
@@ -57,52 +67,38 @@ StorePromise.then((Store) => {
             </style>
 
             <div class="pc-podcast-search-results">
-                ${until(searchForPodcasts(props.term, props.rssFeed, update), html`<pc-loading></pc-loading>`)}
+                <pc-loading
+                    .hidden=${props.loaded}
+                    .prefix=${"pc-podcast-search-results-"}
+                ></pc-loading>
+                ${props.searchResultsUI}
             </div>
         `;
     });
 
-    async function searchForPodcasts(term: string, rssFeed: boolean, update: any) {
-        if (
-            term === null ||
-            term === undefined
-        ) {
-            if (rssFeed === true) {
-                // TODO this is really ugly and I do not like it...
-                // TODO we need to figure out a way to navigate elegantly, maybe this is okay, seems to work for now
-                update({
-                    term: null,
-                    rssFeed: false
-                });
-                navigate(Store, '/');
-            }
+    async function searchForPodcasts(props: any, update: any) {
 
+        if (
+            props.term === null ||
+            props.term === undefined ||
+            props.loaded === true
+        ) {
             return;
         }
 
-        if (
-            rssFeed === false &&
-            (
-                term.startsWith('https://') ||
-                term.startsWith('http://')
-            )
-        ) {
-            update({
-                term: null,
-                rssFeed: true
-            });
-            navigate(Store, `/podcast-overview?feedUrl=${term}`);
-        }
-
-        const response = await window.fetch(`https://itunes.apple.com/search?country=US&media=podcast&term=${term}`);
-        const responseJSON = await response.json();
+        const responseJSON = await getResponseJSON(props.term);
 
         if (responseJSON.results.length === 0) {
-            return html`
-                <div style="padding: 5%">
-                    No results
-                </div>
-            `;
+            update({
+                ...props,
+                loaded: true,
+                previousTerm: props.term,
+                searchResultsUI: html`
+                    <div style="padding: 5%">
+                        No results
+                    </div>
+                `
+            });
         }
         else {
             const podcastFeedResultsPromises = responseJSON.results.map(async (searchResult: any) => {   
@@ -115,14 +111,14 @@ StorePromise.then((Store) => {
                 return html`
                     <div class="pc-podcast-search-results-item">
                         <div>
-                            <img src="${searchResult.artworkUrl60}" width="60" height="60">
+                            <img src="${podcast.imageUrl}" width="60" height="60">
                         </div>
 
                         <div
                             class="pc-podcast-search-results-item-text"
-                            @click=${() => episodeDescriptionClick(podcast.feedUrl)}
+                            @click=${() => podcastTitleClick(podcast.feedUrl)}
                         >
-                            ${searchResult.trackName}
+                            ${podcast.title}
                             <div>
                                 ${
                                     podcast.ethereumAddress === 'NOT_FOUND' ? 
@@ -149,9 +145,32 @@ StorePromise.then((Store) => {
 
             const podcastFeedResults = await Promise.all(podcastFeedResultsPromises);
 
-            return html`
-                ${podcastFeedResults}
-            `;
+            update({
+                ...props,
+                loaded: true,
+                previousTerm: props.term,
+                searchResultsUI: html`
+                    ${podcastFeedResults}
+                `
+            });
+        }
+    }
+
+    async function getResponseJSON(term: string) {
+        if (
+            term.startsWith('https://') ||
+            term.startsWith('http://')
+        ) {
+            return {
+                results: [{
+                    feedUrl: term
+                }]
+            };
+        }
+        else {
+            const response = await window.fetch(`https://itunes.apple.com/search?country=US&media=podcast&term=${term}`);
+            const responseJSON = await response.json();
+            return responseJSON;
         }
     }
 
@@ -165,7 +184,7 @@ StorePromise.then((Store) => {
         });
     }
 
-    function episodeDescriptionClick(feedUrl: string) {
+    function podcastTitleClick(feedUrl: string) {
         navigate(Store, `podcast-overview?feedUrl=${feedUrl}`);
     }
 

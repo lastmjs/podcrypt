@@ -75,12 +75,13 @@ export async function createPodcast(feedUrl: string, feed?: any): Promise<Readon
 
     const ethereumAddress: EthereumAddress | 'NOT_FOUND' | 'MALFORMED' = parseEthereumAddressFromPodcastDescription(theFeed.description);
     const email: string | 'NOT_SET' = theFeed.itunes ? theFeed.itunes.owner ? theFeed.itunes.owner.email ? theFeed.itunes.owner.email : 'NOT_SET' : 'NOT_SET' : 'NOT_SET';
+    const imageUrl: string | 'NOT_SET' = getImageUrl(theFeed);
 
     const podcast: Readonly<Podcast> = {
-        feedUrl: feedUrl, // TODO check if this works
+        feedUrl,
         title: theFeed.title,
         description: theFeed.description,
-        imageUrl: theFeed.image ? theFeed.image.url : 'NOT_FOUND',
+        imageUrl,
         episodeGuids: [],
         previousPayoutDateInMilliseconds: 'NEVER',
         latestTransactionHash: null,
@@ -89,6 +90,20 @@ export async function createPodcast(feedUrl: string, feed?: any): Promise<Readon
     };
 
     return podcast;
+}
+
+function getImageUrl(feed: any): string | 'NOT_FOUND' {
+    if (feed.image) {
+        return feed.image.url;
+    }
+
+    if (feed.itunes) {
+        if (feed.itunes.image) {
+            return feed.itunes.image;
+        }
+    }
+
+    return 'NOT_FOUND';
 }
 
 async function getFeed(feedUrl: string, feed?: any): Promise<any | null> {
