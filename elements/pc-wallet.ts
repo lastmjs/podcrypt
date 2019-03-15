@@ -195,10 +195,10 @@ StorePromise.then((Store) => {
 
                 return html`
                     <div class="pc-wallet-podcast-item">
-                        <div>
+                        <div style="flex: 1">
                             <img src="${podcast.imageUrl}" width="60" height="60">
                         </div>
-                        <div style="display:flex: flex-direction: column; padding-left: 5%">
+                        <div style="display:flex; flex-direction: column; padding-left: 5%; flex: 4">
                             <div class="pc-wallet-podcast-item-text">${podcast.title}</div>
                             <div>
                                 ${
@@ -219,10 +219,10 @@ StorePromise.then((Store) => {
             })}
 
             <div class="pc-wallet-podcast-item">
-                <div>
+                <div style="flex: 1">
                     <img src="podcrypt-logo-transparent.png" width="60" height="60">
                 </div>
-                <div style="display:flex: flex-direction: column; padding-left: 5%">
+                <div style="display:flex; flex-direction: column; padding-left: 5%; flex: 4">
                     <div class="pc-wallet-podcast-item-text">Podcrypt</div>
                     <br>
                     <div>$${new BigNumber(Store.getState().payoutTargetInUSDCents).multipliedBy(Store.getState().podcryptPayoutPercentage).dividedBy(1000).toFixed(2)}, ${Store.getState().podcryptPayoutPercentage}%</div>
