@@ -41,7 +41,7 @@ StorePromise.then((Store) => {
 
                 .pc-podcast-overview-episode {
                     display: flex;
-                    box-shadow: 0 4px 2px -2px grey;
+                    box-shadow: inset 0px 5px 5px -5px grey;
                     padding: 2%;
                 }
 
@@ -101,16 +101,24 @@ StorePromise.then((Store) => {
             loaded: true,
             previousFeedUrl: feedUrl,
             feedUI: html`
-                <h2 style="margin: 0; padding: 5%; box-shadow: 0 4px 2px -2px grey;">${feed.title}</h2>
-                <div>
-                    ${
-                        podcast.ethereumAddress === 'NOT_FOUND' ? 
+                <div style="display: flex; margin: 0; padding: 5%; padding-top: 0%">
+                    <div style="flex: 1; display: flex; flex-direction: column; align-items: flex-start">
+                        <img src="${podcast.imageUrl}" width="60" height="60">
+                    </div>
+                    <div style="flex: 3;">
+                        <h3 style="margin: 0">${feed.title}</h3>
+                        <div>
+                            ${
+                                podcast.ethereumAddress === 'NOT_FOUND' ? 
+                                    html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${() => notVerifiedHelpClick(podcast)}>Not verified - click to help</button>` :
+                                    podcast.ethereumAddress === 'MALFORMED' ?
                             html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${() => notVerifiedHelpClick(podcast)}>Not verified - click to help</button>` :
-                            podcast.ethereumAddress === 'MALFORMED' ?
-                    html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${() => notVerifiedHelpClick(podcast)}>Not verified - click to help</button>` :
-                                html`<button style="color: green; border: none; padding: 5px; margin: 5px" @click=${(e: any) => { e.stopPropagation(); alert(`This podcast's Ethereum address: ${podcast.ethereumAddress}`)} }>Verified</button>` }
+                                        html`<button style="color: green; border: none; padding: 5px; margin: 5px" @click=${(e: any) => { e.stopPropagation(); alert(`This podcast's Ethereum address: ${podcast.ethereumAddress}`)} }>Verified</button>` }
+                        </div>
+                    </div>
                 </div>
-                <h4 style="margin: 0; padding: 2%; box-shadow: 0 4px 2px -2px grey;">${feed.description}</h4>
+            
+                <h4 style="margin: 0; padding: 2%; box-shadow: inset 0px 5px 5px -5px grey;">${feed.description}</h4>
 
                 ${feed.items.map((item: any) => {
                     return html`

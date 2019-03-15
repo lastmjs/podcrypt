@@ -110,6 +110,7 @@ StorePromise.then((Store) => {
                     width: 100%;
                     background-color: white;
                     padding: calc(10px + 1vmin);
+                    box-shadow: inset 0px 5px 5px -5px grey;
                 }
     
                 .pc-player-play-icon {

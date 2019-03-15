@@ -1,15 +1,26 @@
 import { customElement, html } from 'functional-element';
 import { pcContainerStyles } from '../services/css';
 import { StorePromise } from '../services/store';
+import './pc-loading';
 
 StorePromise.then((Store) => {
-    customElement('pc-not-verified-help', ({ constructing, props }) => {
+    customElement('pc-not-verified-help', ({ constructing, connecting, props, update }) => {
 
         if (constructing) {
             return {
                 podcastEmail: null,
-                feedUrl: null
+                feedUrl: null,
+                loaded: false
             };
+        }
+
+        if (connecting) {
+            setTimeout(() => {
+                update({
+                    ...props,
+                    loaded: true
+                });
+            });
         }
     
         return html`
@@ -20,6 +31,11 @@ StorePromise.then((Store) => {
             </style>
     
             <div class="pc-not-verified-help-container">
+                <pc-loading
+                    .hidden=${props.loaded}
+                    .prefix=${"pc-not-verified-help-"}
+                ></pc-loading>
+
                 <h2>Podcast not verified</h2>
                 <p>
                     No Ethereum address was found for this podcast.
@@ -41,11 +57,10 @@ StorePromise.then((Store) => {
                 </p>
                 <p style="overflow-wrap: break-word">
                     It allows me to send cryptocurrency donations to podcasts with an Ethereum address.
-                    Your podcast does not have an Ethereum address in its main description.
-                    As you can see, you are unverified: https://podcrypt.app/podcast-overview?feedUrl=${props.feedUrl}
+                    Your podcast does not have an Ethereum address in its main description: https://podcrypt.app/podcast-overview?feedUrl=${props.feedUrl}
                 </p>
                 <p>
-                    To be able to receive donations, all you have to do is add your Ethereum address to your podcast's main description.
+                    If you want to receive donations, all you have to do is add your Ethereum address to your podcast's main description.
                     If you're unfamiliar with Ethereum, then Coinbase or MetaMask are good ways to get an address and start receiving donations.
                 </p>
                 <p>
