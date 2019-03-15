@@ -6,6 +6,7 @@ import {
     getRSSFeed,
     createPodcast
 } from '../services/utilities';
+import './pc-loading';
 
 StorePromise.then((Store) => {
     // TODO we might be repeating a lot of code, think about making a component for the episode items
@@ -15,7 +16,7 @@ StorePromise.then((Store) => {
             return {
                 feedUrl: null,
                 episodeGuid: null,
-                loading: true
+                loaded: false
             };
         }
 
@@ -70,7 +71,11 @@ StorePromise.then((Store) => {
             </style>
 
             <div class="pc-playlist-container">
-                ${props.loading ? loadingUI() : loadedUI()}
+                <pc-loading
+                    .hidden=${props.loaded}
+                    .prefix=${"pc-playlist-"}
+                ></pc-loading>
+                ${props.loaded ? loadedUI() : loadingUI()}
             </div>
     `});
 
@@ -174,13 +179,20 @@ StorePromise.then((Store) => {
 
     // TODO preparePlaylist is disgusting...think of a cleaner way to get the episode to load first try
     async function preparePlaylist(props: any, update: any) {
+
+
+        if (props.loaded === true) {
+            return;
+        }
+
         if (
             Store.getState().currentRoute.pathname === '/playlist' &&
             Store.getState().currentRoute.search === '' &&
-            props.loading === true
+            props.loaded === false
         ) {
             update({
-                loading: false
+                ...props,
+                loaded: true
             });
         }
 
@@ -192,7 +204,8 @@ StorePromise.then((Store) => {
         ) {
             if (Store.getState().currentEpisodeGuid === props.episodeGuid) {
                 update({
-                    loading: false
+                    ...props,
+                    loaded: true
                 });
                 return;
             }
@@ -269,7 +282,8 @@ StorePromise.then((Store) => {
             });
         
             update({
-                loading: false
+                ...props,
+                loaded: true
             });
         }
     }

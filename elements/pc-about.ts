@@ -1,7 +1,24 @@
 import { customElement, html } from 'functional-element';
 import { pcContainerStyles } from '../services/css';
+import './pc-loading';
 
-customElement('pc-about', () => {
+customElement('pc-about', ({ constructing, connecting, update, props }) => {
+
+    if (constructing) {
+        return {
+            loaded: false
+        };
+    }
+
+    if (connecting) {
+        setTimeout(() => {
+            update({
+                ...props,
+                loaded: true
+            });
+        });
+    }
+
     return html`
         <style>
             .pc-about-container {
@@ -10,6 +27,11 @@ customElement('pc-about', () => {
         </style>
 
         <div class="pc-about-container">
+            <pc-loading
+                .hidden=${props.loaded}
+                .prefix=${"pc-about-"}
+            ></pc-loading>
+
             <h2>About Podcrypt</h2>
 
             <p>

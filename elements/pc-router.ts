@@ -98,13 +98,17 @@ StorePromise.then((Store) => {
         // await loadRouteModules(Store.getState().currentRoute);
     
         return html`
-            <pc-podcasts ?hidden=${currentRoute.pathname !== '/'}></pc-podcasts>
+            <pc-podcasts
+                ?hidden=${currentRoute.pathname !== '/'}
+            ></pc-podcasts>
             <pc-playlist
                 ?hidden=${currentRoute.pathname !== '/playlist'}
                 .feedUrl=${currentRoute.query.feedUrl}
                 .episodeGuid=${currentRoute.query.episodeGuid}
             ></pc-playlist>
-            <pc-wallet ?hidden=${currentRoute.pathname !== '/wallet'}></pc-wallet>
+            <pc-wallet
+                ?hidden=${currentRoute.pathname !== '/wallet'}
+            ></pc-wallet>
             <pc-podcast-overview
                 ?hidden=${currentRoute.pathname !== '/podcast-overview'}
                 .feedUrl=${Store.getState().currentRoute.query.feedUrl}
@@ -113,16 +117,26 @@ StorePromise.then((Store) => {
                 ?hidden=${currentRoute.pathname !== '/podcast-search-results'}
                 .term=${Store.getState().currentRoute.query.term}
             ></pc-podcast-search-results>
-            <pc-credits ?hidden=${currentRoute.pathname !== '/credits'}></pc-credits>
-            <pc-privacy ?hidden=${currentRoute.pathname !== '/privacy'}></pc-privacy>
-            <pc-contact ?hidden=${currentRoute.pathname !== '/contact'}></pc-contact>
-            <pc-about ?hidden=${currentRoute.pathname !== '/about'}></pc-about>
+            <pc-credits
+                ?hidden=${currentRoute.pathname !== '/credits'}
+            ></pc-credits>
+            <pc-privacy
+                ?hidden=${currentRoute.pathname !== '/privacy'}
+            ></pc-privacy>
+            <pc-contact
+                ?hidden=${currentRoute.pathname !== '/contact'}
+            ></pc-contact>
+            <pc-about
+                ?hidden=${currentRoute.pathname !== '/about'}
+            ></pc-about>
             <pc-not-verified-help
                 ?hidden=${currentRoute.pathname !== '/not-verified-help'}
                 .podcastEmail=${Store.getState().currentRoute.query.podcastEmail}
                 .feedUrl=${Store.getState().currentRoute.query.feedUrl}
             ></pc-not-verified-help>
-            <pc-get-eth ?hidden=${currentRoute.pathname !== '/get-eth'}></pc-get-eth>
+            <pc-get-eth
+                ?hidden=${currentRoute.pathname !== '/get-eth'}
+            ></pc-get-eth>
         `;
     });
     

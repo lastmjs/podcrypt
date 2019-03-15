@@ -22,16 +22,30 @@ import {
 import { navigate } from '../services/utilities';
 import '../node_modules/ethers/dist/ethers.min.js';
 import BigNumber from "../node_modules/bignumber.js/bignumber";
+import './pc-loading';
 
 const ethersProvider = new ethers.providers.EtherscanProvider('ropsten');
 
 StorePromise.then((Store) => {
-    customElement('pc-wallet', ({ constructing, update }) => {
+    customElement('pc-wallet', ({ constructing, connecting, props, update }) => {
         if (constructing) {
             Store.subscribe(update);
 
             loadEthereumAccountBalance(Store, ethersProvider);
             loadCurrentETHPriceInUSDCents(Store);
+
+            return {
+                loaded: false
+            };
+        }
+
+        if (connecting) {
+            setTimeout(() => {
+                update({
+                    ...props,
+                    loaded: true
+                });
+            });
         }
 
         return html`
@@ -59,6 +73,11 @@ StorePromise.then((Store) => {
             </style>
     
             <div class="pc-wallet-container">
+                <pc-loading
+                    .hidden=${props.loaded}
+                    .prefix=${"pc-wallet-"}
+                ></pc-loading>
+
                 ${
                     Store.getState().walletCreationState === 'CREATED' ? 
                         walletUI() :

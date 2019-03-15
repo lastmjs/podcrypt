@@ -7,6 +7,7 @@ import {
     createPodcast
 } from '../services/utilities';
 import { asyncAppend } from 'lit-html/directives/async-append';
+import './pc-loading';
 
 StorePromise.then((Store) => {
     customElement('pc-podcast-search-results', ({ constructing, props, update }) => {
@@ -56,7 +57,7 @@ StorePromise.then((Store) => {
             </style>
 
             <div class="pc-podcast-search-results">
-                ${until(searchForPodcasts(props.term, props.rssFeed, update), html`<div style="padding: 5%">Loading...</div>`)}
+                ${until(searchForPodcasts(props.term, props.rssFeed, update), html`<pc-loading></pc-loading>`)}
             </div>
         `;
     });
