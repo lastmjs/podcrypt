@@ -1,5 +1,4 @@
 import { customElement, html } from 'functional-element';
-import '../node_modules/rss-parser/dist/rss-parser.min.js';
 import { StorePromise } from '../services/store';
 import { pcContainerStyles } from '../services/css';
 import {

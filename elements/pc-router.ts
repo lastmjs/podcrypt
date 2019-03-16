@@ -20,23 +20,18 @@ StorePromise.then((Store) => {
     window.addEventListener('popstate', (e) => {
 
         // If we are going back to the playlist, and the playlist has changed since we were there
-        // then we do not want the url that we were at to be honored. So, just set it to the current playing episode
+        // then we do not want the url that we were at to be honored. So, just set ignore the feedUrl and episodeGuid and go to the playlist proper
         if (window.location.pathname === '/playlist') {
-            const currentEpisode: Readonly<Episode> = Store.getState().episodes[Store.getState().currentEpisodeGuid];
-
             Store.dispatch({
                 type: 'CHANGE_CURRENT_ROUTE',
                 currentRoute: {
                     pathname: window.location.pathname,
-                    search: `?feedUrl=${currentEpisode.feedUrl}&episodeGuid=${currentEpisode.guid}`,
-                    query: {
-                        feedUrl: currentEpisode.feedUrl,
-                        episodeGuid: currentEpisode.guid
-                    }
+                    search: ``,
+                    query: {}
                 }
             });
-            
-            history.replaceState({}, '', `${(Store.getState() as any).currentRoute.pathname}${(Store.getState() as any).currentRoute.search ? `${(Store.getState() as any).currentRoute.search}` : ''}`);
+
+            history.replaceState({}, '', `/playlist`);
         }
         else {
             Store.dispatch({
@@ -50,6 +45,7 @@ StorePromise.then((Store) => {
         }
     });
     
+    // TODO maybe we just do not want to use anchor tags to navigate within our app, consider getting rid of this
     // this listens for anchor tag clicks
     window.addEventListener('click', (e: any) => {
 
@@ -80,6 +76,7 @@ StorePromise.then((Store) => {
         }
     });
     
+    // This loads the current route from the address bar when the app first loads
     Store.dispatch({
         type: 'CHANGE_CURRENT_ROUTE',
         currentRoute: {
@@ -147,7 +144,7 @@ StorePromise.then((Store) => {
     });
     
     // TODO figure out lazy loading later...perhaps we should not do our own router in that case
-    // TODO I am having issues with property settings when lazy loading
+    // TODO I am having issues with property settings when lazy loading -- I think I know what to do, load the import and create the html all at the same time, otherwise we have that binding to the prototype issue before the element is upgraded
     // async function loadRouteModules(currentRoute): Promise<void> {
     //     const routes = {
     //         '/': async () => {
