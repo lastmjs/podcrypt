@@ -15,7 +15,7 @@ import {
 export const StorePromise: Promise<Readonly<Store<Readonly<State>, Readonly<AnyAction>>>> = prepareStore();
 
 async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<AnyAction>>>> {
-    const version: number = 25;
+    const version: number = 26;
     const persistedState: Readonly<State> = await get('state');
 
     const InitialState: Readonly<State> = persistedState && version === persistedState.version ? persistedState : {
@@ -144,8 +144,24 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
         // }
     
         if (action.type === 'SUBSCRIBE_TO_PODCAST') {
-            if (state.podcasts[action.podcast.feedUrl]) {
-                return state;
+            const podcastInState: Readonly<Podcast> = state.podcasts[action.podcast.feedUrl];
+            const podcastAlreadyExists: boolean = podcastInState !== null && podcastInState !== undefined;
+
+            if (podcastAlreadyExists) {
+                return {
+                    ...state,
+                    podcasts: {
+                        ...state.podcasts,
+                        [action.podcast.feedUrl]: {
+                            ...state.podcasts[action.podcast.feedUrl],
+                            title: action.podcast.title,
+                            description: action.podcast.description,
+                            imageUrl: action.podcast.imageUrl,
+                            ethereumAddress: action.podcast.ethereumAddress,
+                            email: action.podcast.email
+                        }
+                    }
+                };
             }
             else {
                 return {
@@ -202,27 +218,86 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
             };
         }
     
-        // TODO adding an episode multiple times will wreak havoc
         if (action.type === 'ADD_EPISODE_TO_PLAYLIST') {
-            return {
-                ...state,
-                playlist: [...state.playlist, action.episode.guid],
-                episodes: {
-                    ...state.episodes,
-                    [action.episode.guid]: {
-                        ...state.episodes[action.episode.guid],
-                        ...action.episode
+            const episodeInPlaylist: boolean = state.playlist.includes(action.episode.guid);
+
+            if (episodeInPlaylist) {
+                return state;
+            }
+            else {
+                const episodeInState: Readonly<Episode> = state.episodes[action.episode.guid];
+                const episodeAlreadyExists: boolean = episodeInState !== null && episodeInState !== undefined;
+
+                if (episodeAlreadyExists) {
+                    return {
+                        ...state,
+                        playlist: [...state.playlist, action.episode.guid],
+                        episodes: {
+                            ...state.episodes,
+                            [action.episode.guid]: {
+                                ...state.episodes[action.episode.guid],
+                                title: action.episode.title,
+                                src: action.episode.src
+                            }
+                        },
+                        podcasts: {
+                            ...state.podcasts,
+                            [action.podcast.feedUrl]: {
+                                ...state.podcasts[action.podcast.feedUrl],
+                                title: action.podcast.title,
+                                description: action.podcast.description,
+                                imageUrl: action.podcast.imageUrl,
+                                ethereumAddress: action.podcast.ethereumAddress,
+                                email: action.podcast.email
+                            }
+                        }
+                    };
+                }
+                else {
+                    const podcastInState: Readonly<Podcast> = state.podcasts[action.podcast.feedUrl];
+                    const podcastAlreadyExists: boolean = podcastInState !== null && podcastInState !== undefined;
+
+                    if (podcastAlreadyExists) {
+                        return {
+                            ...state,
+                            playlist: [...state.playlist, action.episode.guid],
+                            episodes: {
+                                ...state.episodes,
+                                [action.episode.guid]: action.episode
+                            },
+                            podcasts: {
+                                ...state.podcasts,
+                                [action.podcast.feedUrl]: {
+                                    ...state.podcasts[action.podcast.feedUrl],
+                                    title: action.podcast.title,
+                                    description: action.podcast.description,
+                                    imageUrl: action.podcast.imageUrl,
+                                    ethereumAddress: action.podcast.ethereumAddress,
+                                    email: action.podcast.email,
+                                    episodeGuids: [...podcastInState.episodeGuids, action.episode.guid]
+                                }
+                            }
+                        };
                     }
-                },
-                podcasts: {
-                    ...state.podcasts,
-                    [action.podcast.feedUrl]: {
-                        ...state.podcasts[action.podcast.feedUrl],
-                        ...action.podcast,
-                        episodeGuids: [...(state.podcasts[action.podcast.feedUrl] ? state.podcasts[action.podcast.feedUrl].episodeGuids : []), action.episode.guid]
+                    else {
+                        return {
+                            ...state,
+                            playlist: [...state.playlist, action.episode.guid],
+                            episodes: {
+                                ...state.episodes,
+                                [action.episode.guid]: action.episode
+                            },
+                            podcasts: {
+                                ...state.podcasts,
+                                [action.podcast.feedUrl]: {
+                                    ...action.podcast,
+                                    episodeGuids: [action.episode.guid]
+                                }
+                            }
+                        };
                     }
                 }
-            };
+            }
         }
     
         if (action.type === 'PLAY_EPISODE_FROM_PLAYLIST') {
