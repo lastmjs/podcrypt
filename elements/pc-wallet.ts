@@ -186,8 +186,8 @@ StorePromise.then((Store) => {
 
             ${Object.values(Store.getState().podcasts).map((podcast: Podcast) => {
                 const totalTimeForPodcastDuringCurrentIntervalInMilliseconds: Milliseconds = calculateTotalTimeForPodcastDuringCurrentIntervalInMilliseconds(Store.getState(), podcast);
-                const totalTimeForPodcastDuringCurrentIntervalInMinutes: Minutes = new BigNumber(totalTimeForPodcastDuringCurrentIntervalInMilliseconds).dividedBy(60000).toFixed(0);
-                const secondsRemainingForPodcastDuringCurrentInterval: Seconds = new BigNumber(totalTimeForPodcastDuringCurrentIntervalInMilliseconds).mod(60000).dividedBy(1000).toFixed(0);
+                const totalTimeForPodcastDuringCurrentIntervalInMinutes: Minutes = new BigNumber(totalTimeForPodcastDuringCurrentIntervalInMilliseconds).dividedBy(60000).integerValue(BigNumber.ROUND_FLOOR).toString();
+                const secondsRemainingForPodcastDuringCurrentInterval: Seconds = new BigNumber(totalTimeForPodcastDuringCurrentIntervalInMilliseconds).mod(60000).dividedBy(1000).integerValue(BigNumber.ROUND_FLOOR).toString();
                 // const totalTimeForPodcastDuringCurrentIntervalInMinutes: Minutes = Math.floor(totalTimeForPodcastDuringCurrentIntervalInMilliseconds / 60000);
                 // const secondsRemainingForPodcastDuringCurrentInterval: Seconds = Math.round((totalTimeForPodcastDuringCurrentIntervalInMilliseconds % 60000) / 1000);
 
