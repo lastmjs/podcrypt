@@ -41,6 +41,11 @@ export function getPayoutTargetInETH(Store: Readonly<Store<Readonly<State>, AnyA
     return Store.getState().currentETHPriceInUSDCents === 'UNKNOWN' ? 'Loading...' : payoutTargetInETH;
 }
 
+export function getPayoutTargetInWEI(state: Readonly<State>): string | 'Loading...' {
+    const payoutTargetInWEI: ETH = new BigNumber(state.payoutTargetInUSDCents).dividedBy(new BigNumber(state.currentETHPriceInUSDCents)).multipliedBy(1e18).toString();
+    return state.currentETHPriceInUSDCents === 'UNKNOWN' ? 'Loading...' : payoutTargetInWEI;
+}
+
 export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>, ethersProvider: any, retryDelayInMilliseconds: Milliseconds): Promise<void> {
         
     // TODO this is not being used for anything

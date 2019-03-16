@@ -7,11 +7,15 @@ import {
     get,
     set
 } from 'idb-keyval';
+import BigNumber from 'bignumber.js';
+import {
+    getPayoutTargetInWEI
+} from './payout-calculations';
 
 export const StorePromise: Promise<Readonly<Store<Readonly<State>, Readonly<AnyAction>>>> = prepareStore();
 
 async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<AnyAction>>>> {
-    const version: number = 23;
+    const version: number = 24;
     const persistedState: Readonly<State> = await get('state');
 
     const InitialState: Readonly<State> = persistedState && version === persistedState.version ? persistedState : {
@@ -49,7 +53,8 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
         preparingPlaylist: false,
         podcryptPayoutPercentage: '10',
         podcryptPreviousPayoutDateInMilliseconds: 'NEVER',
-        podcryptLatestTransactionHash: null
+        podcryptLatestTransactionHash: null,
+        payoutProblem: 'NO_PROBLEM'
     };
     
     const RootReducer: (state: Readonly<State> | undefined, action: AnyAction) => Readonly<State> = (state: Readonly<State> = InitialState, action: AnyAction) => {
@@ -520,9 +525,18 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
         }
 
         if (action.type === 'SET_ETHEREUM_BALANCE_IN_WEI') {
+            const newEthereumBalanceInWEI: WEI = action.ethereumBalanceInWEI;
+            const payoutTargetInWEI: WEI = getPayoutTargetInWEI(state);
+
+            const newEthereumBalanceInWEIBigNumber = new BigNumber(newEthereumBalanceInWEI);
+            const payoutTargetInWEIBigNumber = new BigNumber(payoutTargetInWEI);
+
+            const newPayoutProblem = newEthereumBalanceInWEIBigNumber.eq(0) ? 'BALANCE_0' : payoutTargetInWEIBigNumber.eq(0) ? 'PAYOUT_TARGET_0' : newEthereumBalanceInWEIBigNumber.lt(payoutTargetInWEIBigNumber) ? 'BALANCE_LESS_THAN_PAYOUT_TARGET' : 'NO_PROBLEM';
+
             return {
                 ...state,
-                ethereumBalanceInWEI: action.ethereumBalanceInWEI
+                payoutProblem: newPayoutProblem,
+                ethereumBalanceInWEI: newEthereumBalanceInWEI
             };
         }
     

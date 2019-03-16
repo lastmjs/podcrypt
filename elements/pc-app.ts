@@ -50,7 +50,19 @@ StorePromise.then((Store) => {
     
             <div class="pc-app-top-bar">
                 <pc-hamburger @click=${mainMenuToggle}></pc-hamburger>
-                <div style="margin-left: 5%">Podcrypt Pre-alpha</div>
+                <div style="margin-left: 5%;">Podcrypt Pre-alpha</div>
+                <div
+                    ?hidden=${Store.getState().payoutProblem === 'NO_PROBLEM'}
+                    style="margin-left: auto; margin-right: 5%;"
+                >
+                    <i 
+                        class="material-icons"
+                        style="font-size: calc(25px + 1vmin); color: red"
+                        @click=${() => alert(getPayoutProblemMessage(Store.getState().payoutProblem))}
+                    >
+                        error_outline
+                    </i>  
+                </div>
             </div>
     
             <pc-main-menu></pc-main-menu>
@@ -65,5 +77,19 @@ StorePromise.then((Store) => {
         Store.dispatch({
             type: 'TOGGLE_SHOW_MAIN_MENU'
         });
+    }
+
+    function getPayoutProblemMessage(payoutProblem: PayoutProblem) {
+        if (payoutProblem === 'BALANCE_0') {
+            return `There is a problem with your next payout: You have a balance of 0`;
+        }
+
+        if (payoutProblem === 'PAYOUT_TARGET_0') {
+            return `There is a problem with your next payout: Your payout target is $0`;
+        }
+
+        if (payoutProblem === 'BALANCE_LESS_THAN_PAYOUT_TARGET') {
+            return `There is a problem with your next payout: Your balance is less than your payout target`;
+        }
     }
 });
