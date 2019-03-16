@@ -146,3 +146,23 @@ export function parseEthereumAddressFromPodcastDescription(podcastDescription: s
         return 'MALFORMED';
     }
 }
+
+export function addEpisodeToPlaylist(Store: any, podcast: any, item: any) {
+    Store.dispatch({
+        type: 'ADD_EPISODE_TO_PLAYLIST',
+        episode: {
+            feedUrl: podcast.feedUrl,
+            guid: item.guid,
+            title: item.title,
+            src: item.enclosure.url,
+            finishedListening: false,
+            playing: false,
+            progress: 0,
+            isoDate: item.isoDate,
+            timestamps: []
+        },
+        podcast: {
+            ...podcast
+        }
+    });
+}
