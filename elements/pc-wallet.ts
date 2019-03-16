@@ -228,7 +228,7 @@ StorePromise.then((Store) => {
                 <div style="display:flex; flex-direction: column; padding-left: 5%; flex: 3">
                     <div class="pc-wallet-podcast-item-text">Podcrypt</div>
                     <br>
-                    <div>$${new BigNumber(Store.getState().payoutTargetInUSDCents).multipliedBy(Store.getState().podcryptPayoutPercentage).dividedBy(1000).toFixed(2)}, ${Store.getState().podcryptPayoutPercentage}%</div>
+                    <div>$${new BigNumber(Store.getState().payoutTargetInUSDCents).multipliedBy(Store.getState().podcryptPayoutPercentage).dividedBy(10000).toFixed(2)}, ${Store.getState().podcryptPayoutPercentage}%</div>
                     <br>
                     <div>Last payout: ${Store.getState().previousPayoutDateInMilliseconds === 'NEVER' ? 'never' : html`<a href="https://ropsten.etherscan.io/tx/${Store.getState().podcryptLatestTransactionHash}" target="_blank">${new Date(Store.getState().previousPayoutDateInMilliseconds).toLocaleString()}</a>`}</div>
                     <div>Next payout: ${nextPayoutLocaleDateString}</div>
