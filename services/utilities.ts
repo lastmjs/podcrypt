@@ -1,3 +1,5 @@
+import '../node_modules/rss-parser/dist/rss-parser.min.js';
+
 export const corsAnywhereProxy = 'https://cors-anywhere.herokuapp.com/';
 export const jsonpProxy = 'https://jsonp.afeld.me/?url=';
 
@@ -18,6 +20,18 @@ export function parseQueryString(queryString: string) {
 
 export function navigate(Store: any, path: string) {
     window.history.pushState({}, '', path);
+    Store.dispatch({
+        type: 'CHANGE_CURRENT_ROUTE',
+        currentRoute: {
+            pathname: window.location.pathname,
+            search: window.location.search,
+            query: parseQueryString(window.location.search.slice(1))
+        }
+    });
+}
+
+export function navigateInPlace(Store: any, path: string) {
+    window.history.replaceState({}, '', path);
     Store.dispatch({
         type: 'CHANGE_CURRENT_ROUTE',
         currentRoute: {
@@ -54,6 +68,7 @@ export async function getRSSFeed(feedUrl: string, attemptNumber: number = 0): Pr
         return null;
     }
     catch(error) {
+        console.log('getRSSFeed error', error);
         return await getRSSFeed(feedUrl, attemptNumber + 1);
     }
 }
@@ -157,8 +172,6 @@ export function addEpisodeToPlaylist(Store: any, podcast: any, item: any) {
             isoDate: item.isoDate,
             timestamps: []
         },
-        podcast: {
-            ...podcast
-        }
+        podcast
     });
 }

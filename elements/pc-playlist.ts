@@ -2,9 +2,10 @@ import { customElement, html } from 'functional-element';
 import { StorePromise } from '../services/store';
 import { pcContainerStyles } from '../services/css';
 import { 
-    navigate,
+    navigateInPlace,
     getRSSFeed,
-    createPodcast
+    createPodcast,
+    addEpisodeToPlaylist
 } from '../services/utilities';
 import './pc-loading';
 
@@ -15,14 +16,27 @@ StorePromise.then((Store) => {
             Store.subscribe(update);
             return {
                 feedUrl: null,
+                previousFeedUrl: null,
                 episodeGuid: null,
+                previousEpisodeGuid: null,
                 loaded: false
             };
         }
 
-        // TODO preparePlaylist is disgusting...think of a cleaner way to get the episode to load first try
-        // TODO see if you can do the previousFeedUrl previousEpisodeGuid thing from episode preview
-        preparePlaylist(props, update);
+        if (
+            props.feedUrl !== props.previousFeedUrl &&
+            props.episodeGuid !== props.previousEpisodeGuid
+        ) {
+            const newProps = {
+                ...props,
+                loaded: false,
+                previousFeedUrl: props.feedUrl,
+                previousEpisodeGuid: props.episodeGuid
+            };
+
+            update(newProps);
+            preparePlaylist(newProps, update);
+        }
 
         return html`
             <style>
@@ -91,7 +105,7 @@ StorePromise.then((Store) => {
                 ${Store.getState().playlist.map((episodeGuid: any, index: any) => {
                     const episode: Readonly<Episode> = Store.getState().episodes[episodeGuid];
                     const podcast: Readonly<Podcast> = Store.getState().podcasts[episode.feedUrl];
-                    const currentPlaylistIndex = (Store.getState() as any).currentPlaylistIndex;
+                    const currentPlaylistIndex = Store.getState().currentPlaylistIndex;
                     const currentlyPlaying = currentPlaylistIndex === index;
 
                     return html`
@@ -148,7 +162,7 @@ StorePromise.then((Store) => {
         });
 
         const episode: Readonly<Episode> = Store.getState().episodes[episodeGuid];
-        navigate(Store, `/playlist?feedUrl=${episode.feedUrl}&episodeGuid=${episodeGuid}`);
+        navigateInPlace(Store, `/playlist?feedUrl=${episode.feedUrl}&episodeGuid=${episodeGuid}`);
     }
 
     function pauseEpisode() {
@@ -182,114 +196,55 @@ StorePromise.then((Store) => {
         });
     }
 
-    // TODO preparePlaylist is disgusting...think of a cleaner way to get the episode to load first try
     async function preparePlaylist(props: any, update: any) {
 
-
-        if (props.loaded === true) {
+        // TODO It is a little unclear to me why this is working.
+        // TODO we want to load pretty immediately if there is no feedUrl or episodeGuid in the route
+        // TODO this might be checking for that situation
+        if (
+            props.feedUrl === null ||
+            props.feedUrl === undefined ||
+            props.episodeGuid === null ||
+            props.episodeGuid === undefined
+        ) {
+            update({
+                ...props,
+                loaded: true
+            });
+            
             return;
         }
 
-        if (
-            Store.getState().currentRoute.pathname === '/playlist' &&
-            Store.getState().currentRoute.search === '' &&
-            props.loaded === false
-        ) {
-            update({
-                ...props,
-                loaded: true
-            });
-        }
+        const episodeInState = Store.getState().episodes[props.episodeGuid];
+        const episodeDoesNotExist = episodeInState === null || episodeInState === undefined;
 
-        if (
-            props.feedUrl !== null &&
-            props.feedUrl !== undefined &&
-            props.episodeGuid !== null &&
-            props.episodeGuid !== undefined
-        ) {
-            if (Store.getState().currentEpisodeGuid === props.episodeGuid) {
-                update({
-                    ...props,
-                    loaded: true
-                });
-                return;
-            }
+        // TODO check for null results indicating failures, display ui accordingly
+        if (episodeDoesNotExist) {
+            const feed = await getRSSFeed(props.feedUrl);
+            const episodeItem = feed.items.filter((item: any) => {
+                return item.guid === props.episodeGuid;
+            })[0];
+            const podcast: Readonly<Podcast> | null = await createPodcast(props.feedUrl, feed);
 
-            if (Store.getState().preparingPlaylist) {
-                return;
-            }
-            else {
-                Store.dispatch({
-                    type: 'SET_PREPARING_PLAYLIST',
-                    preparingPlaylist: true
-                });
-            }
+            addEpisodeToPlaylist(Store, podcast, episodeItem);
 
-            if (!Store.getState().podcasts[props.feedUrl]) {
-                const podcast: Readonly<Podcast | null> = await createPodcast(props.feedUrl);
-
-                Store.dispatch({
-                    type: 'SUBSCRIBE_TO_PODCAST',
-                    podcast
-                });
-            }
-
-            if (!Store.getState().episodes[props.episodeGuid]) {
-                // TODO grabbing the feed is not optimized...we will be grabbing it multiple times potentially
-                // TODO if the podcast also does not yet exist in Redux
-                const feed = await getRSSFeed(props.feedUrl);
-                const episodeItem = feed.items.filter((item: any) => {
-                    return item.guid === props.episodeGuid;
-                })[0];
-                const podcast: Readonly<Podcast> = Store.getState().podcasts[props.feedUrl];
-                
-                // TODO put episode creation somewhere to share
-                const episode: Readonly<Episode> = {
-                    feedUrl: podcast.feedUrl,
-                    guid: episodeItem.guid,
-                    title: episodeItem.title,
-                    src: episodeItem.enclosure.url,
-                    finishedListening: false,
-                    playing: false,
-                    progress: '0',
-                    isoDate: episodeItem.isoDate,
-                    timestamps: []
-                };
-
-                Store.dispatch({
-                    type: 'ADD_EPISODE_TO_PLAYLIST',
-                    podcast,
-                    episode
-                });
-            }
-
-            const podcast: Readonly<Podcast> = Store.getState().podcasts[props.feedUrl];
             const episode: Readonly<Episode> = Store.getState().episodes[props.episodeGuid];
 
-            if (!Store.getState().playlist.includes(props.episodeGuid)) {
-                Store.dispatch({
-                    type: 'ADD_EPISODE_TO_PLAYLIST',
-                    podcast,
-                    episode
-                });
-            }
-
-            if (!(Store.getState().currentEpisodeGuid === episode.guid)) {
-                Store.dispatch({
-                    type: 'SET_CURRENT_EPISODE',
-                    episode
-                });
-            }
-
             Store.dispatch({
-                type: 'SET_PREPARING_PLAYLIST',
-                preparingPlaylist: false
-            });
-        
-            update({
-                ...props,
-                loaded: true
+                type: 'SET_CURRENT_EPISODE',
+                episode
             });
         }
+        else {
+            Store.dispatch({
+                type: 'SET_CURRENT_EPISODE',
+                episode: episodeInState
+            });
+        }
+        
+        update({
+            ...props,
+            loaded: true
+        });
     }
 });
