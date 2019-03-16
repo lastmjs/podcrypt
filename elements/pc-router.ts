@@ -4,6 +4,7 @@ import './pc-podcasts.ts';
 import './pc-playlist';
 import './pc-wallet';
 import './pc-podcast-overview';
+import './pc-episode-overview';
 import './pc-podcast-search-results';
 import './pc-credits';
 import './pc-privacy';
@@ -113,6 +114,11 @@ StorePromise.then((Store) => {
                 ?hidden=${currentRoute.pathname !== '/podcast-overview'}
                 .feedUrl=${Store.getState().currentRoute.query.feedUrl}
             ></pc-podcast-overview>
+            <pc-episode-overview
+                ?hidden=${currentRoute.pathname !== '/episode-overview'}
+                .feedUrl=${Store.getState().currentRoute.query.feedUrl}
+                .episodeGuid=${Store.getState().currentRoute.query.episodeGuid}
+            ></pc-episode-overview>
             <pc-podcast-search-results
                 ?hidden=${currentRoute.pathname !== '/podcast-search-results'}
                 .term=${Store.getState().currentRoute.query.term}

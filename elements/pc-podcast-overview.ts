@@ -5,18 +5,19 @@ import { pcContainerStyles } from '../services/css';
 import {
     getRSSFeed,
     navigate,
-    createPodcast
+    createPodcast,
+    addEpisodeToPlaylist
 } from '../services/utilities';
 import './pc-loading';
 
 StorePromise.then((Store) => {
-    customElement('pc-podcast-overview', ({ constructing, element, update, props }) => {
+    customElement('pc-podcast-overview', ({ constructing, update, props }) => {
     
         if (constructing) {
             return {
                 feedUrl: null,
                 previousFeedUrl: null,
-                feedUI: html`Loading...`,
+                feedUI: '',
                 loaded: false,
                 once: false
             };
@@ -102,11 +103,11 @@ StorePromise.then((Store) => {
             previousFeedUrl: feedUrl,
             feedUI: html`
                 <div style="display: flex; margin: 0; padding: 5%; padding-top: 0%">
-                    <div style="flex: 1; display: flex; flex-direction: column; align-items: flex-start">
+                    <div style="flex: 1">
                         <img src="${podcast.imageUrl}" width="60" height="60">
                     </div>
                     <div style="flex: 3;">
-                        <h3 style="margin: 0">${feed.title}</h3>
+                        <div style="font-weight: bold; font-size: calc(16px + 1vmin); flex: 3">${feed.title}</div>
                         <div>
                             ${
                                 podcast.ethereumAddress === 'NOT_FOUND' ? 
@@ -123,7 +124,10 @@ StorePromise.then((Store) => {
                 ${feed.items.map((item: any) => {
                     return html`
                         <div class="pc-podcast-overview-episode">
-                            <div class="pc-podcast-overview-episode-title">
+                            <div
+                                class="pc-podcast-overview-episode-title"
+                                @click=${() => navigate(Store, `/episode-overview?feedUrl=${podcast.feedUrl}&episodeGuid=${item.guid}`)}
+                            >
                                 <div>${item.title}</div>
                                 <br>
                                 <div style="font-size: calc(10px + 1vmin); font-weight: normal">${new Date(item.isoDate).toLocaleDateString()}</div>
@@ -132,7 +136,7 @@ StorePromise.then((Store) => {
                             <div class="pc-podcast-overview-episode-controls-container">
                                 <i 
                                     class="material-icons pc-podcast-overview-episode-add-control"
-                                    @click=${() => addEpisodeToPlaylist(podcast, item)}
+                                    @click=${() => addEpisodeToPlaylist(Store, podcast, item)}
                                 >playlist_add
                                 </i>  
                             </div>
@@ -158,27 +162,6 @@ StorePromise.then((Store) => {
     //         }
     //     });
     // }
-    
-    function addEpisodeToPlaylist(podcast: any, item: any) {
-        console.log(item)
-        Store.dispatch({
-            type: 'ADD_EPISODE_TO_PLAYLIST',
-            episode: {
-                feedUrl: podcast.feedUrl,
-                guid: item.guid,
-                title: item.title,
-                src: item.enclosure.url,
-                finishedListening: false,
-                playing: false,
-                progress: 0,
-                isoDate: item.isoDate,
-                timestamps: []
-            },
-            podcast: {
-                ...podcast
-            }
-        });
-    }
 
     function notVerifiedHelpClick(podcast: Readonly<Podcast>) {
         navigate(Store, `/not-verified-help?feedUrl=${podcast.feedUrl}&podcastEmail=${podcast.email}`);
