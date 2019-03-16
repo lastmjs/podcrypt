@@ -275,18 +275,24 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
         if (action.type === 'CURRENT_EPISODE_COMPLETED') {
             const nextPlaylistIndex: number = state.currentPlaylistIndex + 1;
             const nextEpisodeGuid: EpisodeGuid = state.playlist[nextPlaylistIndex];
-    
+            const newCurrentEpisode = {
+                ...state.episodes[state.currentEpisodeGuid],
+                finishedListening: true,
+                progress: '0',
+                playing: false,
+                timestamps: [...state.episodes[state.currentEpisodeGuid].timestamps, {
+                    type: 'STOP',
+                    actionType: 'CURRENT_EPISODE_COMPLETED',
+                    milliseconds: new Date().getTime().toString()
+                }]
+            };
+
             if (!nextEpisodeGuid) {
                 return {
                     ...state,
                     episodes: {
                         ...state.episodes,
-                        [state.currentEpisodeGuid]: {
-                            ...state.episodes[state.currentEpisodeGuid],
-                            finishedListening: true,
-                            progress: '0',
-                            playing: false
-                        }
+                        [state.currentEpisodeGuid]: newCurrentEpisode
                     }
                 };
             }
@@ -297,15 +303,15 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
                 currentPlaylistIndex: nextPlaylistIndex,
                 episodes: {
                     ...state.episodes,
-                    [state.currentEpisodeGuid]: {
-                        ...state.episodes[state.currentEpisodeGuid],
-                        finishedListening: true,
-                        progress: '0',
-                        playing: false
-                    },
+                    [state.currentEpisodeGuid]: newCurrentEpisode,
                     [nextEpisodeGuid]: {
                         ...state.episodes[nextEpisodeGuid],
-                        playing: true
+                        playing: true,
+                        timestamps: [...state.episodes[nextEpisodeGuid].timestamps, {
+                            type: 'START',
+                            actionType: 'CURRENT_EPISODE_COMPLETED',
+                            milliseconds: new Date().getTime().toString()
+                        }]
                     }
                 }
             };
