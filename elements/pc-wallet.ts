@@ -214,7 +214,7 @@ StorePromise.then((Store) => {
                             <br>
                             <div>$${new BigNumber(payoutAmountForPodcastDuringCurrentIntervalInUSD).toFixed(2)}, ${new BigNumber(percentageOfTotalTimeForPodcastDuringCurrentInterval).toFixed(2)}%, ${totalTimeForPodcastDuringCurrentIntervalInMinutes} min ${secondsRemainingForPodcastDuringCurrentInterval} sec</div>
                             <br>
-                            <div>Last payout: ${podcast.previousPayoutDateInMilliseconds === 'NEVER' ? 'never' : html`<a href="https://ropsten.etherscan.io/tx/${podcast.latestTransactionHash}" target="_blank">${new Date(podcast.previousPayoutDateInMilliseconds).toLocaleDateString()}</a>`}</div>
+                            <div>Last payout: ${podcast.previousPayoutDateInMilliseconds === 'NEVER' ? 'never' : html`<a href="https://ropsten.etherscan.io/tx/${podcast.latestTransactionHash}" target="_blank">${new Date(podcast.previousPayoutDateInMilliseconds).toLocaleString()}</a>`}</div>
                             <div>Next payout: ${nextPayoutLocaleDateString}</div>
                         </div>
                     </div>
@@ -230,7 +230,7 @@ StorePromise.then((Store) => {
                     <br>
                     <div>$${new BigNumber(Store.getState().payoutTargetInUSDCents).multipliedBy(Store.getState().podcryptPayoutPercentage).dividedBy(1000).toFixed(2)}, ${Store.getState().podcryptPayoutPercentage}%</div>
                     <br>
-                    <div>Last payout: ${Store.getState().previousPayoutDateInMilliseconds === 'NEVER' ? 'never' : html`<a href="https://ropsten.etherscan.io/tx/${Store.getState().podcryptLatestTransactionHash}" target="_blank">${new Date(Store.getState().previousPayoutDateInMilliseconds).toLocaleDateString()}</a>`}</div>
+                    <div>Last payout: ${Store.getState().previousPayoutDateInMilliseconds === 'NEVER' ? 'never' : html`<a href="https://ropsten.etherscan.io/tx/${Store.getState().podcryptLatestTransactionHash}" target="_blank">${new Date(Store.getState().previousPayoutDateInMilliseconds).toLocaleString()}</a>`}</div>
                     <div>Next payout: ${nextPayoutLocaleDateString}</div>
                 </div>
             </div>
@@ -246,7 +246,7 @@ StorePromise.then((Store) => {
 
     function walletWarnings() {
         return html`
-            <div>I understand the following:</div>
+            <div>I understand the following (check each box):</div>
             <br>
             <div>
                 <input 
@@ -360,6 +360,8 @@ StorePromise.then((Store) => {
             type: 'SET_NEXT_PAYOUT_DATE_IN_MILLISECONDS',
             nextPayoutDateInMilliseconds
         });
+
+        loadEthereumAccountBalance(Store, ethersProvider);
     }
     
     async function payoutTargetInUSDCentsInputChanged(e: any) {
@@ -368,6 +370,8 @@ StorePromise.then((Store) => {
             type: 'SET_PAYOUT_TARGET_IN_USD_CENTS',
             payoutTargetInUSDCents: parseInt(e.target.value) * 100
         });
+
+        loadEthereumAccountBalance(Store, ethersProvider);
     }
 
     setInterval(() => {

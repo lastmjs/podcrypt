@@ -36,6 +36,8 @@ type Timestamp = {
     readonly milliseconds: string;
 }
 
+type PayoutProblem = 'BALANCE_0' | 'PAYOUT_TARGET_0' | 'BALANCE_LESS_THAN_PAYOUT_TARGET' | 'NO_PROBLEM';
+
 type CryptonatorETHPriceAPIEndpoint = `https://api.cryptonator.com/api/ticker/eth-usd`;
 type EtherscanETHPriceAPIEndpoint = `https://api.etherscan.io/api?module=stats&action=ethprice`;
 type FeedUrl = string;
@@ -101,4 +103,5 @@ type State = {
     readonly podcryptPayoutPercentage: Percent;
     readonly podcryptPreviousPayoutDateInMilliseconds: Milliseconds | 'NEVER';
     readonly podcryptLatestTransactionHash: string | null;
+    readonly payoutProblem: PayoutProblem;
 }
