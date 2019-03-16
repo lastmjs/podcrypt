@@ -15,7 +15,7 @@ import {
 export const StorePromise: Promise<Readonly<Store<Readonly<State>, Readonly<AnyAction>>>> = prepareStore();
 
 async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<AnyAction>>>> {
-    const version: number = 25;
+    const version: number = 26;
     const persistedState: Readonly<State> = await get('state');
 
     const InitialState: Readonly<State> = persistedState && version === persistedState.version ? persistedState : {
