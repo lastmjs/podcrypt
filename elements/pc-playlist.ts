@@ -21,6 +21,7 @@ StorePromise.then((Store) => {
         }
 
         // TODO preparePlaylist is disgusting...think of a cleaner way to get the episode to load first try
+        // TODO see if you can do the previousFeedUrl previousEpisodeGuid thing from episode preview
         preparePlaylist(props, update);
 
         return html`
@@ -88,7 +89,8 @@ StorePromise.then((Store) => {
             html`<div style="display: flex; align-items: center; justify-content: center; margin-top: 25%; font-size: calc(20px + 1vmin); color: grey">Your playlist is empty</div>` :
             html`
                 ${Store.getState().playlist.map((episodeGuid: any, index: any) => {
-                    const episode = (Store.getState() as any).episodes[episodeGuid];
+                    const episode: Readonly<Episode> = Store.getState().episodes[episodeGuid];
+                    const podcast: Readonly<Podcast> = Store.getState().podcasts[episode.feedUrl];
                     const currentPlaylistIndex = (Store.getState() as any).currentPlaylistIndex;
                     const currentlyPlaying = currentPlaylistIndex === index;
 
@@ -109,7 +111,10 @@ StorePromise.then((Store) => {
                                     title="Move episode down"
                                 >keyboard_arrow_down</i>
                             </div>
-                            <div class="pc-playlist-item-title">${episode.finishedListening ? '*' : ''} ${episode.title}</div>
+                            <div class="pc-playlist-item-title">
+                                <div style="font-size: calc(10px + 1vmin); color: grey; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; width: 60vw">${podcast.title}</div>
+                                <div>${episode.finishedListening ? '*' : ''} ${episode.title}</div>
+                            </div>
                             <div class="pc-playlist-item-controls-container">
                                 ${
                                     episode.playing ? 
