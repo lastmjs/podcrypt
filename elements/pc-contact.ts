@@ -34,7 +34,7 @@ customElement('pc-contact', ({ constructing, connecting, props, update}) => {
 
             <h2>Contact</h2>
 
-            <p>Reach out if you need something:</p>
+            <p>Bugs, errors, issues, suggestions? Reach out if you need something:</p>
 
             <div>
                 <a href="https://t.me/podcrypt" target="_blank">Telegram</a>

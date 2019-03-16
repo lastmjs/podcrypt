@@ -102,39 +102,24 @@ StorePromise.then((Store) => {
         }
         else {
             const podcastFeedResultsPromises = responseJSON.results.map(async (searchResult: any) => {   
-                const podcast: Readonly<Podcast | null> = await createPodcast(searchResult.feedUrl);
-
-                if (podcast === null) {
-                    return html`<div>Podcast could not be loaded</div>`;
-                }
-
                 return html`
                     <div class="pc-podcast-search-results-item">
                         <div>
-                            <img src="${podcast.imageUrl}" width="60" height="60">
+                            <img src="${searchResult.artworkUrl60}" width="60" height="60">
                         </div>
 
                         <div
                             class="pc-podcast-search-results-item-text"
-                            @click=${() => podcastTitleClick(podcast.feedUrl)}
+                            @click=${() => podcastTitleClick(searchResult.feedUrl)}
                         >
-                            ${podcast.title}
-                            <div>
-                                ${
-                                    podcast.ethereumAddress === 'NOT_FOUND' ? 
-                                        html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${(e: any) => notVerifiedHelpClick(e, podcast)}>Not verified - click to help</button>` :
-                                        podcast.ethereumAddress === 'MALFORMED' ?
-                                html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${(e: any) => notVerifiedHelpClick(e, podcast)}>Not verified - click to help</button>` :
-                                            html`<button style="color: green; border: none; padding: 5px; margin: 5px" @click=${(e: any) => { e.stopPropagation(); alert(`This podcast's Ethereum address: ${podcast.ethereumAddress}`)} }>Verified</button>` }
-                            </div>
-
+                            ${searchResult.trackName}
                         </div>
 
                         <div class="pc-podcast-search-results-item-controls-container">
                             <i 
                                 class="material-icons"
                                 style="font-size: 25px; cursor: pointer"
-                                @click=${() => subscribeToPodcast(podcast)}
+                                @click=${() => subscribeToPodcast(searchResult.feedUrl)}
                             >
                                 library_add
                             </i>  
@@ -174,10 +159,14 @@ StorePromise.then((Store) => {
         }
     }
 
-    // TODO defend against adding podcasts multiple times
-    // TODO only send the dynamic information that we need from here
-    // TODO put all of the defaults into the redux reducer
-    function subscribeToPodcast(podcast: Readonly<Podcast>) {
+    async function subscribeToPodcast(feedUrl: FeedUrl) {
+        const podcast: Readonly<Podcast> | null = await createPodcast(feedUrl);
+
+        if (podcast === null) {
+            alert('Could not subscribe to podcast');
+            return;
+        }
+
         Store.dispatch({
             type: 'SUBSCRIBE_TO_PODCAST',
             podcast
@@ -186,11 +175,5 @@ StorePromise.then((Store) => {
 
     function podcastTitleClick(feedUrl: string) {
         navigate(Store, `podcast-overview?feedUrl=${feedUrl}`);
-    }
-
-    function notVerifiedHelpClick(e: any, podcast: Readonly<Podcast>) {
-        e.stopPropagation();
-
-        navigate(Store, `/not-verified-help?feedUrl=${podcast.feedUrl}&podcastEmail=${podcast.email}`);
     }
 });

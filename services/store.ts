@@ -143,18 +143,19 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
         //     };
         // }
     
-        // TODO when adding new episodes and podcasts, we might overwrite important data...use more intelligent defaults
         if (action.type === 'SUBSCRIBE_TO_PODCAST') {
-            return {
-                ...state,
-                podcasts: {
-                    ...state.podcasts,
-                    [action.podcast.feedUrl]: {
-                        ...state.podcasts[action.podcast.feedUrl],
-                        ...action.podcast
+            if (state.podcasts[action.podcast.feedUrl]) {
+                return state;
+            }
+            else {
+                return {
+                    ...state,
+                    podcasts: {
+                        ...state.podcasts,
+                        [action.podcast.feedUrl]: action.podcast
                     }
-                }
-            };
+                };
+            }
         }
 
         if (action.type === 'SET_PREPARING_PLAYLIST') {
@@ -201,6 +202,7 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
             };
         }
     
+        // TODO adding an episode multiple times will wreak havoc
         if (action.type === 'ADD_EPISODE_TO_PLAYLIST') {
             return {
                 ...state,
@@ -275,7 +277,7 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
         if (action.type === 'CURRENT_EPISODE_COMPLETED') {
             const nextPlaylistIndex: number = state.currentPlaylistIndex + 1;
             const nextEpisodeGuid: EpisodeGuid = state.playlist[nextPlaylistIndex];
-            const newCurrentEpisode = {
+            const newCurrentEpisode: Readonly<Episode> = {
                 ...state.episodes[state.currentEpisodeGuid],
                 finishedListening: true,
                 progress: '0',
