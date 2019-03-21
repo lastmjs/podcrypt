@@ -185,7 +185,7 @@ StorePromise.then((Store) => {
                     <button @click=${() => navigate(Store, '/receive-eth')} style="font-size: calc(15px + 1vmin); border: none; background-color: white; box-shadow: 0px 0px 1px grey; padding: calc(5px + 1vmin);">Receive ETH</button>
                 </div>
                 <div style="display: flex; justify-content: center; align-items: center; margin: calc(5px + 1vmin)">
-                    <button @click=${() => payout(Store, ethersProvider, '500')} style="font-size: calc(15px + 1vmin); border: none; background-color: white; box-shadow: 0px 0px 1px grey; padding: calc(5px + 1vmin);">Pay now</button>
+                    <button @click=${payNowClick} style="font-size: calc(15px + 1vmin); border: none; background-color: white; box-shadow: 0px 0px 1px grey; padding: calc(5px + 1vmin);">Pay now</button>
                 </div>
                 <div style="display: flex; justify-content: center; align-items: center; margin: calc(5px + 1vmin)">
                     <button @click=${restoreWithPhrase} style="font-size: calc(15px + 1vmin); border: none; background-color: white; box-shadow: 0px 0px 1px grey; padding: calc(5px + 1vmin);">Restore with phrase</button>
@@ -325,6 +325,14 @@ StorePromise.then((Store) => {
         `;
     }
 
+    function payNowClick() {
+        const result = confirm('Are you sure you want to pay out now?');
+
+        if (result === true) {
+            payout(Store, ethersProvider, '500');
+        }
+    }
+
     function notVerifiedHelpClick(podcast: Readonly<Podcast>) {
         navigate(Store, `/not-verified-help?feedUrl=${podcast.feedUrl}&podcastEmail=${podcast.email}`);
     }
@@ -454,5 +462,12 @@ StorePromise.then((Store) => {
                 payout(Store, ethersProvider, '500');
             // }
         }
-    }, 60000);
+    }, 30000);
+
+    setInterval(() => {
+        if (Store.getState().currentRoute.pathname === '/wallet') {
+            console.log('loadEthereumAccountBalance');
+            loadEthereumAccountBalance(Store, ethersProvider);
+        }
+    }, 30000);
 });
