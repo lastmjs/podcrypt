@@ -33,7 +33,11 @@ customElement('pc-credits', ({ constructing, connecting, update, props }) => {
             <h3>APIs</h3>
 
             <p>Podcrypt uses a variety of APIs to make itself awesome. Some of them are listed below:</p>
-            <p>Powered by Etherscan.io APIs</p>
+            <p>Powered by <a href="https://etherscan.io/apis" target="_blank">Etherscan.io APIs</a></p>
+            <p><a href="https://ethgasstation.info" target="_blank">ETH Gas Station</a></p>
+            <p><a href="https://cors-anywhere.herokuapp.com" target="_blank">CORS Anywhere</a></p>
+            <p><a href="https://jsonp.afeld.me" target="_blank">JSONProxy</a></p>
+            <p><a href="https://www.cryptonator.com/api" target="_blank">Cryptonator</a></p>
 
             <h3>Open Source</h3>
             <p>Podcrypt itself is distributed under the terms of the MIT license. Podcrypt uses many other open source libraries, distributed under the following terms:</p>

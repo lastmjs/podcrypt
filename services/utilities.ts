@@ -1,4 +1,5 @@
 import '../node_modules/rss-parser/dist/rss-parser.min.js';
+import BigNumber from 'bignumber.js';
 
 export const corsAnywhereProxy = 'https://cors-anywhere.herokuapp.com/';
 export const jsonpProxy = 'https://jsonp.afeld.me/?url=';
@@ -174,4 +175,18 @@ export function addEpisodeToPlaylist(Store: any, podcast: any, item: any) {
         },
         podcast
     });
+}
+
+// TODO we need a contingency plan for this oracle...
+export async function getSafeLowGasPriceInWEI(): Promise<WEI> {
+    const gasPriceResponse = await window.fetch('https://ethgasstation.info/json/ethgasAPI.json');
+    const gasPriceJSON = await gasPriceResponse.json();
+
+    const safeLowGasPriceInGWEI: GWEI = gasPriceJSON.safeLow;
+    const safeLowGasPriceInGWEIBigNumber: BigNumber = new BigNumber(safeLowGasPriceInGWEI);
+    // For some reason the API is returning GWEI times 10, so I multiply by 1e8 instead of 1e9
+    // It's true, look here: https://github.com/ethgasstation/ethgasstation-backend/issues/5
+    const safeLowGasPriceInWEI: WEI = safeLowGasPriceInGWEIBigNumber.multipliedBy(1e8).toFixed(0);
+
+    return safeLowGasPriceInWEI;
 }

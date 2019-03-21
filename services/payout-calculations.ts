@@ -10,7 +10,8 @@ import { loadEthereumAccountBalance } from './balance-calculations';
 import { get } from 'idb-keyval';
 import { 
     wait,
-    getRSSFeed
+    getRSSFeed,
+    getSafeLowGasPriceInWEI
 } from './utilities';
 import BigNumber from "../node_modules/bignumber.js/bignumber";
 import { parseEthereumAddressFromPodcastDescription } from './utilities';
@@ -86,9 +87,8 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
                 continue;
             }
 
-            // const gasPrice = await web3.eth.getGasPrice();
-            const gasPriceInWEI: WEI = '10000000000';
-            const gasPriceInWEIBigNumber = new BigNumber(gasPriceInWEI);
+            const gasPriceInWEI: WEI = await getSafeLowGasPriceInWEI();
+            const gasPriceInWEIBigNumber: BigNumber = new BigNumber(gasPriceInWEI);
 
             console.log('gasPriceInWEIBigNumber', gasPriceInWEIBigNumber.toString());
     
@@ -168,7 +168,7 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
     }
 
     try {
-        const gasPriceInWEI: WEI = '10000000000';
+        const gasPriceInWEI: WEI = await getSafeLowGasPriceInWEI();
         const gasPriceInWEIBigNumber: BigNumber = new BigNumber(gasPriceInWEI);    
 
         console.log('gasPriceInWEIBigNumber', gasPriceInWEIBigNumber.toString());
