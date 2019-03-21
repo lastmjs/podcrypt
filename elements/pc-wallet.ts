@@ -174,7 +174,7 @@ StorePromise.then((Store) => {
 
             <br>
 
-            <div style="display: flex; align-items: center; justify-content: center">
+            <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: center">
                 <div style="display: flex; justify-content: center; align-items: center; margin: calc(5px + 1vmin)">
                     <button @click=${() => alert('Coming soon to most US states: Buy ETH with your debit card')} style="font-size: calc(15px + 1vmin); border: none; background-color: white; box-shadow: 0px 0px 1px grey; padding: calc(5px + 1vmin);">Buy ETH</button>
                 </div>
@@ -184,6 +184,10 @@ StorePromise.then((Store) => {
                 <div style="display: flex; justify-content: center; align-items: center; margin: calc(5px + 1vmin)">
                     <button @click=${() => payout(Store, ethersProvider, '500')} style="font-size: calc(15px + 1vmin); border: none; background-color: white; box-shadow: 0px 0px 1px grey; padding: calc(5px + 1vmin);">Pay now</button>
                 </div>
+                <div style="display: flex; justify-content: center; align-items: center; margin: calc(5px + 1vmin)">
+                    <button @click=${restoreWithPhrase} style="font-size: calc(15px + 1vmin); border: none; background-color: white; box-shadow: 0px 0px 1px grey; padding: calc(5px + 1vmin);">Restore with phrase</button>
+                </div>
+
             </div>
 
             <br>
@@ -320,6 +324,10 @@ StorePromise.then((Store) => {
 
     function notVerifiedHelpClick(podcast: Readonly<Podcast>) {
         navigate(Store, `/not-verified-help?feedUrl=${podcast.feedUrl}&podcastEmail=${podcast.email}`);
+    }
+
+    function restoreWithPhrase() {
+        navigate(Store, '/restore-with-phrase');
     }
 
     function createWalletClick() {
