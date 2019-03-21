@@ -12,6 +12,7 @@ import './pc-contact';
 import './pc-about';
 import './pc-not-verified-help';
 import './pc-receive-eth';
+import './pc-logs';
 import { parseQueryString } from '../services/utilities';
 
 StorePromise.then((Store) => {
@@ -140,6 +141,9 @@ StorePromise.then((Store) => {
             <pc-receive-eth
                 ?hidden=${currentRoute.pathname !== '/receive-eth'}
             ></pc-receive-eth>
+            <pc-logs
+                ?hidden=${currentRoute.pathname !== '/logs'}
+            ></pc-logs>
         `;
     });
     
