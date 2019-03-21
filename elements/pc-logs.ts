@@ -8,6 +8,11 @@ customElement('pc-logs', ({ constructing, update }) => {
     if (constructing) {
         const originalConsoleLog = window.console.log;
         window.console.log = (...args: any) => {
+
+            if (logs.length > 100) {
+                logs = [];
+            }
+
             logs.push(args);
             originalConsoleLog(...args);
             update();
