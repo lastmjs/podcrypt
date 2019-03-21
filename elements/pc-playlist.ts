@@ -205,9 +205,11 @@ StorePromise.then((Store) => {
             props.episodeGuid === null ||
             props.episodeGuid === undefined
         ) {
-            update({
-                ...props,
-                loaded: true
+            setTimeout(() => {
+                update({
+                    ...props,
+                    loaded: true
+                });
             });
             
             return;
