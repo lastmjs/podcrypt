@@ -303,8 +303,8 @@ StorePromise.then((Store) => {
         return html`
             <p>Your secret 12 word phrase:</p>
             <h3>${mnemonicPhrase}</h3>
-            <p>You should store this phrase somewhere safe. If something terrible happens to your Podcrypt wallet, you may be able to use this phrase to restore it.</p>
-            <p>If you do not store this phrase safely, you are more likely to lose any money that you send to Podcrypt.</p>
+            <p>You should immediately store this phrase somewhere safe. If something terrible happens to your Podcrypt wallet, you may be able to use this phrase to restore it.</p>
+            <p>If you do not immediately store this phrase somewhere safe, you are more likely to lose any money that you send to Podcrypt.</p>
             <div>
                 <input 
                     type="checkbox"
