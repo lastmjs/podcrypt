@@ -34,7 +34,7 @@ customElement('pc-loading', ({ props, constructing }) => {
                 right: 0;
                 background-color: ${props.hidden ? 'rgba(255, 255, 255, 0)' : 'rgba(255, 255, 255, 1)'};
                 z-index: 0;
-                transition: background-color 1s linear;
+                ${props.hidden ? 'transition: background-color 1s linear;' : ''}
                 pointer-events: none;
                 text-align: center;
             }
