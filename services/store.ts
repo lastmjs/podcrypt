@@ -15,49 +15,12 @@ import {
 export const StorePromise: Promise<Readonly<Store<Readonly<State>, Readonly<AnyAction>>>> = prepareStore();
 
 async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<AnyAction>>>> {
-    const version: number = 26;
     const persistedState: Readonly<State> = await get('state');
+    const version: number = 28;
 
-    const InitialState: Readonly<State> = persistedState && version === persistedState.version ? persistedState : {
-        version,
-        currentRoute: {
-            pathname: '/',
-            search: '',
-            query: {}
-        },
-        showMainMenu: false,
-        currentEpisodeGuid: 'NOT_SET',
-        playlist: [],
-        currentPlaylistIndex: 0,
-        podcasts: {},
-        episodes: {},
-        payoutTargetInUSDCents: '1000',
-        payoutIntervalInDays: '30',
-        currentETHPriceInUSDCents: 'UNKNOWN',
-        previousPayoutDateInMilliseconds: 'NEVER',
-        nextPayoutDateInMilliseconds: 'NEVER',
-        ethereumAddress: 'NOT_CREATED',
-        ethereumBalanceInWEI: '0',
-        warningCheckbox1Checked: false,
-        warningCheckbox2Checked: false,
-        warningCheckbox3Checked: false,
-        warningCheckbox4Checked: false,
-        warningCheckbox5Checked: false,
-        walletCreationState: 'NOT_CREATED',
-        podcryptEthereumAddress: '0x0a0d88E64da0CFB51d8D1D5a9A3604647eB3D131',
-        playerPlaying: false,
-        showPlaybackRateMenu: false,
-        playbackRate: '1',
-        currentETHPriceState: 'NOT_FETCHED',
-        payoutInProgress: false, // TODO this is not used for anything currently
-        preparingPlaylist: false,
-        podcryptPayoutPercentage: '10',
-        podcryptPreviousPayoutDateInMilliseconds: 'NEVER',
-        podcryptLatestTransactionHash: null,
-        payoutProblem: 'NO_PROBLEM'
-    };
+    const InitialState: Readonly<State> = getInitialState(persistedState, version);
     
-    const RootReducer: (state: Readonly<State> | undefined, action: AnyAction) => Readonly<State> = (state: Readonly<State> = InitialState, action: AnyAction) => {
+    const RootReducer: (state: Readonly<State> | undefined, action: AnyAction) => Readonly<State> = (state: Readonly<State> = InitialState, action: AnyAction): Readonly<State> => {
         
         if (action.type === 'SET_PODCRYPT_LATEST_TRANSACTION_HASH') {
             return {
@@ -690,4 +653,92 @@ function getCurrentPlaylistIndexAfterMoveDown(state: Readonly<State>, action: Re
     }
 
     return state.currentPlaylistIndex;
+}
+
+function getInitialState(persistedState: Readonly<State>, version: number): Readonly<State> {
+
+    if (
+        persistedState === null ||
+        persistedState === undefined ||
+        persistedState.version < 26
+    ) {
+        return {
+            version,
+            currentRoute: {
+                pathname: '/',
+                search: '',
+                query: {}
+            },
+            showMainMenu: false,
+            currentEpisodeGuid: 'NOT_SET',
+            playlist: [],
+            currentPlaylistIndex: 0,
+            podcasts: {},
+            episodes: {},
+            payoutTargetInUSDCents: '1000',
+            payoutIntervalInDays: '30',
+            currentETHPriceInUSDCents: 'UNKNOWN',
+            previousPayoutDateInMilliseconds: 'NEVER',
+            nextPayoutDateInMilliseconds: 'NEVER',
+            ethereumAddress: 'NOT_CREATED',
+            ethereumBalanceInWEI: '0',
+            warningCheckbox1Checked: false,
+            warningCheckbox2Checked: false,
+            warningCheckbox3Checked: false,
+            warningCheckbox4Checked: false,
+            warningCheckbox5Checked: false,
+            walletCreationState: 'NOT_CREATED',
+            podcryptEthereumAddress: '0x0a0d88E64da0CFB51d8D1D5a9A3604647eB3D131',
+            playerPlaying: false,
+            showPlaybackRateMenu: false,
+            playbackRate: '1',
+            currentETHPriceState: 'NOT_FETCHED',
+            payoutInProgress: false, // TODO this is not used for anything currently
+            preparingPlaylist: false,
+            podcryptPayoutPercentage: '10',
+            podcryptPreviousPayoutDateInMilliseconds: 'NEVER',
+            podcryptLatestTransactionHash: null,
+            payoutProblem: 'NO_PROBLEM'
+        };
+    }
+
+    return runMigrations(persistedState, version);
+}
+
+function runMigrations(persistedState: Readonly<State>, version: number): Readonly<State> {
+    console.log('runMigrations()');
+
+    if (persistedState.version === version) {
+        console.log(`persistedState is up to date with version ${version}`);
+        return persistedState;
+    }
+
+    // TODO this is how we will deal with migrations
+    // TODO for each version, we'll run a specific migration function...
+    // TODO we will need to run the migrations in order though
+    if (persistedState.version === 26) {
+        console.log(`running migration to upgrade version 26`);
+        // TODO run the migration for version 26 to 27
+        // TODO then runMigrations again
+
+        const newPersistedState: Readonly<State> = {
+            ...persistedState,
+            version: 27
+        };
+
+        return runMigrations(newPersistedState, version);
+    }
+
+    if (persistedState.version === 27) {
+        console.log(`running migration to upgrade version 27`);
+
+        const newPersistedState: Readonly<State> = {
+            ...persistedState,
+            version: 28
+        };
+
+        return runMigrations(newPersistedState, version);
+    }
+
+    return persistedState;
 }
