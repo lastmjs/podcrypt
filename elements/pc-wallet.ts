@@ -88,7 +88,7 @@ StorePromise.then((Store) => {
                             html`<div>Creating wallet...</div>` :
                             Store.getState().walletCreationState === 'SHOW_MNEMONIC_PHRASE' ?
                                 until(mnemonicPhraseUI(), 'Loading...') :
-                                warningsUI()
+                                warningsUI(update, props)
                 }
             </div>
         `;
@@ -185,7 +185,7 @@ StorePromise.then((Store) => {
                     <button @click=${() => navigate(Store, '/receive-eth')} style="font-size: calc(15px + 1vmin); border: none; background-color: white; box-shadow: 0px 0px 1px grey; padding: calc(5px + 1vmin);">Receive ETH</button>
                 </div>
                 <div style="display: flex; justify-content: center; align-items: center; margin: calc(5px + 1vmin)">
-                    <button @click=${() => payout(Store, ethersProvider, '500')} style="font-size: calc(15px + 1vmin); border: none; background-color: white; box-shadow: 0px 0px 1px grey; padding: calc(5px + 1vmin);">Pay now</button>
+                    <button @click=${payNowClick} style="font-size: calc(15px + 1vmin); border: none; background-color: white; box-shadow: 0px 0px 1px grey; padding: calc(5px + 1vmin);">Pay now</button>
                 </div>
                 <div style="display: flex; justify-content: center; align-items: center; margin: calc(5px + 1vmin)">
                     <button @click=${restoreWithPhrase} style="font-size: calc(15px + 1vmin); border: none; background-color: white; box-shadow: 0px 0px 1px grey; padding: calc(5px + 1vmin);">Restore with phrase</button>
@@ -255,52 +255,55 @@ StorePromise.then((Store) => {
         `;
     }
 
-    function warningsUI() {
+    function warningsUI(update: any, props: any) {
         return html`
-            <div>I understand the following (check each box):</div>
-            <br>
-            <div>
-                <input 
-                    type="checkbox"
-                    @input=${checkbox1InputChanged}
-                    .checked=${Store.getState().warningCheckbox1Checked}
-                >
-                Podcrypt is offered to me under the terms of the <a href="https://opensource.org/licenses/MIT" target="_blank">MIT license</a>
+            <div style="padding-left: 2%; padding-right: 2%">
+                <div>I understand the following (check each box):</div>
+                <br>
+                <div>
+                    <input 
+                        type="checkbox"
+                        @input=${checkbox1InputChanged}
+                        .checked=${Store.getState().warningCheckbox1Checked}
+                    >
+                    Podcrypt is offered to me under the terms of the <a href="https://opensource.org/licenses/MIT" target="_blank">MIT license</a>
+                </div>
+                <div>
+                    <input
+                        type="checkbox"
+                        @input=${checkbox2InputChanged}
+                        .checked=${Store.getState().warningCheckbox2Checked}
+                    >
+                    This is pre-alpha software
+                </div>
+                <div>
+                    <input
+                        type="checkbox"
+                        @input=${checkbox3InputChanged}
+                        .checked=${Store.getState().warningCheckbox3Checked}
+                    >
+                    Anything could go wrong
+                </div>
+                <div>
+                    <input
+                        type="checkbox"
+                        @input=${checkbox4InputChanged}
+                        .checked=${Store.getState().warningCheckbox4Checked}
+                    >
+                    My Podcrypt data will probably be wiped regularly during the pre-alpha
+                </div>
+                <div>
+                    <input
+                        type="checkbox"
+                        @input=${checkbox5InputChanged}
+                        .checked=${Store.getState().warningCheckbox5Checked}
+                    >
+                    Podcrypt Pre-alpha uses the Ropsten test network for payments. I should NOT send real ETH to Podcrypt Pre-alpha.
+                </div>
+                <br>
+                <button @click=${() => createWalletClick(update, props)}>Create Wallet</button>
             </div>
-            <div>
-                <input
-                    type="checkbox"
-                    @input=${checkbox2InputChanged}
-                    .checked=${Store.getState().warningCheckbox2Checked}
-                >
-                This is pre-alpha software
-            </div>
-            <div>
-                <input
-                    type="checkbox"
-                    @input=${checkbox3InputChanged}
-                    .checked=${Store.getState().warningCheckbox3Checked}
-                >
-                Anything could go wrong
-            </div>
-            <div>
-                <input
-                    type="checkbox"
-                    @input=${checkbox4InputChanged}
-                    .checked=${Store.getState().warningCheckbox4Checked}
-                >
-                My Podcrypt data will probably be wiped regularly during the pre-alpha
-            </div>
-            <div>
-                <input
-                    type="checkbox"
-                    @input=${checkbox5InputChanged}
-                    .checked=${Store.getState().warningCheckbox5Checked}
-                >
-                Podcrypt Pre-alpha uses the Ropsten test network for payments. I should NOT send real ETH to Podcrypt Pre-alpha.
-            </div>
-            <br>
-            <button @click=${createWalletClick}>Create Wallet</button>
+
         `;
     }
 
@@ -308,21 +311,31 @@ StorePromise.then((Store) => {
         const mnemonicPhrase = await get('ethereumMnemonicPhrase');
 
         return html`
-            <p>Your secret 12 word phrase:</p>
-            <h3>${mnemonicPhrase}</h3>
-            <p>You should immediately store this phrase somewhere safe. If something terrible happens to your Podcrypt wallet, you may be able to use this phrase to restore it.</p>
-            <p>If you do not immediately store this phrase somewhere safe, you are more likely to lose any money that you send to Podcrypt.</p>
-            <div>
-                <input 
-                    type="checkbox"
-                    @input=${mnemonicPhraseWarningInputChanged}
-                    .checked=${Store.getState().mnemonicPhraseWarningCheckboxChecked}
-                >
-                I understand
+            <div style="padding-left: 2%; padding-right: 2%">
+                <p>Your secret 12 word phrase:</p>
+                <h3>${mnemonicPhrase}</h3>
+                <p>You should immediately store this phrase somewhere safe. If something terrible happens to your Podcrypt wallet, you may be able to use this phrase to restore it.</p>
+                <p>If you do not immediately store this phrase somewhere safe, you are more likely to lose any money that you send to Podcrypt.</p>
+                <div>
+                    <input 
+                        type="checkbox"
+                        @input=${mnemonicPhraseWarningInputChanged}
+                        .checked=${Store.getState().mnemonicPhraseWarningCheckboxChecked}
+                    >
+                    I understand
+                </div>
+                <br>
+                <button @click=${goToMyWalletClick}>Go to my wallet</button>
             </div>
-            <br>
-            <button @click=${goToMyWalletClick}>Go to my wallet</button>
         `;
+    }
+
+    function payNowClick() {
+        const result = confirm('Are you sure you want to pay out now?');
+
+        if (result === true) {
+            payout(Store, ethersProvider, '500');
+        }
     }
 
     function notVerifiedHelpClick(podcast: Readonly<Podcast>) {
@@ -333,7 +346,7 @@ StorePromise.then((Store) => {
         navigate(Store, '/restore-with-phrase');
     }
 
-    function createWalletClick() {
+    async function createWalletClick(update: any, props: any) {
         const warningsAccepted = 
             Store.getState().warningCheckbox1Checked &&
             Store.getState().warningCheckbox2Checked &&
@@ -345,7 +358,17 @@ StorePromise.then((Store) => {
             alert('Silly you, you must understand');
         }
         else {
-            createWallet(Store, ethersProvider);
+            update({
+                ...props,
+                loaded: false
+            });
+
+            await createWallet(Store, ethersProvider);
+
+            update({
+                ...props,
+                loaded: true
+            });
         }
     }
 
@@ -454,5 +477,12 @@ StorePromise.then((Store) => {
                 payout(Store, ethersProvider, '500');
             // }
         }
-    }, 60000);
+    }, 30000);
+
+    setInterval(() => {
+        if (Store.getState().currentRoute.pathname === '/wallet') {
+            console.log('loadEthereumAccountBalance');
+            loadEthereumAccountBalance(Store, ethersProvider);
+        }
+    }, 30000);
 });
