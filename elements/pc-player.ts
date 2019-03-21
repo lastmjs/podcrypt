@@ -192,6 +192,7 @@ StorePromise.then((Store) => {
 
             <audio
                 src="${currentEpisode ? currentEpisode.src : ''}"
+                preload="metadata"
                 @ended=${audioEnded}
                 @timeupdate=${timeUpdated}
                 @loadstart=${() => loadStarted(currentEpisode, element)}
