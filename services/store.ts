@@ -338,9 +338,11 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
 
         if (action.type === 'PAUSE_EPISODE_FROM_PLAYLIST') {
             const episodeGuid: EpisodeGuid = action.episodeGuid;
+            const isCurrentEpisode: boolean = episodeGuid === state.currentEpisodeGuid;
 
             return {
                 ...state,
+                playerPlaying: isCurrentEpisode ? false : state.playerPlaying,
                 episodes: {
                     ...state.episodes,
                     [episodeGuid]: {
@@ -374,6 +376,7 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
             if (!nextEpisodeGuid) {
                 return {
                     ...state,
+                    playerPlaying: false,
                     episodes: {
                         ...state.episodes,
                         [state.currentEpisodeGuid]: newCurrentEpisode
