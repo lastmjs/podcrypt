@@ -41,7 +41,7 @@ StorePromise.then((Store) => {
                     display: flex;
                     justify-content: center;
                     align-items: center;
-                    box-shadow: 0 4px 2px -2px grey;
+                    box-shadow: 0px 5px 5px -5px grey;
                     padding: 2%;
                 }
     

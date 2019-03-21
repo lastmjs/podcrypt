@@ -30,20 +30,22 @@ StorePromise.then((Store) => {
             <style>
                 .pc-podcasts-container {
                     ${pcContainerStyles}
+                    padding-left: 0;
+                    padding-right: 0;
                 }
     
                 .pc-podcasts-search-input {
-                    width: 100%;
+                    width: 96%;
                     font-size: calc(15px + 1vmin);
                     border: none;
                     border-bottom: 1px solid grey;
+                    margin-left: 2%;
                 }
     
                 .pc-podcasts-item {
-                    box-shadow: 0px 0px 5px grey;
-                    padding: 2%;
-                    margin-top: 2%;
                     display: flex;
+                    padding: 2%;
+                    box-shadow: 0px 5px 5px -5px grey;
                     justify-content: center;
                     align-items: center;
                 }

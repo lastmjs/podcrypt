@@ -49,7 +49,7 @@ StorePromise.then((Store) => {
                 .pc-playlist-item {
                     display: flex;
                     position: relative;
-                    box-shadow: -5px 5px 5px -5px grey;
+                    box-shadow: 0px 5px 5px -5px grey;
                     padding: 2%;
                 }
 

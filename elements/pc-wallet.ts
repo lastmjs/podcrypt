@@ -54,15 +54,16 @@ StorePromise.then((Store) => {
             <style>
                 .pc-wallet-container {
                     ${pcContainerStyles}
+                    padding-left: 0;
+                    padding-right: 0;
                 }
     
                 .pc-wallet-podcast-item {
-                    box-shadow: 0px 0px 5px grey;
+                    box-shadow: 0px 5px 5px -5px grey;
                     padding: 5%;
                     margin-top: 2%;
                     display: flex;
                     justify-content: center;
-                    /* align-items: center; */
                 }
 
                 .pc-wallet-podcast-item-text {
@@ -104,70 +105,72 @@ StorePromise.then((Store) => {
         const balanceInETH: ETH = new BigNumber(getBalanceInETH(Store)).toFixed(4);
 
         return html`
-            <h3>Balance</h3>
+            <div style="padding-left: 2%; padding-right: 2%">
+                <h3>Balance</h3>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr">
-                <div
-                    style="display: flex; flex-direction: column; align-items: center; justify-content: center;"
-                >
-                    <div style="font-size: calc(30px + 1vmin);">${balanceInUSD}</div>
-                    <div style="font-size: calc(15px + 1vmin); color: grey">USD</div>
-                </div>
-
-                <div
-                    style="display: flex; flex-direction: column; align-items: center; justify-content: center;"
-                >
-                    <div style="font-size: calc(30px + 1vmin);">${balanceInETH}</div>
-                    <div style="font-size: calc(15px + 1vmin); color: grey">ETH</div>
-                </div>
-            </div>
-
-            <h3>
-                Payout
-            </h3>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; grid-row-gap: calc(30px + 1vmin)">
-                <div
-                    style="display: flex; flex-direction: column; align-items: center; justify-content: center;"
-                >
-                    <div style="font-size: calc(30px + 1vmin);">
-                        <input
-                            type="number"
-                            value=${payoutTargetInUSD}
-                            @input=${payoutTargetInUSDCentsInputChanged}
-                            style="text-align: center; font-size: calc(30px + 1vmin); border: none; border-bottom: 1px solid grey;"
-                            min="0"
-                            max="100"
-                            step="0.01"
-                        >
-                    </div>
-                    <div style="font-size: calc(15px + 1vmin); color: grey">USD</div>
-                </div>
-
-                <div
-                    style="display: flex; flex-direction: column; align-items: center; justify-content: center;"
-                >
-                    <div style="font-size: calc(30px + 1vmin);">${payoutTargetInETH}</div>
-                    <div style="font-size: calc(15px + 1vmin); color: grey">ETH</div>
-                </div>
-
-                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                    <input 
-                        type="number"
-                        value=${payoutIntervalInDays}
-                        @input=${payoutIntervalInDaysInputChanged}
-                        style="text-align: center; font-size: calc(30px + 1vmin); border: none; border-bottom: 1px solid grey"
-                        min="1"
-                        max="30"
+                <div style="display: grid; grid-template-columns: 1fr 1fr">
+                    <div
+                        style="display: flex; flex-direction: column; align-items: center; justify-content: center;"
                     >
-                    <div style="font-size: calc(15px + 1vmin); color: grey">Days</div>
+                        <div style="font-size: calc(30px + 1vmin);">${balanceInUSD}</div>
+                        <div style="font-size: calc(15px + 1vmin); color: grey">USD</div>
+                    </div>
+
+                    <div
+                        style="display: flex; flex-direction: column; align-items: center; justify-content: center;"
+                    >
+                        <div style="font-size: calc(30px + 1vmin);">${balanceInETH}</div>
+                        <div style="font-size: calc(15px + 1vmin); color: grey">ETH</div>
+                    </div>
                 </div>
 
-                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                    <div style="font-size: calc(25px + 1vmin);">${nextPayoutLocaleDateString}</div>
-                    <div style="font-size: calc(15px + 1vmin); color: grey">Next payout</div>
-                </div>
+                <h3>
+                    Payout
+                </h3>
 
+                <div style="display: grid; grid-template-columns: 1fr 1fr; grid-row-gap: calc(30px + 1vmin)">
+                    <div
+                        style="display: flex; flex-direction: column; align-items: center; justify-content: center;"
+                    >
+                        <div style="font-size: calc(30px + 1vmin);">
+                            <input
+                                type="number"
+                                value=${payoutTargetInUSD}
+                                @input=${payoutTargetInUSDCentsInputChanged}
+                                style="text-align: center; font-size: calc(30px + 1vmin); border: none; border-bottom: 1px solid grey;"
+                                min="0"
+                                max="100"
+                                step="0.01"
+                            >
+                        </div>
+                        <div style="font-size: calc(15px + 1vmin); color: grey">USD</div>
+                    </div>
+
+                    <div
+                        style="display: flex; flex-direction: column; align-items: center; justify-content: center;"
+                    >
+                        <div style="font-size: calc(30px + 1vmin);">${payoutTargetInETH}</div>
+                        <div style="font-size: calc(15px + 1vmin); color: grey">ETH</div>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                        <input 
+                            type="number"
+                            value=${payoutIntervalInDays}
+                            @input=${payoutIntervalInDaysInputChanged}
+                            style="text-align: center; font-size: calc(30px + 1vmin); border: none; border-bottom: 1px solid grey"
+                            min="1"
+                            max="30"
+                        >
+                        <div style="font-size: calc(15px + 1vmin); color: grey">Days</div>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                        <div style="font-size: calc(25px + 1vmin);">${nextPayoutLocaleDateString}</div>
+                        <div style="font-size: calc(15px + 1vmin); color: grey">Next payout</div>
+                    </div>
+
+                </div>
             </div>
 
             <br>
