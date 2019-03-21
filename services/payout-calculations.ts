@@ -168,7 +168,7 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
     }
 
     try {
-        const gasPriceInWEI: WEI = '10000000000';
+        const gasPriceInWEI: WEI = await getSafeLowGasPriceInWEI();
         const gasPriceInWEIBigNumber: BigNumber = new BigNumber(gasPriceInWEI);    
 
         console.log('gasPriceInWEIBigNumber', gasPriceInWEIBigNumber.toString());
