@@ -16,7 +16,7 @@ export const StorePromise: Promise<Readonly<Store<Readonly<State>, Readonly<AnyA
 
 async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<AnyAction>>>> {
     const persistedState: Readonly<State> = await get('state');
-    const version: number = 28;
+    const version: number = 29;
 
     const InitialState: Readonly<State> = getInitialState(persistedState, version);
     
@@ -566,6 +566,13 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
             };
         }
 
+        if (action.type === 'SET_MNEMONIC_PHRASE_WARNING_CHECKBOX_CHECKED') {
+            return {
+                ...state,
+                mnemonicPhraseWarningCheckboxChecked: action.checked
+            };
+        }
+
         if (action.type === 'SET_WALLET_CREATION_STATE') {
             return {
                 ...state,
@@ -687,6 +694,7 @@ function getInitialState(persistedState: Readonly<State>, version: number): Read
             warningCheckbox3Checked: false,
             warningCheckbox4Checked: false,
             warningCheckbox5Checked: false,
+            mnemonicPhraseWarningCheckboxChecked: false,
             walletCreationState: 'NOT_CREATED',
             podcryptEthereumAddress: '0x0a0d88E64da0CFB51d8D1D5a9A3604647eB3D131',
             playerPlaying: false,
@@ -735,6 +743,18 @@ function runMigrations(persistedState: Readonly<State>, version: number): Readon
         const newPersistedState: Readonly<State> = {
             ...persistedState,
             version: 28
+        };
+
+        return runMigrations(newPersistedState, version);
+    }
+
+    if (persistedState.version === 28) {
+        console.log(`running migration to upgrade version 28`);
+
+        const newPersistedState: Readonly<State> = {
+            ...persistedState,
+            version: 29,
+            mnemonicPhraseWarningCheckboxChecked: false
         };
 
         return runMigrations(newPersistedState, version);

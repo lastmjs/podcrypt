@@ -43,7 +43,8 @@ type EtherscanETHPriceAPIEndpoint = `https://api.etherscan.io/api?module=stats&a
 type FeedUrl = string;
 type EthereumAddress = string;
 type CurrentETHPriceState = 'NOT_FETCHED' | 'FETCHING' | 'FETCHED';
-type WalletCreationState = 'NOT_CREATED' | 'CREATING' | 'CREATED';
+// TODO I feel like we might not need the creating state
+type WalletCreationState = 'NOT_CREATED' | 'CREATING' | 'SHOW_MNEMONIC_PHRASE' | 'CREATED';
 type EpisodeGuid = string;
 type PodcastGuid = string;
 type Percent = string;
@@ -92,6 +93,7 @@ type State = {
     readonly warningCheckbox3Checked: boolean;
     readonly warningCheckbox4Checked: boolean;
     readonly warningCheckbox5Checked: boolean;
+    readonly mnemonicPhraseWarningCheckboxChecked: boolean;
     readonly walletCreationState: WalletCreationState;
     readonly podcryptEthereumAddress: EthereumAddress;
     readonly playerPlaying: boolean;
