@@ -235,7 +235,6 @@ StorePromise.then((Store) => {
     }
 
     function playbackRateChanged(e: any) {
-        console.log(e)
         Store.dispatch({
             type: 'SET_PLAYBACK_RATE',
             playbackRate: e.target.value
@@ -267,6 +266,10 @@ StorePromise.then((Store) => {
         }
     }
     
+    // TODO the counter is a hacky way of doing this bit it helps for now
+    // We only update the progress about once every second instead of 4 times per second
+    // Dispatching an action 4 times per second was really slowing things down
+    let counter = 1;
     function timeUpdated(e: any) {
         const progress = e.target.currentTime;
     
@@ -276,6 +279,14 @@ StorePromise.then((Store) => {
 
         if (e.target.paused) {
             return;
+        }
+
+        if (counter % 4 !== 0) {
+            counter = counter + 1;
+            return;
+        }
+        else {
+            counter = 1;
         }
     
         Store.dispatch({
