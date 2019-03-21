@@ -84,11 +84,15 @@ StorePromise.then((Store) => {
         // TODO this might be necessary so that the src gets set first when switching episodes
         // TODO the src gets set, then we click play on a new episode
         setTimeout(() => {
-            const state = Store.getState() as any;
-            const currentEpisode = state.episodes[state.currentEpisodeGuid];
+            const state: Readonly<State> = Store.getState();
+            const currentEpisode: Readonly<Episode> = state.episodes[state.currentEpisodeGuid];
 
-            const audioElement = element.querySelector('audio');
-            if (audioElement && currentEpisode) {
+            const audioElement: HTMLAudioElement | null = element.querySelector('audio');
+            
+            if (
+                audioElement &&
+                currentEpisode
+            ) {
                 if (currentEpisode.playing === true) {
                     audioElement.play();    
                 }
