@@ -1,5 +1,6 @@
 import { customElement, html } from 'functional-element';
 import { TemplateResult } from 'lit-html';
+import { until } from 'lit-html/directives/until';
 import { pcContainerStyles } from '../services/css';
 import { StorePromise } from '../services/store';
 import {
@@ -23,6 +24,7 @@ import { navigate } from '../services/utilities';
 import '../node_modules/ethers/dist/ethers.min.js';
 import BigNumber from "../node_modules/bignumber.js/bignumber";
 import './pc-loading';
+import { get } from 'idb-keyval';
 
 const ethersProvider = new ethers.providers.EtherscanProvider('ropsten');
 
@@ -83,7 +85,9 @@ StorePromise.then((Store) => {
                         walletUI() :
                         Store.getState().walletCreationState === 'CREATING' ?
                             html`<div>Creating wallet...</div>` :
-                            walletWarnings()
+                            Store.getState().walletCreationState === 'SHOW_MNEMONIC_PHRASE' ?
+                                until(mnemonicPhraseUI(), 'Loading...') :
+                                warningsUI()
                 }
             </div>
         `;
@@ -244,7 +248,7 @@ StorePromise.then((Store) => {
         `;
     }
 
-    function walletWarnings() {
+    function warningsUI() {
         return html`
             <div>I understand the following (check each box):</div>
             <br>
@@ -290,6 +294,27 @@ StorePromise.then((Store) => {
             </div>
             <br>
             <button @click=${createWalletClick}>Create Wallet</button>
+        `;
+    }
+
+    async function mnemonicPhraseUI() {
+        const mnemonicPhrase = await get('ethereumMnemonicPhrase');
+
+        return html`
+            <p>Your secret 12 word phrase:</p>
+            <h3>${mnemonicPhrase}</h3>
+            <p>You should store this phrase somewhere safe. If something terrible happens to your Podcrypt wallet, you may be able to use this phrase to restore it.</p>
+            <p>If you do not store this phrase safely, you are more likely to lose any money that you send to Podcrypt.</p>
+            <div>
+                <input 
+                    type="checkbox"
+                    @input=${mnemonicPhraseWarningInputChanged}
+                    .checked=${Store.getState().mnemonicPhraseWarningCheckboxChecked}
+                >
+                I understand
+            </div>
+            <br>
+            <button @click=${goToMyWalletClick}>Go to my wallet</button>
         `;
     }
 
@@ -346,6 +371,27 @@ StorePromise.then((Store) => {
             type: 'SET_WARNING_CHECKBOX_5_CHECKED',
             checked: e.target.checked
         });
+    }
+
+    function mnemonicPhraseWarningInputChanged(e: any) {
+        Store.dispatch({
+            type: 'SET_MNEMONIC_PHRASE_WARNING_CHECKBOX_CHECKED',
+            checked: e.target.checked
+        });
+    }
+
+    function goToMyWalletClick() {
+        const mnemonicPhraseWarningAccepted: boolean = Store.getState().mnemonicPhraseWarningCheckboxChecked;
+
+        if (!mnemonicPhraseWarningAccepted) {
+            alert('Do you want to lose all of your money?');
+        }
+        else {
+            Store.dispatch({
+                type: 'SET_WALLET_CREATION_STATE',
+                walletCreationState: 'CREATED'
+            });
+        }
     }
 
     function payoutIntervalInDaysInputChanged(e: any) {

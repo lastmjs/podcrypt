@@ -21,6 +21,7 @@ export async function createWallet(Store: Readonly<Store<Readonly<State>, AnyAct
 
     // TODO we will probably need some more hardcore security than this
     await set('ethereumPrivateKey', newWallet.privateKey);
+    await set('ethereumMnemonicPhrase', newWallet.mnemonic);
 
     Store.dispatch({
         type: 'SET_ETHEREUM_ADDRESS',
@@ -29,7 +30,7 @@ export async function createWallet(Store: Readonly<Store<Readonly<State>, AnyAct
 
     Store.dispatch({
         type: 'SET_WALLET_CREATION_STATE',
-        walletCreationState: 'CREATED'
+        walletCreationState: 'SHOW_MNEMONIC_PHRASE'
     });
 
     await loadEthereumAccountBalance(Store, ethersProvider);
