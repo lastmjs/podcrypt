@@ -10,14 +10,14 @@ import {
 } from './utilities';
 import BigNumber from "../node_modules/bignumber.js/bignumber";
 
-export async function createWallet(Store: Readonly<Store<Readonly<State>, AnyAction>>, ethersProvider: any): Promise<void> {
+export async function createWallet(Store: Readonly<Store<Readonly<State>, AnyAction>>, ethersProvider: any, mnemonicPhrase?: string): Promise<void> {
     Store.dispatch({
         type: 'SET_WALLET_CREATION_STATE',
         walletCreationState: 'CREATING'
     });
 
     // TODO we might want some backup nodes
-    const newWallet = ethers.Wallet.createRandom();
+    const newWallet = mnemonicPhrase ? ethers.Wallet.fromMnemonic(mnemonicPhrase) : ethers.Wallet.createRandom();
 
     // TODO we will probably need some more hardcore security than this
     await set('ethereumPrivateKey', newWallet.privateKey);

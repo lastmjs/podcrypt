@@ -13,6 +13,7 @@ import './pc-about';
 import './pc-not-verified-help';
 import './pc-receive-eth';
 import './pc-logs';
+import './pc-restore-with-phrase';
 import { parseQueryString } from '../services/utilities';
 
 StorePromise.then((Store) => {
@@ -144,6 +145,9 @@ StorePromise.then((Store) => {
             <pc-logs
                 ?hidden=${currentRoute.pathname !== '/logs'}
             ></pc-logs>
+            <pc-restore-with-phrase
+                ?hidden=${currentRoute.pathname !== '/restore-with-phrase'}
+            ></pc-restore-with-phrase>
         `;
     });
     
