@@ -337,13 +337,20 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
         }
 
         if (action.type === 'PAUSE_EPISODE_FROM_PLAYLIST') {
+            const episodeGuid: EpisodeGuid = action.episodeGuid;
+
             return {
                 ...state,
                 episodes: {
                     ...state.episodes,
-                    [state.currentEpisodeGuid]: {
-                        ...state.episodes[state.currentEpisodeGuid],
-                        playing: false
+                    [episodeGuid]: {
+                        ...state.episodes[episodeGuid],
+                        playing: false,
+                        timestamps: [...state.episodes[episodeGuid].timestamps, {
+                            type: 'STOP',
+                            actionType: 'PAUSE_EPISODE_FROM_PLAYLIST',
+                            milliseconds: new Date().getTime().toString()
+                        }]
                     }
                 }
             };
