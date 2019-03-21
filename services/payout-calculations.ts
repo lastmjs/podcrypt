@@ -117,13 +117,22 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
     
             console.log('nonce', nonce);
 
+            const dataUTF8Bytes = ethers.utils.toUtf8Bytes('podcrypt.app');
+            const data: string = ethers.utils.hexlify(dataUTF8Bytes);
+            const dataLengthInBytes: number = ethers.utils.hexDataLength(data);
+            const gasLimit: number = 21000 + (68 * dataLengthInBytes);
+
+            console.log('data', data);
+            console.log('dataLengthInBytes', dataLengthInBytes);
+            console.log('gasLimit', gasLimit);
+
             const preparedTransaction = {
                 to: podcastEthereumAddress,
-                gasLimit: 21000,
+                gasLimit,
                 gasPrice: ethers.utils.bigNumberify(gasPriceInWEIBigNumber.toString()),
                 value: ethers.utils.bigNumberify(netValueInWEIBigNumber.toString()),
-                nonce
-                // data: web3.utils.asciiToHex('podcrypt') // TODO we might need to increase the gaslimit for this?
+                nonce,
+                data
             };
     
             console.log('preparedTransaction', preparedTransaction);
@@ -195,13 +204,22 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
     
             console.log('nonce', nonce);
     
+            const dataUTF8Bytes = ethers.utils.toUtf8Bytes('podcrypt.app');
+            const data: string = ethers.utils.hexlify(dataUTF8Bytes);
+            const dataLengthInBytes: number = ethers.utils.hexDataLength(data);
+            const gasLimit: number = 21000 + (68 * dataLengthInBytes);
+
+            console.log('data', data);
+            console.log('dataLengthInBytes', dataLengthInBytes);
+            console.log('gasLimit', gasLimit);
+
             const preparedTransaction = {
                 to: Store.getState().podcryptEthereumAddress,
-                gasLimit: 21000,
+                gasLimit,
                 gasPrice: ethers.utils.bigNumberify(gasPriceInWEIBigNumber.toString()),
                 value: ethers.utils.bigNumberify(netValueInWEIBigNumber.toString()),
-                nonce
-                // data: web3.utils.asciiToHex('podcrypt') // TODO we might need to increase the gaslimit for this?
+                nonce,
+                data
             };
     
             console.log('preparedTransaction', preparedTransaction);
