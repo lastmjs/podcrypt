@@ -4,9 +4,9 @@ import { until } from 'lit-html/directives/until';
 import { pcContainerStyles } from '../services/css';
 import { StorePromise } from '../services/store';
 import {
-    calculateTotalTimeForPodcastDuringCurrentIntervalInMilliseconds,
-    calculatePayoutAmountForPodcastDuringCurrentIntervalInUSD,
-    calculateProportionOfTotalTimeForPodcastDuringCurrentInterval
+    calculateTotalTimeForPodcastDuringIntervalInMilliseconds,
+    calculatePayoutAmountForPodcastDuringIntervalInUSD,
+    calculateProportionOfTotalTimeForPodcastDuringInterval
 } from '../services/podcast-calculations';
 import {
     getNextPayoutDateInMilliseconds,
@@ -196,14 +196,16 @@ StorePromise.then((Store) => {
             <br>
 
             ${Object.values(Store.getState().podcasts).map((podcast: Podcast) => {
-                const totalTimeForPodcastDuringCurrentIntervalInMilliseconds: Milliseconds = calculateTotalTimeForPodcastDuringCurrentIntervalInMilliseconds(Store.getState(), podcast);
-                const totalTimeForPodcastDuringCurrentIntervalInMinutes: Minutes = new BigNumber(totalTimeForPodcastDuringCurrentIntervalInMilliseconds).dividedBy(60000).integerValue(BigNumber.ROUND_FLOOR).toString();
-                const secondsRemainingForPodcastDuringCurrentInterval: Seconds = new BigNumber(totalTimeForPodcastDuringCurrentIntervalInMilliseconds).mod(60000).dividedBy(1000).integerValue(BigNumber.ROUND_FLOOR).toString();
-                // const totalTimeForPodcastDuringCurrentIntervalInMinutes: Minutes = Math.floor(totalTimeForPodcastDuringCurrentIntervalInMilliseconds / 60000);
-                // const secondsRemainingForPodcastDuringCurrentInterval: Seconds = Math.round((totalTimeForPodcastDuringCurrentIntervalInMilliseconds % 60000) / 1000);
+                const previousPayoutDateInMilliseconds: Milliseconds = podcast.previousPayoutDateInMilliseconds !== 'NEVER' && Store.getState().previousPayoutDateInMilliseconds !== 'NEVER' && new BigNumber(podcast.previousPayoutDateInMilliseconds).gt(Store.getState().previousPayoutDateInMilliseconds) ? podcast.previousPayoutDateInMilliseconds : Store.getState().previousPayoutDateInMilliseconds;
 
-                const payoutAmountForPodcastDuringCurrentIntervalInUSD: USDollars = calculatePayoutAmountForPodcastDuringCurrentIntervalInUSD(Store.getState(), podcast);
-                const percentageOfTotalTimeForPodcastDuringCurrentInterval: Percent = new BigNumber(calculateProportionOfTotalTimeForPodcastDuringCurrentInterval(Store.getState(), podcast)).multipliedBy(100).toString();
+                const totalTimeForPodcastDuringIntervalInMilliseconds: Milliseconds = calculateTotalTimeForPodcastDuringIntervalInMilliseconds(Store.getState(), podcast, previousPayoutDateInMilliseconds);
+                const totalTimeForPodcastDuringIntervalInMinutes: Minutes = new BigNumber(totalTimeForPodcastDuringIntervalInMilliseconds).dividedBy(60000).integerValue(BigNumber.ROUND_FLOOR).toString();
+                const secondsRemainingForPodcastDuringInterval: Seconds = new BigNumber(totalTimeForPodcastDuringIntervalInMilliseconds).mod(60000).dividedBy(1000).integerValue(BigNumber.ROUND_FLOOR).toString();
+                // const totalTimeForPodcastDuringIntervalInMinutes: Minutes = Math.floor(totalTimeForPodcastDuringIntervalInMilliseconds / 60000);
+                // const secondsRemainingForPodcastDuringInterval: Seconds = Math.round((totalTimeForPodcastDuringIntervalInMilliseconds % 60000) / 1000);
+
+                const payoutAmountForPodcastDuringIntervalInUSD: USDollars = calculatePayoutAmountForPodcastDuringIntervalInUSD(Store.getState(), podcast, previousPayoutDateInMilliseconds);
+                const percentageOfTotalTimeForPodcastDuringInterval: Percent = new BigNumber(calculateProportionOfTotalTimeForPodcastDuringInterval(Store.getState(), podcast, previousPayoutDateInMilliseconds)).multipliedBy(100).toString();
 
                 const ethereumAddress: EthereumAddress | 'NOT_FOUND' | 'MALFORMED' = podcast.ethereumAddress;
 
@@ -223,7 +225,7 @@ StorePromise.then((Store) => {
                                             html`<button style="color: green; border: none; padding: 5px; margin: 5px" @click=${() => alert(`This podcast's Ethereum address: ${podcast.ethereumAddress}`)}>Verified</button>`}
                             </div>
                             <br>
-                            <div>$${new BigNumber(payoutAmountForPodcastDuringCurrentIntervalInUSD).toFixed(2)}, ${new BigNumber(percentageOfTotalTimeForPodcastDuringCurrentInterval).toFixed(2)}%, ${totalTimeForPodcastDuringCurrentIntervalInMinutes} min ${secondsRemainingForPodcastDuringCurrentInterval} sec</div>
+                            <div>$${new BigNumber(payoutAmountForPodcastDuringIntervalInUSD).toFixed(2)}, ${new BigNumber(percentageOfTotalTimeForPodcastDuringInterval).toFixed(2)}%, ${totalTimeForPodcastDuringIntervalInMinutes} min ${secondsRemainingForPodcastDuringInterval} sec</div>
                             <br>
                             <div>Last payout: ${podcast.previousPayoutDateInMilliseconds === 'NEVER' ? 'never' : html`<a href="https://ropsten.etherscan.io/tx/${podcast.latestTransactionHash}" target="_blank">${new Date(podcast.previousPayoutDateInMilliseconds).toLocaleString()}</a>`}</div>
                             <div>Next payout: ${nextPayoutLocaleDateString}</div>
