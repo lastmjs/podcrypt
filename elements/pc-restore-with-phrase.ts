@@ -33,7 +33,7 @@ StorePromise.then((Store) => {
     async function restoreWalletClick(element: any) {
         const pcRestoreWithPhraseInput = element.querySelector('#pc-restore-with-phrase-input');
         const mnemonicPhrase: string = pcRestoreWithPhraseInput.value;
-        const ethersProvider = new ethers.providers.EtherscanProvider('ropsten');
+        const ethersProvider = new ethers.providers.EtherscanProvider();
         await createWallet(Store, ethersProvider, mnemonicPhrase);
         navigate(Store, '/wallet');
     }

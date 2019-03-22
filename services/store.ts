@@ -16,7 +16,7 @@ export const StorePromise: Promise<Readonly<Store<Readonly<State>, Readonly<AnyA
 
 async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<AnyAction>>>> {
     const persistedState: Readonly<State> = await get('state');
-    const version: number = 29;
+    const version: number = 30;
 
     const InitialState: Readonly<State> = getInitialState(persistedState, version);
     
@@ -684,45 +684,7 @@ function getInitialState(persistedState: Readonly<State>, version: number): Read
         persistedState === undefined ||
         persistedState.version < 26
     ) {
-        return {
-            version,
-            currentRoute: {
-                pathname: '/',
-                search: '',
-                query: {}
-            },
-            showMainMenu: false,
-            currentEpisodeGuid: 'NOT_SET',
-            playlist: [],
-            currentPlaylistIndex: 0,
-            podcasts: {},
-            episodes: {},
-            payoutTargetInUSDCents: '1000',
-            payoutIntervalInDays: '30',
-            currentETHPriceInUSDCents: 'UNKNOWN',
-            previousPayoutDateInMilliseconds: 'NEVER',
-            nextPayoutDateInMilliseconds: 'NEVER',
-            ethereumAddress: 'NOT_CREATED',
-            ethereumBalanceInWEI: '0',
-            warningCheckbox1Checked: false,
-            warningCheckbox2Checked: false,
-            warningCheckbox3Checked: false,
-            warningCheckbox4Checked: false,
-            warningCheckbox5Checked: false,
-            mnemonicPhraseWarningCheckboxChecked: false,
-            walletCreationState: 'NOT_CREATED',
-            podcryptEthereumAddress: '0x0a0d88E64da0CFB51d8D1D5a9A3604647eB3D131',
-            playerPlaying: false,
-            showPlaybackRateMenu: false,
-            playbackRate: '1',
-            currentETHPriceState: 'NOT_FETCHED',
-            payoutInProgress: false, // TODO this is not used for anything currently
-            preparingPlaylist: false,
-            podcryptPayoutPercentage: '10',
-            podcryptPreviousPayoutDateInMilliseconds: 'NEVER',
-            podcryptLatestTransactionHash: null,
-            payoutProblem: 'NO_PROBLEM'
-        };
+        return getOriginalState(version);
     }
 
     return runMigrations(persistedState, version);
@@ -775,5 +737,77 @@ function runMigrations(persistedState: Readonly<State>, version: number): Readon
         return runMigrations(newPersistedState, version);
     }
 
+    if (persistedState.version === 29) {
+        console.log(`running migration to upgrade version 29`);
+
+        const newPersistedState: Readonly<State> = {
+            ...persistedState,
+            version: 30,
+            payoutTargetInUSDCents: '1000',
+            payoutIntervalInDays: '30',
+            currentETHPriceInUSDCents: 'UNKNOWN',
+            previousPayoutDateInMilliseconds: 'NEVER',
+            nextPayoutDateInMilliseconds: 'NEVER',
+            ethereumAddress: 'NOT_CREATED',
+            ethereumBalanceInWEI: '0',
+            warningCheckbox1Checked: false,
+            warningCheckbox2Checked: false,
+            warningCheckbox3Checked: false,
+            warningCheckbox4Checked: false,
+            warningCheckbox5Checked: false,
+            mnemonicPhraseWarningCheckboxChecked: false,
+            walletCreationState: 'NOT_CREATED',
+            currentETHPriceState: 'NOT_FETCHED',
+            payoutInProgress: false,
+            podcryptPreviousPayoutDateInMilliseconds: 'NEVER',
+            podcryptLatestTransactionHash: null,
+            payoutProblem: 'NO_PROBLEM'
+        };
+
+        return runMigrations(newPersistedState, version);
+    }
+
     return persistedState;
+}
+
+function getOriginalState(version: number): Readonly<State> {
+    return {
+        version,
+        currentRoute: {
+            pathname: '/',
+            search: '',
+            query: {}
+        },
+        showMainMenu: false,
+        currentEpisodeGuid: 'NOT_SET',
+        playlist: [],
+        currentPlaylistIndex: 0,
+        podcasts: {},
+        episodes: {},
+        payoutTargetInUSDCents: '1000',
+        payoutIntervalInDays: '30',
+        currentETHPriceInUSDCents: 'UNKNOWN',
+        previousPayoutDateInMilliseconds: 'NEVER',
+        nextPayoutDateInMilliseconds: 'NEVER',
+        ethereumAddress: 'NOT_CREATED',
+        ethereumBalanceInWEI: '0',
+        warningCheckbox1Checked: false,
+        warningCheckbox2Checked: false,
+        warningCheckbox3Checked: false,
+        warningCheckbox4Checked: false,
+        warningCheckbox5Checked: false,
+        mnemonicPhraseWarningCheckboxChecked: false,
+        walletCreationState: 'NOT_CREATED',
+        podcryptEthereumAddress: '0x0a0d88E64da0CFB51d8D1D5a9A3604647eB3D131',
+        playerPlaying: false,
+        showPlaybackRateMenu: false,
+        playbackRate: '1',
+        currentETHPriceState: 'NOT_FETCHED',
+        payoutInProgress: false, // TODO this is not used for anything currently
+        preparingPlaylist: false,
+        podcryptPayoutPercentage: '10',
+        podcryptPreviousPayoutDateInMilliseconds: 'NEVER',
+        podcryptLatestTransactionHash: null,
+        payoutProblem: 'NO_PROBLEM'
+    };
 }
