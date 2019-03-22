@@ -303,7 +303,7 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
                         [state.currentEpisodeGuid]: {
                             ...state.episodes[state.currentEpisodeGuid],
                             playing: false,
-                            timestamps: [...state.episodes[state.currentEpisodeGuid].timestamps, {
+                            timestamps: [...(state.episodes[state.currentEpisodeGuid] ? state.episodes[state.currentEpisodeGuid].timestamps : []), {
                                 type: 'STOP',
                                 actionType: 'PLAY_EPISODE_FROM_PLAYLIST',
                                 milliseconds: new Date().getTime().toString()
