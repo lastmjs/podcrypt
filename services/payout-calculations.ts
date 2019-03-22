@@ -3,8 +3,8 @@ import {
     AnyAction
 } from 'redux';
 import {
-    calculatePayoutAmountForPodcastDuringCurrentIntervalInWEI,
-    calculatePayoutAmountForPodcryptDuringCurrentIntervalInWEI
+    calculatePayoutAmountForPodcastDuringIntervalInWEI,
+    calculatePayoutAmountForPodcryptDuringIntervalInWEI
 } from './podcast-calculations';
 import { loadEthereumAccountBalance } from './balance-calculations';
 import { get } from 'idb-keyval';
@@ -92,7 +92,8 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
 
             console.log('gasPriceInWEIBigNumber', gasPriceInWEIBigNumber.toString());
     
-            const valueInWEI: WEI = new BigNumber(calculatePayoutAmountForPodcastDuringCurrentIntervalInWEI(Store.getState(), podcast)).toFixed(0);
+            const previousPayoutDateInMilliseconds: Milliseconds = podcast.previousPayoutDateInMilliseconds !== 'NEVER' && Store.getState().previousPayoutDateInMilliseconds !== 'NEVER' && new BigNumber(podcast.previousPayoutDateInMilliseconds).gt(Store.getState().previousPayoutDateInMilliseconds) ? podcast.previousPayoutDateInMilliseconds : Store.getState().previousPayoutDateInMilliseconds;
+            const valueInWEI: WEI = new BigNumber(calculatePayoutAmountForPodcastDuringIntervalInWEI(Store.getState(), podcast, previousPayoutDateInMilliseconds)).toFixed(0);
             const valueInWEIBigNumber: BigNumber = new BigNumber(valueInWEI);
             
             console.log('valueInWEIBigNumber', valueInWEIBigNumber.toString());
@@ -182,7 +183,7 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
 
         console.log('gasPriceInWEIBigNumber', gasPriceInWEIBigNumber.toString());
 
-        const valueInWEI: WEI = new BigNumber(calculatePayoutAmountForPodcryptDuringCurrentIntervalInWEI(Store.getState())).toFixed(0);
+        const valueInWEI: WEI = new BigNumber(calculatePayoutAmountForPodcryptDuringIntervalInWEI(Store.getState())).toFixed(0);
         const valueInWEIBigNumber: BigNumber = new BigNumber(valueInWEI);
 
         console.log('valueInWEIBigNumber', valueInWEIBigNumber.toString());
