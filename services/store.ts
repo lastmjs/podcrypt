@@ -267,9 +267,31 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
             const newCurrentPlaylistIndex: number = action.playlistIndex;
             const newCurrentEpisodeGuid: EpisodeGuid = state.playlist[newCurrentPlaylistIndex];
     
-            if (newCurrentEpisodeGuid === state.currentEpisodeGuid) {
+            // TODO this is dirty clean it up
+            if (state.currentEpisodeGuid === 'NOT_SET') {
                 return {
                     ...state,
+                    currentEpisodeGuid: newCurrentEpisodeGuid,
+                    currentPlaylistIndex: newCurrentPlaylistIndex,
+                    playerPlaying: true,
+                    episodes: {
+                        ...state.episodes,
+                        [newCurrentEpisodeGuid]: {
+                            ...state.episodes[newCurrentEpisodeGuid],
+                            playing: true,
+                            timestamps: [...state.episodes[newCurrentEpisodeGuid].timestamps, {
+                                type: 'START',
+                                actionType: 'PLAY_EPISODE_FROM_PLAYLIST',
+                                milliseconds: new Date().getTime().toString()
+                            }]
+                        }
+                    }
+                };
+            }
+            else if (newCurrentEpisodeGuid === state.currentEpisodeGuid) {
+                return {
+                    ...state,
+                    playerPlaying: true,
                     episodes: {
                         ...state.episodes,
                         [state.currentEpisodeGuid]: {
@@ -289,6 +311,7 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
                     ...state,
                     currentEpisodeGuid: newCurrentEpisodeGuid,
                     currentPlaylistIndex: newCurrentPlaylistIndex,
+                    playerPlaying: true,
                     episodes: {
                         ...state.episodes,
                         [newCurrentEpisodeGuid]: {
