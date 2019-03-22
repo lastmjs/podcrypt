@@ -32,7 +32,7 @@ type Episode = {
 
 type Timestamp = {
     readonly type: 'START' | 'STOP';
-    readonly actionType: 'CURRENT_EPISODE_PLAYED' | 'CURRENT_EPISODE_PAUSED' | 'CURRENT_EPISODE_COMPLETED'| 'PAUSE_EPISODE_FROM_PLAYLIST';
+    readonly actionType: 'CURRENT_EPISODE_PLAYED' | 'CURRENT_EPISODE_PAUSED' | 'CURRENT_EPISODE_COMPLETED'| 'PAUSE_EPISODE_FROM_PLAYLIST' | 'PLAY_EPISODE_FROM_PLAYLIST';
     readonly milliseconds: string;
 }
 
