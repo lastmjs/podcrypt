@@ -26,7 +26,7 @@ import BigNumber from "../node_modules/bignumber.js/bignumber";
 import './pc-loading';
 import { get } from 'idb-keyval';
 
-const ethersProvider = new ethers.providers.EtherscanProvider('ropsten');
+const ethersProvider = new ethers.providers.EtherscanProvider();
 
 StorePromise.then((Store) => {
     customElement('pc-wallet', ({ constructing, connecting, props, update }) => {
@@ -227,7 +227,7 @@ StorePromise.then((Store) => {
                             <br>
                             <div>$${new BigNumber(payoutAmountForPodcastDuringIntervalInUSD).toFixed(2)}, ${new BigNumber(percentageOfTotalTimeForPodcastDuringInterval).toFixed(2)}%, ${totalTimeForPodcastDuringIntervalInMinutes} min ${secondsRemainingForPodcastDuringInterval} sec</div>
                             <br>
-                            <div>Last payout: ${podcast.previousPayoutDateInMilliseconds === 'NEVER' ? 'never' : html`<a href="https://ropsten.etherscan.io/tx/${podcast.latestTransactionHash}" target="_blank">${new Date(podcast.previousPayoutDateInMilliseconds).toLocaleString()}</a>`}</div>
+                            <div>Last payout: ${podcast.previousPayoutDateInMilliseconds === 'NEVER' ? 'never' : html`<a href="https://etherscan.io/tx/${podcast.latestTransactionHash}" target="_blank">${new Date(podcast.previousPayoutDateInMilliseconds).toLocaleString()}</a>`}</div>
                             <div>Next payout: ${nextPayoutLocaleDateString}</div>
                         </div>
                     </div>
@@ -243,7 +243,7 @@ StorePromise.then((Store) => {
                     <br>
                     <div>$${new BigNumber(Store.getState().payoutTargetInUSDCents).multipliedBy(Store.getState().podcryptPayoutPercentage).dividedBy(10000).toFixed(2)}, ${Store.getState().podcryptPayoutPercentage}%</div>
                     <br>
-                    <div>Last payout: ${Store.getState().previousPayoutDateInMilliseconds === 'NEVER' ? 'never' : html`<a href="https://ropsten.etherscan.io/tx/${Store.getState().podcryptLatestTransactionHash}" target="_blank">${new Date(Store.getState().previousPayoutDateInMilliseconds).toLocaleString()}</a>`}</div>
+                    <div>Last payout: ${Store.getState().previousPayoutDateInMilliseconds === 'NEVER' ? 'never' : html`<a href="https://etherscan.io/tx/${Store.getState().podcryptLatestTransactionHash}" target="_blank">${new Date(Store.getState().previousPayoutDateInMilliseconds).toLocaleString()}</a>`}</div>
                     <div>Next payout: ${nextPayoutLocaleDateString}</div>
                 </div>
             </div>
@@ -268,16 +268,22 @@ StorePromise.then((Store) => {
                         @input=${checkbox1InputChanged}
                         .checked=${Store.getState().warningCheckbox1Checked}
                     >
-                    Podcrypt is offered to me under the terms of the <a href="https://opensource.org/licenses/MIT" target="_blank">MIT license</a>
+                    Podcrypt is offered to me under the terms of the <a href="https://opensource.org/licenses/MIT" target="_blank">MIT license</a>, which essentially means I have a license to do whatever I like with Podcrypt, but there is no warranty as far as possible
                 </div>
+
+                <br>
+
                 <div>
                     <input
                         type="checkbox"
                         @input=${checkbox2InputChanged}
                         .checked=${Store.getState().warningCheckbox2Checked}
                     >
-                    This is pre-alpha software
+                    This is alpha software
                 </div>
+
+                <br>
+
                 <div>
                     <input
                         type="checkbox"
@@ -286,23 +292,31 @@ StorePromise.then((Store) => {
                     >
                     Anything could go wrong
                 </div>
+
+                <br>
+
                 <div>
                     <input
                         type="checkbox"
                         @input=${checkbox4InputChanged}
                         .checked=${Store.getState().warningCheckbox4Checked}
                     >
-                    My Podcrypt data will probably be wiped regularly during the pre-alpha
+                    I am responsible for using Podcrypt legally, including determining taxes and other potential legal implications
                 </div>
+
+                <br>
+
                 <div>
                     <input
                         type="checkbox"
                         @input=${checkbox5InputChanged}
                         .checked=${Store.getState().warningCheckbox5Checked}
                     >
-                    Podcrypt Pre-alpha uses the Ropsten test network for payments. I should NOT send real ETH to Podcrypt Pre-alpha.
+                    Podcrypt Alpha uses the Ethereum network for payments. I should only send ETH to Podcrypt Alpha.
                 </div>
+
                 <br>
+
                 <button @click=${() => createWalletClick(update, props)}>Create Wallet</button>
             </div>
 
