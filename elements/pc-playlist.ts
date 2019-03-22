@@ -158,10 +158,6 @@ StorePromise.then((Store) => {
             playlistIndex
         });
 
-        Store.dispatch({
-            type: 'CURRENT_EPISODE_PLAYED'
-        });
-
         const episode: Readonly<Episode> = Store.getState().episodes[episodeGuid];
         navigateInPlace(Store, `/playlist?feedUrl=${episode.feedUrl}&episodeGuid=${episodeGuid}`);
     }

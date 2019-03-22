@@ -274,7 +274,12 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
                         ...state.episodes,
                         [state.currentEpisodeGuid]: {
                             ...state.episodes[state.currentEpisodeGuid],
-                            playing: true
+                            playing: true,
+                            timestamps: [...state.episodes[state.currentEpisodeGuid].timestamps, {
+                                type: 'START',
+                                actionType: 'PLAY_EPISODE_FROM_PLAYLIST',
+                                milliseconds: new Date().getTime().toString()
+                            }]
                         }
                     }
                 };
@@ -288,11 +293,21 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
                         ...state.episodes,
                         [newCurrentEpisodeGuid]: {
                             ...state.episodes[newCurrentEpisodeGuid],
-                            playing: true
+                            playing: true,
+                            timestamps: [...state.episodes[newCurrentEpisodeGuid].timestamps, {
+                                type: 'START',
+                                actionType: 'PLAY_EPISODE_FROM_PLAYLIST',
+                                milliseconds: new Date().getTime().toString()
+                            }]
                         },
                         [state.currentEpisodeGuid]: {
                             ...state.episodes[state.currentEpisodeGuid],
-                            playing: false
+                            playing: false,
+                            timestamps: [...state.episodes[state.currentEpisodeGuid].timestamps, {
+                                type: 'STOP',
+                                actionType: 'PLAY_EPISODE_FROM_PLAYLIST',
+                                milliseconds: new Date().getTime().toString()
+                            }]
                         }
                     }
                 };
