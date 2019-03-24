@@ -33,6 +33,12 @@ StorePromise.then((Store) => {
     async function restoreWalletClick(element: any) {
         const pcRestoreWithPhraseInput = element.querySelector('#pc-restore-with-phrase-input');
         const mnemonicPhrase: string = pcRestoreWithPhraseInput.value;
+
+        if (mnemonicPhrase.split(' ').length !== 12) {
+            alert('Your secret phrase must have exactly 12 words');
+            return;
+        }
+
         await createWallet(Store, mnemonicPhrase);
         navigate(Store, '/wallet');
     }
