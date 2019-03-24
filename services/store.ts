@@ -16,7 +16,7 @@ export const StorePromise: Promise<Readonly<Store<Readonly<State>, Readonly<AnyA
 
 async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<AnyAction>>>> {
     const persistedState: Readonly<State> = await get('state');
-    const version: number = 30;
+    const version: number = 31;
 
     const InitialState: Readonly<State> = getInitialState(persistedState, version);
     
@@ -788,6 +788,28 @@ function runMigrations(persistedState: Readonly<State>, version: number): Readon
         };
 
         return runMigrations(newPersistedState, version);
+    }
+
+    if (persistedState.version === 30) {
+        console.log(`running migration to upgrade version 30`);
+
+        const newPersistedState: Readonly<State> = {
+            ...persistedState,
+            version: 31,
+            podcasts: Object.values(persistedState.podcasts).reduce((result: {
+                [key: string]: Readonly<Podcast>;
+            }, podcast: Readonly<Podcast>) => {
+                return {
+                    ...result,
+                    [podcast.feedUrl]: {
+                        ...podcast,
+                        ensName: 'NOT_FOUND'
+                    }
+                };
+            }, {})
+        }; 
+        
+        return runMigrations(newPersistedState, version);        
     }
 
     return persistedState;

@@ -91,7 +91,7 @@ export async function createPodcast(feedUrl: string, feed?: any): Promise<Readon
         return null;
     }
 
-    const ethereumAddress: EthereumAddress | 'NOT_FOUND' | 'MALFORMED' = await getEthereumAddressFromPodcastDescription(theFeed.description);
+    const ethereumAddressInfo: Readonly<EthereumAddressInfo> = await getEthereumAddressFromPodcastDescription(theFeed.description);
     const email: string | 'NOT_SET' = theFeed.itunes ? theFeed.itunes.owner ? theFeed.itunes.owner.email ? theFeed.itunes.owner.email : 'NOT_SET' : 'NOT_SET' : 'NOT_SET';
     const imageUrl: string | 'NOT_SET' = getImageUrl(theFeed);
 
@@ -103,7 +103,8 @@ export async function createPodcast(feedUrl: string, feed?: any): Promise<Readon
         episodeGuids: [],
         previousPayoutDateInMilliseconds: 'NEVER',
         latestTransactionHash: null,
-        ethereumAddress,
+        ethereumAddress: ethereumAddressInfo.ethereumAddress,
+        ensName: ethereumAddressInfo.ensName,
         email
     };
 
@@ -140,32 +141,53 @@ async function getFeed(feedUrl: string, feed?: any): Promise<any | null> {
     }
 }
 
-export async function getEthereumAddressFromPodcastDescription(podcastDescription: string): Promise<EthereumAddress | 'NOT_FOUND' | 'MALFORMED'> {
+export async function getEthereumAddressFromPodcastDescription(podcastDescription: string): Promise<Readonly<EthereumAddressInfo>> {
     try {
-        const ethereumAddressFromPodcastDescription: EthereumAddress | 'NOT_FOUND' = await parseOrResolveEthereumAddressFromPodcastDescription(podcastDescription);
-        const verifiedAddress = ethers.utils.getAddress(ethereumAddressFromPodcastDescription);
-        return verifiedAddress;        
+        const ethereumAddressInfoFromPodcastDescription: Readonly<EthereumAddressInfo> = await parseOrResolveEthereumAddressFromPodcastDescription(podcastDescription);
+        
+        if (ethereumAddressInfoFromPodcastDescription.ethereumAddress === 'NOT_FOUND') {
+            return ethereumAddressInfoFromPodcastDescription;
+        }
+        
+        const verifiedAddress: EthereumAddress = ethers.utils.getAddress(ethereumAddressInfoFromPodcastDescription.ethereumAddress);
+
+        return {
+            ethereumAddress: verifiedAddress,
+            ensName: ethereumAddressInfoFromPodcastDescription.ensName
+        };        
     }
     catch(error) {
-        console.log(error);
-        return 'MALFORMED';
+        console.log('getEthereumAddressFromPodcastDescription error', error);
+        return {
+            ethereumAddress: 'MALFORMED',
+            ensName: 'NOT_FOUND'
+        };
     }
 }
 
-async function parseOrResolveEthereumAddressFromPodcastDescription(podcastDescription: string): Promise<string | 'NOT_FOUND'> {
+async function parseOrResolveEthereumAddressFromPodcastDescription(podcastDescription: string): Promise<EthereumAddressInfo> {
     const ensMatchInfo: RegExpMatchArray | null = podcastDescription.match(/.*(( |^).*\.eth)/);
     const ensName: ENSName = ensMatchInfo !== null ? ensMatchInfo[1].trim() : 'NOT_FOUND';
 
     if (ensName === 'NOT_FOUND') {
-        return parseEthereumAddressFromPodcastDescription(podcastDescription);
+        return {
+            ethereumAddress: parseEthereumAddressFromPodcastDescription(podcastDescription),
+            ensName: 'NOT_FOUND'
+        };
     }
     else {
         const resolvedEthereumAddress: EthereumAddress | null = await ethersProvider.resolveName(ensName);
         if (resolvedEthereumAddress !== null) {
-            return resolvedEthereumAddress;
+            return {
+                ethereumAddress: resolvedEthereumAddress,
+                ensName
+            };
         }
         else {
-            return parseEthereumAddressFromPodcastDescription(podcastDescription);
+            return {
+                ethereumAddress: parseEthereumAddressFromPodcastDescription(podcastDescription),
+                ensName: 'NOT_FOUND'
+            };
         }
     }
 }

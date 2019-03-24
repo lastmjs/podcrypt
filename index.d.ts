@@ -15,6 +15,7 @@ type Podcast = {
     readonly previousPayoutDateInMilliseconds: string | 'NEVER';
     readonly latestTransactionHash: string | null;
     readonly ethereumAddress: EthereumAddress | 'NOT_FOUND' | 'MALFORMED';
+    readonly ensName: ENSName | 'NOT_FOUND';
     readonly email: string | 'NOT_SET';
 }
 
@@ -62,6 +63,11 @@ type Days = string;
 type Minutes = string;
 type Seconds = string;
 type Milliseconds = string;
+
+type EthereumAddressInfo = {
+    ethereumAddress: EthereumAddress | 'NOT_FOUND' | 'MALFORMED';
+    ensName: ENSName | 'NOT_FOUND';
+}
 
 type State = {
     readonly version: number;

@@ -73,7 +73,8 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
                 continue;
             }
 
-            const podcastEthereumAddress: EthereumAddress | 'NOT_FOUND' | 'MALFORMED' = await getEthereumAddressFromPodcastDescription(feed.description);
+            const podcastEthereumAddressInfo: Readonly<EthereumAddressInfo> = await getEthereumAddressFromPodcastDescription(feed.description);
+            const podcastEthereumAddress: EthereumAddress | 'NOT_FOUND' | 'MALFORMED' = podcastEthereumAddressInfo.ethereumAddress;
         
             Store.dispatch({
                 type: 'SET_PODCAST_ETHEREUM_ADDRESS',
