@@ -16,7 +16,7 @@ export const StorePromise: Promise<Readonly<Store<Readonly<State>, Readonly<AnyA
 
 async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<AnyAction>>>> {
     const persistedState: Readonly<State> = await get('state');
-    const version: number = 30;
+    const version: number = 31;
 
     const InitialState: Readonly<State> = getInitialState(persistedState, version);
     
@@ -790,6 +790,29 @@ function runMigrations(persistedState: Readonly<State>, version: number): Readon
         return runMigrations(newPersistedState, version);
     }
 
+    if (persistedState.version === 30) {
+        console.log(`running migration to upgrade version 30`);
+
+        const newPersistedState: Readonly<State> = {
+            ...persistedState,
+            version: 31,
+            podcryptENSName: 'podcrypt.eth',
+            podcasts: Object.values(persistedState.podcasts).reduce((result: {
+                [key: string]: Readonly<Podcast>;
+            }, podcast: Readonly<Podcast>) => {
+                return {
+                    ...result,
+                    [podcast.feedUrl]: {
+                        ...podcast,
+                        ensName: 'NOT_FOUND'
+                    }
+                };
+            }, {})
+        }; 
+        
+        return runMigrations(newPersistedState, version);        
+    }
+
     return persistedState;
 }
 
@@ -822,6 +845,7 @@ function getOriginalState(version: number): Readonly<State> {
         mnemonicPhraseWarningCheckboxChecked: false,
         walletCreationState: 'NOT_CREATED',
         podcryptEthereumAddress: '0x0a0d88E64da0CFB51d8D1D5a9A3604647eB3D131',
+        podcryptENSName: 'podcrypt.eth',
         playerPlaying: false,
         showPlaybackRateMenu: false,
         playbackRate: '1',

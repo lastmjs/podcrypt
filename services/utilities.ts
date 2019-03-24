@@ -1,5 +1,7 @@
 import '../node_modules/rss-parser/dist/rss-parser.min.js';
 import BigNumber from 'bignumber.js';
+import { ethersProvider } from './ethers-provider';
+import '../node_modules/ethers/dist/ethers.min.js';
 
 export const corsAnywhereProxy = 'https://cors-anywhere.herokuapp.com/';
 export const jsonpProxy = 'https://jsonp.afeld.me/?url=';
@@ -89,7 +91,7 @@ export async function createPodcast(feedUrl: string, feed?: any): Promise<Readon
         return null;
     }
 
-    const ethereumAddress: EthereumAddress | 'NOT_FOUND' | 'MALFORMED' = parseEthereumAddressFromPodcastDescription(theFeed.description);
+    const ethereumAddressInfo: Readonly<EthereumAddressInfo> = await getEthereumAddressFromPodcastDescription(theFeed.description);
     const email: string | 'NOT_SET' = theFeed.itunes ? theFeed.itunes.owner ? theFeed.itunes.owner.email ? theFeed.itunes.owner.email : 'NOT_SET' : 'NOT_SET' : 'NOT_SET';
     const imageUrl: string | 'NOT_SET' = getImageUrl(theFeed);
 
@@ -101,7 +103,8 @@ export async function createPodcast(feedUrl: string, feed?: any): Promise<Readon
         episodeGuids: [],
         previousPayoutDateInMilliseconds: 'NEVER',
         latestTransactionHash: null,
-        ethereumAddress,
+        ethereumAddress: ethereumAddressInfo.ethereumAddress,
+        ensName: ethereumAddressInfo.ensName,
         email
     };
 
@@ -138,25 +141,63 @@ async function getFeed(feedUrl: string, feed?: any): Promise<any | null> {
     }
 }
 
-export function parseEthereumAddressFromPodcastDescription(podcastDescription: string): EthereumAddress | 'NOT_FOUND' | 'MALFORMED' {
+export async function getEthereumAddressFromPodcastDescription(podcastDescription: string): Promise<Readonly<EthereumAddressInfo>> {
     try {
-        // TODO I took the regex below straight from here: https://www.regextester.com/99711
-        // TODO I am not sure if there are any copyright issues with using it, it seems pretty deminimus and obvious to me
-        const matchInfo: RegExpMatchArray | null = podcastDescription.match(/0x[a-fA-F0-9]{40}/);
-        const ethereumAddressFromPodcastDescription: EthereumAddress = matchInfo !== null ? matchInfo[0] : 'NOT_FOUND';
-                
-        if (ethereumAddressFromPodcastDescription === 'NOT_FOUND') {
-            return 'NOT_FOUND';
+        const ethereumAddressInfoFromPodcastDescription: Readonly<EthereumAddressInfo> = await parseOrResolveEthereumAddressFromPodcastDescription(podcastDescription);
+        
+        if (ethereumAddressInfoFromPodcastDescription.ethereumAddress === 'NOT_FOUND') {
+            return ethereumAddressInfoFromPodcastDescription;
         }
         
-        const verifiedAddress = ethers.utils.getAddress(ethereumAddressFromPodcastDescription);
-                
-        return verifiedAddress;        
+        const verifiedAddress: EthereumAddress = ethers.utils.getAddress(ethereumAddressInfoFromPodcastDescription.ethereumAddress);
+
+        return {
+            ethereumAddress: verifiedAddress,
+            ensName: ethereumAddressInfoFromPodcastDescription.ensName
+        };        
     }
     catch(error) {
-        console.log(error);
-        return 'MALFORMED';
+        console.log('getEthereumAddressFromPodcastDescription error', error);
+        return {
+            ethereumAddress: 'MALFORMED',
+            ensName: 'NOT_FOUND'
+        };
     }
+}
+
+async function parseOrResolveEthereumAddressFromPodcastDescription(podcastDescription: string): Promise<EthereumAddressInfo> {
+    const ensMatchInfo: RegExpMatchArray | null = podcastDescription.match(/.*(( |^).*\.eth)/);
+    const ensName: ENSName = ensMatchInfo !== null ? ensMatchInfo[1].trim() : 'NOT_FOUND';
+
+    if (ensName === 'NOT_FOUND') {
+        return {
+            ethereumAddress: parseEthereumAddressFromPodcastDescription(podcastDescription),
+            ensName: 'NOT_FOUND'
+        };
+    }
+    else {
+        const resolvedEthereumAddress: EthereumAddress | null = await ethersProvider.resolveName(ensName);
+        if (resolvedEthereumAddress !== null) {
+            return {
+                ethereumAddress: resolvedEthereumAddress,
+                ensName
+            };
+        }
+        else {
+            return {
+                ethereumAddress: parseEthereumAddressFromPodcastDescription(podcastDescription),
+                ensName: 'NOT_FOUND'
+            };
+        }
+    }
+}
+
+function parseEthereumAddressFromPodcastDescription(podcastDescription: string): string | 'NOT_FOUND' {
+    // TODO I took the regex below straight from here: https://www.regextester.com/99711
+    // TODO I am not sure if there are any copyright issues with using it, it seems pretty deminimus and obvious to me
+    const ethereumAddressmatchInfo: RegExpMatchArray | null = podcastDescription.match(/0x[a-fA-F0-9]{40}/);
+    const ethereumAddress: EthereumAddress = ethereumAddressmatchInfo !== null ? ethereumAddressmatchInfo[0] : 'NOT_FOUND';
+    return ethereumAddress;
 }
 
 export function addEpisodeToPlaylist(Store: any, podcast: any, item: any) {

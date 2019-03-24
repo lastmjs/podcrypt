@@ -15,6 +15,7 @@ type Podcast = {
     readonly previousPayoutDateInMilliseconds: string | 'NEVER';
     readonly latestTransactionHash: string | null;
     readonly ethereumAddress: EthereumAddress | 'NOT_FOUND' | 'MALFORMED';
+    readonly ensName: ENSName | 'NOT_FOUND';
     readonly email: string | 'NOT_SET';
 }
 
@@ -38,10 +39,12 @@ type Timestamp = {
 
 type PayoutProblem = 'BALANCE_0' | 'PAYOUT_TARGET_0' | 'BALANCE_LESS_THAN_PAYOUT_TARGET' | 'NO_PROBLEM';
 
+type EthereumNetworkName = 'homestead' | 'ropsten';
 type CryptonatorETHPriceAPIEndpoint = `https://api.cryptonator.com/api/ticker/eth-usd`;
 type EtherscanETHPriceAPIEndpoint = `https://api.etherscan.io/api?module=stats&action=ethprice`;
 type FeedUrl = string;
 type EthereumAddress = string;
+type ENSName = string;
 type CurrentETHPriceState = 'NOT_FETCHED' | 'FETCHING' | 'FETCHED';
 // TODO I feel like we might not need the creating state
 type WalletCreationState = 'NOT_CREATED' | 'CREATING' | 'SHOW_MNEMONIC_PHRASE' | 'CREATED';
@@ -61,6 +64,11 @@ type Days = string;
 type Minutes = string;
 type Seconds = string;
 type Milliseconds = string;
+
+type EthereumAddressInfo = {
+    ethereumAddress: EthereumAddress | 'NOT_FOUND' | 'MALFORMED';
+    ensName: ENSName | 'NOT_FOUND';
+}
 
 type State = {
     readonly version: number;
@@ -96,6 +104,7 @@ type State = {
     readonly mnemonicPhraseWarningCheckboxChecked: boolean;
     readonly walletCreationState: WalletCreationState;
     readonly podcryptEthereumAddress: EthereumAddress;
+    readonly podcryptENSName: ENSName;
     readonly playerPlaying: boolean;
     readonly showPlaybackRateMenu: boolean;
     readonly playbackRate: string;
