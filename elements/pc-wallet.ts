@@ -224,7 +224,7 @@ StorePromise.then((Store) => {
                             <br>
                             <div>$${new BigNumber(payoutAmountForPodcastDuringIntervalInUSD).toFixed(2)}, ${new BigNumber(percentageOfTotalTimeForPodcastDuringInterval).toFixed(2)}%, ${totalTimeForPodcastDuringIntervalInMinutes} min ${secondsRemainingForPodcastDuringInterval} sec</div>
                             <br>
-                            <div>Last payout: ${podcast.previousPayoutDateInMilliseconds === 'NEVER' ? 'never' : html`<a href="https://etherscan.io/tx/${podcast.latestTransactionHash}" target="_blank">${new Date(podcast.previousPayoutDateInMilliseconds).toLocaleString()}</a>`}</div>
+                            <div>Last payout: ${podcast.previousPayoutDateInMilliseconds === 'NEVER' ? 'never' : html`<a href="https://${process.env.NODE_ENV !== 'production' ? 'ropsten.' : ''}etherscan.io/tx/${podcast.latestTransactionHash}" target="_blank">${new Date(podcast.previousPayoutDateInMilliseconds).toLocaleString()}</a>`}</div>
                             <div>Next payout: ${nextPayoutLocaleDateString}</div>
                         </div>
                     </div>
@@ -240,7 +240,7 @@ StorePromise.then((Store) => {
                     <br>
                     <div>$${new BigNumber(Store.getState().payoutTargetInUSDCents).multipliedBy(Store.getState().podcryptPayoutPercentage).dividedBy(10000).toFixed(2)}, ${Store.getState().podcryptPayoutPercentage}%</div>
                     <br>
-                    <div>Last payout: ${Store.getState().previousPayoutDateInMilliseconds === 'NEVER' ? 'never' : html`<a href="https://etherscan.io/tx/${Store.getState().podcryptLatestTransactionHash}" target="_blank">${new Date(Store.getState().previousPayoutDateInMilliseconds).toLocaleString()}</a>`}</div>
+                    <div>Last payout: ${Store.getState().previousPayoutDateInMilliseconds === 'NEVER' ? 'never' : html`<a href="https://${process.env.NODE_ENV !== 'production' ? 'ropsten.' : ''}etherscan.io/tx/${Store.getState().podcryptLatestTransactionHash}" target="_blank">${new Date(Store.getState().previousPayoutDateInMilliseconds).toLocaleString()}</a>`}</div>
                     <div>Next payout: ${nextPayoutLocaleDateString}</div>
                 </div>
             </div>

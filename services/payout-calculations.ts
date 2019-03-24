@@ -15,6 +15,7 @@ import {
 } from './utilities';
 import BigNumber from "../node_modules/bignumber.js/bignumber";
 import { getEthereumAddressFromPodcastDescription } from './utilities';
+import '../node_modules/ethers/dist/ethers.min.js';
 import { ethersProvider } from './ethers-provider';
 
 export function getNextPayoutDateInMilliseconds(Store: Readonly<Store<Readonly<State>, AnyAction>>): Milliseconds {
@@ -112,7 +113,7 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
                 continue;
             }
 
-            const wallet = new ethers.Wallet(await get('ethereumPrivateKey'));
+            const wallet = new ethers.Wallet(await get('ethereumPrivateKey'), ethersProvider);
             
             console.log('getting transaction count')
             
@@ -199,7 +200,7 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
         console.log('netValueInWEIBigNumber', netValueInWEIBigNumber.toString());
 
         if (!netValueInWEIBigNumber.eq(0)) {
-            const wallet = new ethers.Wallet(await get('ethereumPrivateKey'));
+            const wallet = new ethers.Wallet(await get('ethereumPrivateKey'), ethersProvider);
         
             console.log('getting transaction count')
             
