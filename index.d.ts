@@ -104,6 +104,7 @@ type State = {
     readonly mnemonicPhraseWarningCheckboxChecked: boolean;
     readonly walletCreationState: WalletCreationState;
     readonly podcryptEthereumAddress: EthereumAddress;
+    readonly podcryptENSName: ENSName;
     readonly playerPlaying: boolean;
     readonly showPlaybackRateMenu: boolean;
     readonly playbackRate: string;

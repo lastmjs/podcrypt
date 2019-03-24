@@ -796,6 +796,7 @@ function runMigrations(persistedState: Readonly<State>, version: number): Readon
         const newPersistedState: Readonly<State> = {
             ...persistedState,
             version: 31,
+            podcryptENSName: 'podcrypt.eth',
             podcasts: Object.values(persistedState.podcasts).reduce((result: {
                 [key: string]: Readonly<Podcast>;
             }, podcast: Readonly<Podcast>) => {
@@ -844,6 +845,7 @@ function getOriginalState(version: number): Readonly<State> {
         mnemonicPhraseWarningCheckboxChecked: false,
         walletCreationState: 'NOT_CREATED',
         podcryptEthereumAddress: '0x0a0d88E64da0CFB51d8D1D5a9A3604647eB3D131',
+        podcryptENSName: 'podcrypt.eth',
         playerPlaying: false,
         showPlaybackRateMenu: false,
         playbackRate: '1',
