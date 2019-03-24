@@ -9,8 +9,10 @@ import {
     etherscanAPIEndpoint
 } from './utilities';
 import BigNumber from "../node_modules/bignumber.js/bignumber";
+import { ethersProvider } from './ethers-provider';
+import '../node_modules/ethers/dist/ethers.min.js';
 
-export async function createWallet(Store: Readonly<Store<Readonly<State>, AnyAction>>, ethersProvider: any, mnemonicPhrase?: string): Promise<void> {
+export async function createWallet(Store: Readonly<Store<Readonly<State>, AnyAction>>, mnemonicPhrase?: string): Promise<void> {
     Store.dispatch({
         type: 'SET_WALLET_CREATION_STATE',
         walletCreationState: 'CREATING'
@@ -33,7 +35,7 @@ export async function createWallet(Store: Readonly<Store<Readonly<State>, AnyAct
         walletCreationState: 'SHOW_MNEMONIC_PHRASE'
     });
 
-    await loadEthereumAccountBalance(Store, ethersProvider);
+    await loadEthereumAccountBalance(Store);
 
     const nextPayoutDateInMilliseconds: Milliseconds = getNextPayoutDateInMilliseconds(Store);
 
@@ -79,7 +81,7 @@ export function getBalanceInETH(Store: Readonly<Store<Readonly<State>, AnyAction
     return new BigNumber(Store.getState().ethereumBalanceInWEI).dividedBy(new BigNumber(1e18)).toString();
 }
 
-export async function loadEthereumAccountBalance(Store: Readonly<Store<Readonly<State>, AnyAction>>, ethersProvider: any): Promise<void> {
+export async function loadEthereumAccountBalance(Store: Readonly<Store<Readonly<State>, AnyAction>>): Promise<void> {
     const ethereumAddress: EthereumAddress | 'NOT_CREATED' = Store.getState().ethereumAddress;
 
     if (ethereumAddress === 'NOT_CREATED') {

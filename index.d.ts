@@ -42,6 +42,7 @@ type CryptonatorETHPriceAPIEndpoint = `https://api.cryptonator.com/api/ticker/et
 type EtherscanETHPriceAPIEndpoint = `https://api.etherscan.io/api?module=stats&action=ethprice`;
 type FeedUrl = string;
 type EthereumAddress = string;
+type ENSName = string;
 type CurrentETHPriceState = 'NOT_FETCHED' | 'FETCHING' | 'FETCHED';
 // TODO I feel like we might not need the creating state
 type WalletCreationState = 'NOT_CREATED' | 'CREATING' | 'SHOW_MNEMONIC_PHRASE' | 'CREATED';

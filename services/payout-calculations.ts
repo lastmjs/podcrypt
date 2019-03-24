@@ -14,7 +14,8 @@ import {
     getSafeLowGasPriceInWEI
 } from './utilities';
 import BigNumber from "../node_modules/bignumber.js/bignumber";
-import { parseEthereumAddressFromPodcastDescription } from './utilities';
+import { getEthereumAddressFromPodcastDescription } from './utilities';
+import { ethersProvider } from './ethers-provider';
 
 export function getNextPayoutDateInMilliseconds(Store: Readonly<Store<Readonly<State>, AnyAction>>): Milliseconds {
     const previousPayoutDateInMilliseconds: Milliseconds | 'NEVER' = Store.getState().previousPayoutDateInMilliseconds;
@@ -47,7 +48,7 @@ export function getPayoutTargetInWEI(state: Readonly<State>): string | 'Loading.
     return state.currentETHPriceInUSDCents === 'UNKNOWN' ? 'Loading...' : payoutTargetInWEI;
 }
 
-export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>, ethersProvider: any, retryDelayInMilliseconds: Milliseconds): Promise<void> {
+export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>, retryDelayInMilliseconds: Milliseconds): Promise<void> {
         
     // TODO this is not being used for anything
     Store.dispatch({
@@ -72,7 +73,7 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
                 continue;
             }
 
-            const podcastEthereumAddress: EthereumAddress | 'NOT_FOUND' | 'MALFORMED' = parseEthereumAddressFromPodcastDescription(feed.description);
+            const podcastEthereumAddress: EthereumAddress | 'NOT_FOUND' | 'MALFORMED' = await getEthereumAddressFromPodcastDescription(feed.description);
         
             Store.dispatch({
                 type: 'SET_PODCAST_ETHEREUM_ADDRESS',
@@ -110,7 +111,7 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
                 continue;
             }
 
-            const wallet = new ethers.Wallet(await get('ethereumPrivateKey'), ethersProvider);
+            const wallet = new ethers.Wallet(await get('ethereumPrivateKey'));
             
             console.log('getting transaction count')
             
@@ -172,7 +173,7 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
             console.log('podcast payout error', error);
             console.log(`retrying in ${new BigNumber(retryDelayInMilliseconds).multipliedBy(2)}`);
             await wait(new BigNumber(retryDelayInMilliseconds).multipliedBy(2).toNumber());
-            payout(Store, ethersProvider, new BigNumber(retryDelayInMilliseconds).multipliedBy(2).toFixed(0));
+            payout(Store, new BigNumber(retryDelayInMilliseconds).multipliedBy(2).toFixed(0));
             return;
         }
     }
@@ -197,7 +198,7 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
         console.log('netValueInWEIBigNumber', netValueInWEIBigNumber.toString());
 
         if (!netValueInWEIBigNumber.eq(0)) {
-            const wallet = new ethers.Wallet(await get('ethereumPrivateKey'), ethersProvider);
+            const wallet = new ethers.Wallet(await get('ethereumPrivateKey'));
         
             console.log('getting transaction count')
             
@@ -254,7 +255,7 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
         console.log('podcrypt payout error', error);
         console.log(`retrying in ${new BigNumber(retryDelayInMilliseconds).multipliedBy(2)}`);
         await wait(new BigNumber(retryDelayInMilliseconds).multipliedBy(2).toNumber());
-        payout(Store, ethersProvider, new BigNumber(retryDelayInMilliseconds).multipliedBy(2).toFixed(0));
+        payout(Store, new BigNumber(retryDelayInMilliseconds).multipliedBy(2).toFixed(0));
         return;
     }
 
@@ -270,7 +271,7 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
         nextPayoutDateInMilliseconds
     });
 
-    await loadEthereumAccountBalance(Store, ethersProvider);
+    await loadEthereumAccountBalance(Store);
 
     // TODO this is not being used for anything
     Store.dispatch({

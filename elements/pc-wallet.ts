@@ -21,19 +21,16 @@ import {
     createWallet
 } from '../services/balance-calculations';
 import { navigate } from '../services/utilities';
-import '../node_modules/ethers/dist/ethers.min.js';
 import BigNumber from "../node_modules/bignumber.js/bignumber";
 import './pc-loading';
 import { get } from 'idb-keyval';
-
-const ethersProvider = new ethers.providers.EtherscanProvider();
 
 StorePromise.then((Store) => {
     customElement('pc-wallet', ({ constructing, connecting, props, update }) => {
         if (constructing) {
             Store.subscribe(update);
 
-            loadEthereumAccountBalance(Store, ethersProvider);
+            loadEthereumAccountBalance(Store);
             loadCurrentETHPriceInUSDCents(Store);
 
             return {
@@ -350,7 +347,7 @@ StorePromise.then((Store) => {
         const result = confirm('Are you sure you want to pay out now?');
 
         if (result === true) {
-            payout(Store, ethersProvider, '500');
+            payout(Store, '500');
         }
     }
 
@@ -379,7 +376,7 @@ StorePromise.then((Store) => {
                 loaded: false
             });
 
-            await createWallet(Store, ethersProvider);
+            await createWallet(Store);
 
             update({
                 ...props,
@@ -457,7 +454,7 @@ StorePromise.then((Store) => {
             nextPayoutDateInMilliseconds
         });
 
-        loadEthereumAccountBalance(Store, ethersProvider);
+        loadEthereumAccountBalance(Store);
     }
     
     async function payoutTargetInUSDCentsInputChanged(e: any) {
@@ -467,7 +464,7 @@ StorePromise.then((Store) => {
             payoutTargetInUSDCents: parseInt(e.target.value) * 100
         });
 
-        loadEthereumAccountBalance(Store, ethersProvider);
+        loadEthereumAccountBalance(Store);
     }
 
     setInterval(() => {
@@ -490,7 +487,7 @@ StorePromise.then((Store) => {
             // TODO we could use a variable just in memory, but that seems messy and I do not want to store state
             // TODO outside of Redux if at all possible...think about it
             // if (!Store.getState().payoutInProgress) {
-                payout(Store, ethersProvider, '500');
+                payout(Store, '500');
             // }
         }
     }, 30000);
@@ -498,7 +495,7 @@ StorePromise.then((Store) => {
     setInterval(() => {
         if (Store.getState().currentRoute.pathname === '/wallet') {
             console.log('loadEthereumAccountBalance');
-            loadEthereumAccountBalance(Store, ethersProvider);
+            loadEthereumAccountBalance(Store);
         }
     }, 30000);
 });
