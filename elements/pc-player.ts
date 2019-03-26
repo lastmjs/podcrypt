@@ -113,8 +113,8 @@ StorePromise.then((Store) => {
                     bottom: 0;
                     width: 100%;
                     background-color: white;
-                    padding: calc(10px + 1vmin);
                     box-shadow: inset 0px 5px 5px -5px grey;
+                    padding: calc(10px + 1vmin);
                 }
     
                 .pc-player-play-icon {
@@ -123,7 +123,8 @@ StorePromise.then((Store) => {
             </style>
     
             <div class="pc-player-container">
-                <div style="width: 100%; position: absolute; top: 0; right: 0; height: 100%; background-color: rgba(1, 1, 1, .05); z-index: -1"></div>
+                <input @input=${(e: any) => timeSliderOnInput(e, element)} type="range" style="width: 100%; position: absolute; top: 0; height: 0" min="0" max="${getDuration(element)}" .value=${currentEpisode ? currentEpisode.progress : 0}>
+                <div style="width: 100%; position: absolute; top: 0; right: 0; height: 100%; background-color: rgba(1, 1, 1, .05); z-index: -1;"></div>
                 <div style="width: ${getProgressPercentage(element)}%; position: absolute; top: 0; left: 0; height: 100%; background-color: rgba(1, 1, 1, .1); z-index: -1"></div>
                 <!-- <i 
                     class="material-icons pc-player-play-icon"
@@ -132,9 +133,9 @@ StorePromise.then((Store) => {
                 </i> -->
 
                 <div style="display: flex; flex-direction: column; flex: 1; align-items: center; justify-content: center">
-                    <div style="font-size: calc(10px + 1vmin);">${secondsToHoursMinutesSeconds(currentEpisode ? currentEpisode.progress : 0)}</div>
+                    <div style="font-size: calc(10px + 1vmin);">${currentEpisode ? secondsToHoursMinutesSeconds(currentEpisode.progress) : ''}</div>
                     <div><hr style="width: 100%"></div>
-                    <div style="font-size: calc(10px + 1vmin);">${getDuration(element)}</div>
+                    <div style="font-size: calc(10px + 1vmin);">${getDuration(element) ? secondsToHoursMinutesSeconds(getDuration(element)) : ''}</div>
                 </div>
 
                 <div style="flex: 2; display: flex; align-items: center; justify-content: center">
@@ -205,6 +206,21 @@ StorePromise.then((Store) => {
         `;
     });
 
+    function timeSliderOnInput(e: any, element: any) {
+        const progress = e.target.value;
+
+        // TODO it would be nice to do this all through redux, as well as skipping forward and backward
+        const audioElement = element.querySelector('audio');
+        if (audioElement) {
+            audioElement.currentTime = progress;
+        }
+
+        Store.dispatch({
+            type: 'UPDATE_CURRENT_EPISODE_PROGRESS',
+            progress: new BigNumber(progress).toString()
+        });
+    }
+
     function getProgressPercentage(element: any) {
         const audioElement = element.querySelector('audio');
         if (audioElement && !isNaN(audioElement.duration) && !isNaN(audioElement.currentTime)) {
@@ -221,7 +237,7 @@ StorePromise.then((Store) => {
             audioElement &&
             !isNaN(audioElement.duration)
         ) {
-            return secondsToHoursMinutesSeconds(audioElement.duration);
+            return audioElement.duration;
         }
     }
 
