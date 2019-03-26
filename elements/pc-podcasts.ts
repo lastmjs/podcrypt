@@ -44,17 +44,18 @@ StorePromise.then((Store) => {
     
                 .pc-podcasts-item {
                     display: flex;
-                    padding: 2%;
+                    padding: 5%;
                     box-shadow: 0px 5px 5px -5px grey;
                     justify-content: center;
-                    align-items: center;
                 }
 
                 .pc-podcasts-item-text {
                     font-size: calc(12px + 1vmin);
                     text-overflow: ellipsis;
                     flex: 1;
-                    padding: 2%;
+                    padding-top: 1%;
+                    padding-left: 5%;
+                    padding-right: 5%;
                     cursor: pointer;
                     font-weight: bold;
                 }
@@ -79,7 +80,7 @@ StorePromise.then((Store) => {
                             return html`
                                 <div class="pc-podcasts-item">
                                     <div>
-                                        <img src="${podcast.imageUrl}" width="60" height="60">
+                                        <img src="${podcast.imageUrl}" width="60" height="60" style="border-radius: 5%">
                                     </div>
                                     <div class="pc-podcasts-item-text" @click=${() => podcastClick(podcast)}>
                                         ${podcast.title}
