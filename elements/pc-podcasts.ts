@@ -67,13 +67,13 @@ StorePromise.then((Store) => {
                     id="search-input"
                     class="pc-podcasts-search-input"
                     type="text"
-                    placeholder="Search or enter feed URL"
+                    placeholder="Search by term or feed URL"
                     @keydown=${(e: any) => searchInputKeyDown(e, element)}
                 >
     
                 ${
                     Object.values(Store.getState().podcasts).length === 0 ? 
-                    html`<div style="display: flex; align-items: center; justify-content: center; margin-top: 25%; font-size: calc(20px + 1vmin); color: grey">You have no podcasts</div>` :
+                    html`<div style="display: flex; align-items: center; justify-content: center; margin-top: 25%; font-size: calc(20px + 1vmin); color: grey">Search for podcasts above</div>` :
                     html`
                         ${Object.values(Store.getState().podcasts).map((podcast) => {
                             return html`
