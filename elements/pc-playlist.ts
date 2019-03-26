@@ -126,7 +126,7 @@ StorePromise.then((Store) => {
                                 >keyboard_arrow_down</i>
                             </div>
                             <div class="pc-playlist-item-title">
-                                <div style="font-size: calc(10px + 1vmin); color: grey; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; width: 60vw">${podcast.title}</div>
+                                <div style="font-size: calc(10px + 1vmin); color: grey; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; width: 60vw; margin-bottom: 5px">${podcast.title}</div>
                                 <div>${episode.finishedListening ? '*' : ''} ${episode.title}</div>
                             </div>
                             <div class="pc-playlist-item-controls-container">
