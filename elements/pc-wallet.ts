@@ -209,9 +209,9 @@ StorePromise.then((Store) => {
                 return html`
                     <div class="pc-wallet-podcast-item">
                         <div>
-                            <img src="${podcast.imageUrl}" width="60" height="60">
+                            <img src="${podcast.imageUrl}" width="60" height="60" style="border-radius: 5%">
                         </div>
-                        <div style="display:flex; flex-direction: column; padding-left: 5%; flex: 3">
+                        <div style="display:flex; flex-direction: column; padding-left: 5%; padding-top: 1%; flex: 3">
                             <div class="pc-wallet-podcast-item-text">${podcast.title}</div>
                             <div>
                                 ${
@@ -233,9 +233,9 @@ StorePromise.then((Store) => {
 
             <div class="pc-wallet-podcast-item">
                 <div>
-                    <img src="podcrypt-logo-transparent.png" width="60" height="60">
+                    <img src="podcrypt-logo-transparent.png" width="60" height="60" style="border-radius: 5%">
                 </div>
-                <div style="display:flex; flex-direction: column; padding-left: 5%; flex: 3">
+                <div style="display:flex; flex-direction: column; padding-left: 5%; padding-top: 1%; flex: 3">
                     <div class="pc-wallet-podcast-item-text">Podcrypt</div>
                     <br>
                     <div>$${new BigNumber(Store.getState().payoutTargetInUSDCents).multipliedBy(Store.getState().podcryptPayoutPercentage).dividedBy(10000).toFixed(2)}, ${Store.getState().podcryptPayoutPercentage}%</div>
@@ -256,7 +256,7 @@ StorePromise.then((Store) => {
 
     function warningsUI(update: any, props: any) {
         return html`
-            <div style="padding-left: 2%; padding-right: 2%">
+            <div style="padding-left: 2%; padding-right: 2%;">
                 <div>I understand the following (check each box):</div>
                 <br>
                 <div>

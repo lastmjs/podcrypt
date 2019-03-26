@@ -101,9 +101,9 @@ StorePromise.then((Store) => {
             loaded: true,
             previousFeedUrl: feedUrl,
             feedUI: html`
-                <div style="display: flex; margin: 0; padding: 5%; padding-top: 0%">
+                <div style="display: flex; margin: 0; padding: 5%; padding-top: 5%">
                     <div style="flex: 1">
-                        <img src="${podcast.imageUrl}" width="60" height="60">
+                        <img src="${podcast.imageUrl}" width="60" height="60" style="border-radius: 5%">
                     </div>
                     <div style="flex: 3;">
                         <div style="font-weight: bold; font-size: calc(16px + 1vmin); flex: 3">${feed.title}</div>
@@ -129,7 +129,7 @@ StorePromise.then((Store) => {
                             >
                                 <div>${item.title}</div>
                                 <br>
-                                <div style="font-size: calc(10px + 1vmin); font-weight: normal">${new Date(item.isoDate).toLocaleDateString()}</div>
+                                <div style="font-size: calc(10px + 1vmin); font-weight: bold; color: grey">${new Date(item.isoDate).toLocaleDateString()}</div>
                             </div>
 
                             <div class="pc-podcast-overview-episode-controls-container">

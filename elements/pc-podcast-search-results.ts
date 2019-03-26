@@ -39,8 +39,6 @@ StorePromise.then((Store) => {
 
                 .pc-podcast-search-results-item {
                     display: flex;
-                    justify-content: center;
-                    align-items: center;
                     box-shadow: 0px 5px 5px -5px grey;
                     padding: 2%;
                 }
@@ -50,7 +48,8 @@ StorePromise.then((Store) => {
                     font-weight: bold;
                     text-overflow: ellipsis;
                     flex: 1;
-                    padding: 2%;
+                    padding-left: 5%;
+                    padding-top: 1%;
                     cursor: pointer;
                 }
 
@@ -105,7 +104,7 @@ StorePromise.then((Store) => {
                 return html`
                     <div class="pc-podcast-search-results-item">
                         <div>
-                            <img src="${searchResult.artworkUrl60}" width="60" height="60">
+                            <img src="${searchResult.artworkUrl60}" width="60" height="60" style="border-radius: 5%">
                         </div>
 
                         <div
