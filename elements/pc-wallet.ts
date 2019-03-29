@@ -306,7 +306,7 @@ StorePromise.then((Store) => {
                 <div>
                     <input
                         type="checkbox"
-                        @chaange=${checkbox5InputChanged}
+                        @change=${checkbox5InputChanged}
                         .checked=${Store.getState().warningCheckbox5Checked}
                     >
                     Podcrypt Alpha uses the Ethereum network for payments. I should only send ETH to Podcrypt Alpha.
