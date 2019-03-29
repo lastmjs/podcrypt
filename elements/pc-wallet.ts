@@ -262,7 +262,7 @@ StorePromise.then((Store) => {
                 <div>
                     <input 
                         type="checkbox"
-                        @input=${checkbox1InputChanged}
+                        @change=${checkbox1InputChanged}
                         .checked=${Store.getState().warningCheckbox1Checked}
                     >
                     Podcrypt is offered to me under the terms of the <a href="https://opensource.org/licenses/MIT" target="_blank">MIT license</a>, which essentially means I have a license to do whatever I like with Podcrypt, but there is no warranty as far as possible
@@ -273,7 +273,7 @@ StorePromise.then((Store) => {
                 <div>
                     <input
                         type="checkbox"
-                        @input=${checkbox2InputChanged}
+                        @change=${checkbox2InputChanged}
                         .checked=${Store.getState().warningCheckbox2Checked}
                     >
                     This is alpha software
@@ -284,7 +284,7 @@ StorePromise.then((Store) => {
                 <div>
                     <input
                         type="checkbox"
-                        @input=${checkbox3InputChanged}
+                        @change=${checkbox3InputChanged}
                         .checked=${Store.getState().warningCheckbox3Checked}
                     >
                     Anything could go wrong
@@ -295,7 +295,7 @@ StorePromise.then((Store) => {
                 <div>
                     <input
                         type="checkbox"
-                        @input=${checkbox4InputChanged}
+                        @change=${checkbox4InputChanged}
                         .checked=${Store.getState().warningCheckbox4Checked}
                     >
                     I am responsible for using Podcrypt legally, including determining taxes and other potential legal implications
@@ -306,7 +306,7 @@ StorePromise.then((Store) => {
                 <div>
                     <input
                         type="checkbox"
-                        @input=${checkbox5InputChanged}
+                        @change=${checkbox5InputChanged}
                         .checked=${Store.getState().warningCheckbox5Checked}
                     >
                     Podcrypt Alpha uses the Ethereum network for payments. I should only send ETH to Podcrypt Alpha.
@@ -332,7 +332,7 @@ StorePromise.then((Store) => {
                 <div>
                     <input 
                         type="checkbox"
-                        @input=${mnemonicPhraseWarningInputChanged}
+                        @change=${mnemonicPhraseWarningInputChanged}
                         .checked=${Store.getState().mnemonicPhraseWarningCheckboxChecked}
                     >
                     I understand
