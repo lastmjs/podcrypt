@@ -12,7 +12,7 @@ import './pc-contact';
 import './pc-about';
 import './pc-not-verified-help';
 import './pc-receive-eth';
-import './pc-logs';
+// import './pc-logs';
 import './pc-restore-with-phrase';
 import { parseQueryString } from '../services/utilities';
 
