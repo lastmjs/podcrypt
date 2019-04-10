@@ -647,13 +647,13 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
     const Store: Store<Readonly<State>, Readonly<AnyAction>> = createStore((state: Readonly<State> | undefined, action: AnyAction) => {
 
         if (action.type !== 'UPDATE_CURRENT_EPISODE_PROGRESS') {
-            console.log('action', action);
+            // console.log('action', action);
         }
     
         const newState: Readonly<State> = RootReducer(state, action);
     
         if (action.type !== 'UPDATE_CURRENT_EPISODE_PROGRESS') {
-            console.log('state', newState);
+            // console.log('state', newState);
         }
     
         set('state', newState);
