@@ -98,7 +98,7 @@ StorePromise.then((Store) => {
     
         return html`
             <pc-podcasts
-                ?hidden=${currentRoute.pathname !== '/'}
+                ?hidden=${currentRoute.pathname !== '/' || currentRoute.pathname !== '/index.html'}
             ></pc-podcasts>
             <pc-playlist
                 ?hidden=${currentRoute.pathname !== '/playlist'}
