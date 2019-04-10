@@ -264,7 +264,7 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
         }
     
         if (action.type === 'PLAY_EPISODE_FROM_PLAYLIST') {
-            const newCurrentPlaylistIndex: number = action.playlistIndex;
+            const newCurrentPlaylistIndex: number = state.playlist.indexOf(action.episodeGuid);
             const newCurrentEpisodeGuid: EpisodeGuid = state.playlist[newCurrentPlaylistIndex];
     
             // TODO this is dirty clean it up
