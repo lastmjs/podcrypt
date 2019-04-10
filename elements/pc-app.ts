@@ -51,6 +51,9 @@ StorePromise.then((Store) => {
             <div class="pc-app-top-bar">
                 <pc-hamburger @click=${mainMenuToggle}></pc-hamburger>
                 <div style="margin-left: 5%;">Podcrypt Alpha</div>
+
+                <button @click=${() => alert(window.location)} style="border: none; color: white; background-color: white">URL test</button>                
+
                 <div
                     ?hidden=${Store.getState().payoutProblem === 'NO_PROBLEM'}
                     style="margin-left: auto; margin-right: 5%;"
