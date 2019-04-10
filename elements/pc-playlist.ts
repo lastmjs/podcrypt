@@ -133,7 +133,7 @@ StorePromise.then((Store) => {
                                 ${
                                     episode.playing ? 
                                     html`<i class="material-icons pc-playlist-item-audio-control" @click=${() => pauseEpisode(episodeGuid)} title="Pause episode">pause</i>` : 
-                                    html`<i class="material-icons pc-playlist-item-audio-control" @click=${() => playEpisode(index, episodeGuid)} title="Resume episode">play_arrow</i>`
+                                    html`<i class="material-icons pc-playlist-item-audio-control" @click=${() => playEpisode(episodeGuid)} title="Resume episode">play_arrow</i>`
                                 }
 
                                 <!--TODO we need a three dots menu for the extra stuff here, like deleting-->
@@ -151,11 +151,10 @@ StorePromise.then((Store) => {
             `;
     }
 
-    // TODO why even pass in the index here, why not just the episodeGuid?
-    function playEpisode(playlistIndex: number, episodeGuid: EpisodeGuid) {
+    function playEpisode(episodeGuid: EpisodeGuid) {
         Store.dispatch({
             type: 'PLAY_EPISODE_FROM_PLAYLIST',
-            playlistIndex
+            episodeGuid
         });
 
         const episode: Readonly<Episode> = Store.getState().episodes[episodeGuid];
