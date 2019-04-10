@@ -108,12 +108,6 @@ StorePromise.then((Store) => {
                     Credits
                 </div>
 
-                <div
-                    class="pc-main-menu-item"
-                    @click=${() => menuItemClick(Store, '/logs')}
-                >
-                    Logs
-                </div>
             </div>
         `;
     });
