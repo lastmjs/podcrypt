@@ -4,7 +4,12 @@ import './pc-loading';
 import {
     titleTextLarge,
     titleTextXLarge,
-    secondaryTextMedium
+    secondaryTextMedium,
+    pxXSmall,
+    pxXXXSmall,
+    color1Full,
+    pxMedium,
+    pxSmall
 } from '../services/css';
 
 customElement('pc-about', ({ constructing, connecting, update, props }) => {
@@ -39,7 +44,11 @@ customElement('pc-about', ({ constructing, connecting, update, props }) => {
             }
 
             .pc-about-secondary-text {
-                ${secondaryTextMedium}
+                font-size: ${pxSmall};
+                background-color: white;
+                padding: ${pxXSmall};
+                border-radius: ${pxXXXSmall};
+                box-shadow: 0px 0px 1px ${color1Full};
             }
         </style>
 
@@ -51,15 +60,26 @@ customElement('pc-about', ({ constructing, connecting, update, props }) => {
 
             <div class="pc-about-title-text-x-large">About Podcrypt</div>
 
-            <p class="pc-about-secondary-text">
+            <br>
+
+            <div class="pc-about-secondary-text">
                 Podcrypt allows you to listen to and optionally donate back to podcasts automatically, fairly, and peer-to-peer.
-            </p>
+            </div>
+
+            <br>
 
             <div class="pc-about-title-text-large">Podcast listeners</div>
 
+            <br>
+
             <div class="pc-about-secondary-text">
-                <p>You can listen to podcasts for free, just search for your favorites in the Podcasts section.</p>
-                <p>If you want to start donating:</p>
+                You can listen to podcasts for free, just search for your favorites in the Podcasts section.
+            </div>
+
+            <br>
+
+            <div class="pc-about-secondary-text">
+                <div>If you want to start donating:</div>
                 <ul>
                     <li>Create a Podcrypt wallet</li>
                     <li>Send your Podcrypt wallet some ETH</li>
@@ -69,13 +89,19 @@ customElement('pc-about', ({ constructing, connecting, update, props }) => {
                 </ul>
             </div>
 
+            <br>
+
             <div class="pc-about-title-text-large">Podcasters</div>
 
-            <p class="pc-about-secondary-text">
-                To start receiving donations, put your Ethereum address or ENS name into the main description of your podcast (not into episode descriptions).
-            </p>
+            <br>
 
-            <p class="pc-about-secondary-text">That's all it takes to get verified on Podcrypt and start receiving donations.</p>
+            <div class="pc-about-secondary-text">
+                To start receiving donations, put your Ethereum address or ENS name into the main description of your podcast (not into episode descriptions).
+            </div>
+
+            <br>
+
+            <div class="pc-about-secondary-text">That's all it takes to get verified on Podcrypt and start receiving donations.</div>
             
         </div>
     `;
