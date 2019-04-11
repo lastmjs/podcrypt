@@ -24,6 +24,7 @@ StorePromise.then((Store) => {
         }
 
         if (
+            Store.getState().currentRoute.pathname === '/playlist' &&
             props.feedUrl !== props.previousFeedUrl &&
             props.episodeGuid !== props.previousEpisodeGuid
         ) {
