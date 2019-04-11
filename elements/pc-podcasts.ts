@@ -4,8 +4,7 @@ import {
     pcContainerStyles,
     pxMedium,
     pxXSmall,
-    color1Full,
-    color1Light,
+    color1Medium,
     pxSmall,
     pxLarge,
     pxXXXSmall
@@ -45,7 +44,7 @@ StorePromise.then((Store) => {
                     width: 100%;
                     font-size: ${pxMedium};
                     border: none;
-                    border-bottom: 1px solid ${color1Light};
+                    border-bottom: 1px solid ${color1Medium};
                     font-family: Ubuntu;
                     background-color: transparent;
                 }
