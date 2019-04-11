@@ -50,8 +50,10 @@ StorePromise.then((Store) => {
                 .pc-playlist-item {
                     display: flex;
                     position: relative;
-                    box-shadow: 0px 5px 5px -5px grey;
+                    margin: 2%;
                     padding: 2%;
+                    background-color: white;
+                    border-radius: calc(5px + 1vmin);
                 }
 
                 .pc-playlist-item-arrows-container {
