@@ -6,3 +6,8 @@ export const pcContainerStyles = `
     padding-bottom: 20%;
     overflow-y: auto;
 `;
+
+export const color1Full = `rgba(251, 133, 69, 1);`;
+export const color2Full = `rgba(69, 181, 251, 1);`;
+export const color3Full = `rgba(251, 224, 69, 1)`;
+export const color4Full = `rgba(196, 69, 251, 1)`;

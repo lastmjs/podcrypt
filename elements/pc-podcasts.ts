@@ -40,6 +40,7 @@ StorePromise.then((Store) => {
                     border: none;
                     border-bottom: 1px solid grey;
                     margin-left: 2%;
+                    font-family: Ubuntu;
                 }
     
                 .pc-podcasts-item {
@@ -51,6 +52,7 @@ StorePromise.then((Store) => {
 
                 .pc-podcasts-item-text {
                     font-size: calc(12px + 1vmin);
+                    font-family: Ubuntu;
                     text-overflow: ellipsis;
                     flex: 1;
                     padding-top: 1%;

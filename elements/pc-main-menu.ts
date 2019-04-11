@@ -48,21 +48,28 @@ StorePromise.then((Store) => {
                 .pc-main-menu-item-icon {
                     flex: 1;
                     color: grey;
+                    /* color: rgba(69, 181, 251, 1); */
                 }
 
                 .pc-main-menu-item-text {
                     flex: 6;
                     font-size: calc(12px + 1vmin);
+                    font-family: Ubuntu;
                 }
 
                 .pc-main-menu-item-selected {
-                    background-color: rgba(1, 1, 1, .1);
+                    /* background-color: rgba(1, 1, 1, .1); */
+                    /* background-color: #45b5fb; */
+                    background-color: rgba(69, 181, 251, .1);
+                    /* background-color: rgba(251, 133, 69, .1); */
                 }
 
                 .pc-main-menu-logo {
                     font-size: calc(25px + 1vmin);
                     flex: 1;
-                    color: grey;
+                    /* color: grey; */
+                    /* color: rgba(69, 181, 251, 1); */
+                    color: rgba(251, 133, 69, 1);
                 }
 
                 /* .pc-logo {

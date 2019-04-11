@@ -1,4 +1,5 @@
 import { customElement, html } from 'functional-element';
+import { color1Full } from '../services/css';
 
 // TODO all of this prefix nonsense can be fixed by implementing shadow dom in functional-element
 customElement('pc-loading', ({ props, constructing }) => {
@@ -43,7 +44,7 @@ customElement('pc-loading', ({ props, constructing }) => {
                 display: inline-block;
                 width: 50px;
                 height: 50px;
-                border: 3px solid rgba(0, 0, 0, .3);
+                border: 3px solid ${color1Full};
                 border-radius: 50%;
                 border-top-color: #fefefe;
                 animation: spin 1s ease-in-out infinite;
