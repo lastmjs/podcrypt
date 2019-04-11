@@ -15,6 +15,9 @@ import './pc-receive-eth';
 import './pc-restore-with-phrase';
 import { parseQueryString } from '../services/utilities';
 
+
+// TODO I would love to use the route /credits instead of /credit, but there is a strange issues with /credits: https://github.com/lastmjs/podcrypt/issues/169
+
 StorePromise.then((Store) => {
 
     // this listens for browser navigation through the forward and backward navigation arrows, I believe
