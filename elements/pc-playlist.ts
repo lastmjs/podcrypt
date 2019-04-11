@@ -118,6 +118,16 @@ StorePromise.then((Store) => {
                     font-size: ${pxXLarge};
                     cursor: pointer;
                 }
+
+                .pc-playlist-item-select {
+                    border: none;
+                    background-color: white;
+                    width: 35px;
+                    cursor: pointer;
+                    position: absolute;
+                    top: 5px;
+                    right: 5px;
+                }
             </style>
 
             <div class="pc-playlist-container">
@@ -181,25 +191,36 @@ StorePromise.then((Store) => {
                             </div>
 
                             <div class="pc-playlist-item-controls-container">
+
                                 ${
                                     episode.playing ? 
                                         html`<i class="material-icons pc-playlist-item-audio-control" @click=${() => pauseEpisode(episodeGuid)} title="Pause episode">pause</i>` : 
                                         html`<i class="material-icons pc-playlist-item-audio-control" @click=${() => playEpisode(episodeGuid)} title="Resume episode">play_arrow</i>`
                                 }
 
-                                <!--TODO we need a three dots menu for the extra stuff here, like deleting-->
-                                <i 
-                                    class="material-icons"
-                                    style="font-size: 15px; cursor: pointer; position: absolute; top: 5px; right: 5px"
-                                    @click=${() => removeEpisodeFromPlaylist(index)}
+                                <select
+                                    @change=${(e: any) => testSelect(e, index)}
+                                    class="pc-playlist-item-select"
                                 >
-                                    delete
-                                </i>                                
+                                    <option>...</option>
+                                    <option>Remove from playlist</option>
+                                </select>
                             </div>
                         </div>
                     `;
                 })}
             `;
+    }
+
+    function testSelect(e: any, index: number) {
+
+        // TODO constantize each of the options in the dropdown
+
+        if (e.target.value === 'Remove from playlist') {
+            removeEpisodeFromPlaylist(index);
+        }
+
+        e.target.value = '...';
     }
 
     function playEpisode(episodeGuid: EpisodeGuid) {
