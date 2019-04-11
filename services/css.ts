@@ -9,9 +9,11 @@ export const color4Full = `rgba(196, 69, 251, 1)`;
 export const colorBlackFull = `rgba(0, 0, 0, 1)`;
 export const colorBlackMedium = `rgba(0, 0, 0, .75)`;
 export const colorBlackLight = `rgba(0, 0, 0, .5)`;
+export const colorBlackVeryLight = `rgba(0, 0, 0, .05)`;
 export const colorBlackFaint = `rgba(0, 0, 0, .01)`;
 
 export const bottomShadow = `-5px 5px 5px -5px grey`;
+export const normalShadow = `0px 0px 1px grey`;
 
 export const one = `1`;
 

@@ -1,11 +1,23 @@
 import { customElement, html } from 'functional-element';
 import { StorePromise } from '../services/store';
-import { pcContainerStyles } from '../services/css';
+import { 
+    pcContainerStyles,
+    normalShadow,
+    pxSmall,
+    pxXSmall,
+    pxXXSmall,
+    pxXXXSmall,
+    color1Full,
+    colorBlackMedium,
+    colorBlackVeryLight,
+    pxXLarge
+ } from '../services/css';
 import { 
     navigateInPlace,
     getRSSFeed,
     createPodcast,
-    addEpisodeToPlaylist
+    addEpisodeToPlaylist,
+    navigate
 } from '../services/utilities';
 import './pc-loading';
 
@@ -46,12 +58,15 @@ StorePromise.then((Store) => {
                 }
 
                 .pc-playlist-item {
+                    box-shadow: ${normalShadow};
                     display: flex;
                     position: relative;
-                    margin: 2%;
-                    padding: 2%;
+                    margin-top: ${pxXSmall};
+                    margin-bottom: ${pxXSmall};
+                    border-radius: ${pxXXXSmall};
+                    justify-content: center;
                     background-color: white;
-                    border-radius: calc(5px + 1vmin);
+                    padding: ${pxXSmall};
                 }
 
                 .pc-playlist-item-arrows-container {
@@ -62,15 +77,34 @@ StorePromise.then((Store) => {
                 }
 
                 .pc-playlist-item-arrow {
-                    font-size: calc(25px + 1vmin);
+                    font-size: ${pxXLarge};
                     cursor: pointer;
                 }
 
-                .pc-playlist-item-title {
-                    text-overflow: ellipsis;
+                .pc-playlist-item-text-container {
                     flex: 1;
-                    font-size: calc(12px + 1vmin);
-                    padding: 2%;
+                    padding-left: ${pxXSmall};
+                    cursor: pointer;
+                }
+
+                .pc-playlist-item-episode-title {
+                    font-size: ${pxSmall};
+                    font-weight: bold;
+                }
+
+                .pc-playlist-item-episode-title-finished-listening {
+                    font-weight: normal;
+                    color: ${colorBlackMedium};
+                }
+
+                .pc-playlist-item-podcast-title {
+                    font-size: ${pxXSmall};
+                    color: ${color1Full};
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    width: 60vw; /*TODO I want this width to be based on its container*/
+                    margin-bottom: ${pxXXSmall};
                     font-weight: bold;
                 }
 
@@ -81,7 +115,7 @@ StorePromise.then((Store) => {
                 }
 
                 .pc-playlist-item-audio-control {
-                    font-size: calc(35px + 1vmin);
+                    font-size: ${pxXLarge};
                     cursor: pointer;
                 }
             </style>
@@ -106,35 +140,51 @@ StorePromise.then((Store) => {
                 ${Store.getState().playlist.map((episodeGuid: any, index: any) => {
                     const episode: Readonly<Episode> = Store.getState().episodes[episodeGuid];
                     const podcast: Readonly<Podcast> = Store.getState().podcasts[episode.feedUrl];
-                    const currentPlaylistIndex = Store.getState().currentPlaylistIndex;
-                    const currentlyPlaying = currentPlaylistIndex === index;
+                    const currentPlaylistIndex: number = Store.getState().currentPlaylistIndex;
+                    const currentlyPlaying: boolean = currentPlaylistIndex === index;
 
                     return html`
                         <div
-                            class="pc-playlist-item" style="${currentlyPlaying ? 'background-color: rgba(0, 0, 0, .05)' : ''}"
+                            class="pc-playlist-item" style="${currentlyPlaying ? `background-color: ${colorBlackVeryLight}` : ''}"
                         >
                             <div class="pc-playlist-item-arrows-container">
                                 <i 
                                     class="material-icons pc-playlist-item-arrow"
                                     @click=${() => moveEpisodeUp(index)}
-                                    title="Move episode up"
-                                >keyboard_arrow_up</i>
+                                >
+                                    keyboard_arrow_up
+                                </i>
 
                                 <i 
                                     class="material-icons pc-playlist-item-arrow"
                                     @click=${() => moveEpisodeDown(index)}
-                                    title="Move episode down"
-                                >keyboard_arrow_down</i>
+                                >
+                                    keyboard_arrow_down
+                                </i>
                             </div>
-                            <div class="pc-playlist-item-title">
-                                <div style="font-size: calc(10px + 1vmin); color: grey; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; width: 60vw; margin-bottom: 5px">${podcast.title}</div>
-                                <div>${episode.finishedListening ? '*' : ''} ${episode.title}</div>
+
+                            <div 
+                                class="pc-playlist-item-text-container"
+                                @click=${() => navigate(Store, `/episode-overview?feedUrl=${podcast.feedUrl}&episodeGuid=${episode.guid}`)}
+                            >
+                                <div 
+                                    class="pc-playlist-item-podcast-title"
+                                >
+                                    ${podcast.title}
+                                </div>
+
+                                <div 
+                                    class="pc-playlist-item-episode-title${episode.finishedListening ? ' pc-playlist-item-episode-title-finished-listening' : ''} "
+                                >
+                                    ${episode.title}
+                                </div>
                             </div>
+
                             <div class="pc-playlist-item-controls-container">
                                 ${
                                     episode.playing ? 
-                                    html`<i class="material-icons pc-playlist-item-audio-control" @click=${() => pauseEpisode(episodeGuid)} title="Pause episode">pause</i>` : 
-                                    html`<i class="material-icons pc-playlist-item-audio-control" @click=${() => playEpisode(episodeGuid)} title="Resume episode">play_arrow</i>`
+                                        html`<i class="material-icons pc-playlist-item-audio-control" @click=${() => pauseEpisode(episodeGuid)} title="Pause episode">pause</i>` : 
+                                        html`<i class="material-icons pc-playlist-item-audio-control" @click=${() => playEpisode(episodeGuid)} title="Resume episode">play_arrow</i>`
                                 }
 
                                 <!--TODO we need a three dots menu for the extra stuff here, like deleting-->
@@ -142,8 +192,8 @@ StorePromise.then((Store) => {
                                     class="material-icons"
                                     style="font-size: 15px; cursor: pointer; position: absolute; top: 5px; right: 5px"
                                     @click=${() => removeEpisodeFromPlaylist(index)}
-                                    title="Remove episode from playlist"
-                                >delete
+                                >
+                                    delete
                                 </i>                                
                             </div>
                         </div>

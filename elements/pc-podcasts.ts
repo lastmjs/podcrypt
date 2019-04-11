@@ -7,7 +7,9 @@ import {
     color1Medium,
     pxSmall,
     pxLarge,
-    pxXXXSmall
+    pxXXXSmall,
+    normalShadow,
+    colorBlackMedium
  } from '../services/css';
 import { 
     navigate
@@ -50,7 +52,7 @@ StorePromise.then((Store) => {
                 }
     
                 .pc-podcasts-item {
-                    box-shadow: 0px 0px 1px grey;
+                    box-shadow: ${normalShadow};
                     display: flex;
                     padding: ${pxXSmall};
                     margin-top: ${pxXSmall};
@@ -60,13 +62,14 @@ StorePromise.then((Store) => {
                     background-color: white;
                 }
 
-                .pc-podcasts-item-text {
+                .pc-podcasts-item-title {
                     font-size: ${pxSmall};
                     font-family: Ubuntu;
                     text-overflow: ellipsis;
                     flex: 1;
                     padding-left: ${pxXSmall};
                     cursor: pointer;
+                    color: ${colorBlackMedium};
                 }
 
                 .pc-podcasts-item-image {
@@ -114,7 +117,7 @@ StorePromise.then((Store) => {
                                             >
                                         </div>
                                         <div 
-                                            class="pc-podcasts-item-text"
+                                            class="pc-podcasts-item-title"
                                             @click=${() => podcastClick(podcast)}
                                         >
                                             ${podcast.title}
