@@ -103,7 +103,7 @@ StorePromise.then((Store) => {
 
                 <div
                     class="pc-main-menu-item"
-                    @click=${() => menuItemClick(Store, '/credits')}
+                    @click=${() => menuItemClick(Store, '/credit')}
                 >
                     Credits
                 </div>

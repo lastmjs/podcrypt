@@ -122,7 +122,7 @@ StorePromise.then((Store) => {
                 .term=${Store.getState().currentRoute.query.term}
             ></pc-podcast-search-results>
             <pc-credits
-                ?hidden=${currentRoute.pathname !== '/credits'}
+                ?hidden=${currentRoute.pathname !== '/credit'}
             ></pc-credits>
             <pc-privacy
                 ?hidden=${currentRoute.pathname !== '/privacy'}
