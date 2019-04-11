@@ -15,12 +15,21 @@ if ('serviceWorker' in window.navigator) {
     // });
 }
 
-import { customElement, html } from 'functional-element';
+import { 
+    customElement,
+    html 
+} from 'functional-element';
 import { StorePromise } from '../services/store';
 import './pc-router';
 import './pc-main-menu';
 import './pc-player';
-import './pc-hamburger';
+import {
+    bottomShadow,
+    one,
+    pxSmall,
+    pxLarge,
+    pxXLarge
+} from '../services/css';
 
 // TODO I do not like how we have to do this to get the store...top level await would be really nice
 StorePromise.then((Store) => {
@@ -34,30 +43,48 @@ StorePromise.then((Store) => {
             <style>
                 .pc-app-top-bar {
                     position: fixed;
-                    padding-top: 5%;
-                    padding-left: 3%;
-                    padding-bottom: 5%;
-                    width: 100%;
-                    background-color: white;
-                    box-shadow: -5px 5px 5px -5px grey;
-                    z-index: 1;
                     display: flex;
                     align-items: center;
-                    font-size: calc(15px + 1vmin);
-                    font-weight: bold;
+                    padding-top: ${pxSmall};
+                    padding-left: ${pxSmall};
+                    padding-bottom: ${pxSmall};
+                    width: 100%;
+                    box-shadow: ${bottomShadow};
+                    z-index: ${one};
+                    background-color: white;
+                }
+
+                .pc-app-menu-icon {
+                    font-size: ${pxLarge};
+                    cursor: pointer;
+                }
+
+                .pc-app-payout-problem-icon-container {
+                    margin-left: auto;
+                    margin-right: ${pxLarge};
+                }
+
+                .pc-app-payout-problem-icon {
+                    color: red;
+                    font-size: ${pxXLarge};
                 }
             </style>
     
             <div class="pc-app-top-bar">
-                <pc-hamburger @click=${mainMenuToggle}></pc-hamburger>
+
+                <i 
+                    class="material-icons pc-app-menu-icon"
+                    @click=${mainMenuToggle}
+                >
+                    menu
+                </i>
 
                 <div
                     ?hidden=${Store.getState().payoutProblem === 'NO_PROBLEM'}
-                    style="margin-left: auto; margin-right: 5%;"
+                    class="pc-app-payout-problem-icon-container"
                 >
                     <i 
-                        class="material-icons"
-                        style="font-size: calc(25px + 1vmin); color: red"
+                        class="material-icons pc-app-payout-problem-icon"
                         @click=${() => alert(getPayoutProblemMessage(Store.getState().payoutProblem))}
                     >
                         error_outline
