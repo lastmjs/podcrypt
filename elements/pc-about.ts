@@ -48,7 +48,7 @@ customElement('pc-about', ({ constructing, connecting, update, props }) => {
                 background-color: white;
                 padding: ${pxXSmall};
                 border-radius: ${pxXXXSmall};
-                box-shadow: 0px 0px 1px ${color1Full};
+                box-shadow: 0px 0px 1px grey;
             }
         </style>
 

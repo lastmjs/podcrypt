@@ -51,7 +51,7 @@ StorePromise.then((Store) => {
                 }
     
                 .pc-podcasts-item {
-                    box-shadow: 0px 0px 1px ${color1Full};
+                    box-shadow: 0px 0px 1px grey;
                     display: flex;
                     padding: ${pxXSmall};
                     margin-top: ${pxXSmall};
