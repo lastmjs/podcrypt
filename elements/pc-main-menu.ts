@@ -3,6 +3,9 @@ import { StorePromise } from '../services/store';
 import { 
     navigate
 } from '../services/utilities';
+import {
+    colorBlackVeryLight
+} from '../services/css';
 
 StorePromise.then((Store) => {    
     customElement('pc-main-menu', ({ element, update, constructing }) => {
@@ -60,7 +63,7 @@ StorePromise.then((Store) => {
                 .pc-main-menu-item-selected {
                     /* background-color: rgba(1, 1, 1, .1); */
                     /* background-color: #45b5fb; */
-                    background-color: rgba(69, 181, 251, .1);
+                    background-color: ${colorBlackVeryLight};
                     /* background-color: rgba(251, 133, 69, .1); */
                 }
 

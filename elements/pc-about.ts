@@ -4,12 +4,11 @@ import './pc-loading';
 import {
     titleTextLarge,
     titleTextXLarge,
-    secondaryTextMedium,
     pxXSmall,
     pxXXXSmall,
-    color1Full,
-    pxMedium,
-    pxSmall
+    pxSmall,
+    normalShadow,
+    colorBlackMedium
 } from '../services/css';
 
 customElement('pc-about', ({ constructing, connecting, update, props }) => {
@@ -49,7 +48,8 @@ customElement('pc-about', ({ constructing, connecting, update, props }) => {
                 background-color: white;
                 padding: ${pxXSmall};
                 border-radius: ${pxXXXSmall};
-                box-shadow: 0px 0px 1px grey;
+                box-shadow: ${normalShadow};
+                color: ${colorBlackMedium}
             }
         </style>
 
