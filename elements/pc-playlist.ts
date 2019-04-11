@@ -121,7 +121,7 @@ StorePromise.then((Store) => {
 
                 .pc-playlist-item-select {
                     border: none;
-                    background-color: white;
+                    background-color: transparent;
                     width: 35px;
                     cursor: pointer;
                     position: absolute;

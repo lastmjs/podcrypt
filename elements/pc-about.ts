@@ -1,14 +1,10 @@
 import { customElement, html } from 'functional-element';
-import { pcContainerStyles } from '../services/css';
 import './pc-loading';
 import {
+    pcContainerStyles,
     titleTextLarge,
     titleTextXLarge,
-    pxXSmall,
-    pxXXXSmall,
-    pxSmall,
-    normalShadow,
-    colorBlackMedium
+    standardTextContainer
 } from '../services/css';
 
 customElement('pc-about', ({ constructing, connecting, update, props }) => {
@@ -43,13 +39,7 @@ customElement('pc-about', ({ constructing, connecting, update, props }) => {
             }
 
             .pc-about-secondary-text {
-                font-size: ${pxSmall};
-                font-family; Ubuntu;
-                background-color: white;
-                padding: ${pxXSmall};
-                border-radius: ${pxXXXSmall};
-                box-shadow: ${normalShadow};
-                color: ${colorBlackMedium}
+                ${standardTextContainer}
             }
         </style>
 

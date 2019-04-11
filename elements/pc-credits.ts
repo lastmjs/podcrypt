@@ -1,6 +1,11 @@
 import { customElement, html } from 'functional-element';
-import { pcContainerStyles } from '../services/css';
 import './pc-loading';
+import {
+    pcContainerStyles,
+    titleTextLarge,
+    titleTextXLarge,
+    standardTextContainer
+} from '../services/css';
 
 customElement('pc-credits', ({ constructing, connecting, update, props }) => {
 
@@ -20,6 +25,18 @@ customElement('pc-credits', ({ constructing, connecting, update, props }) => {
             .pc-credits-container {
                 ${pcContainerStyles}
             }
+
+            .pc-credits-title-text-x-large {
+                ${titleTextXLarge}
+            }
+
+            .pc-credits-title-text-large {
+                ${titleTextLarge}
+            }
+
+            .pc-credits-secondary-text {
+                ${standardTextContainer}
+            }
         </style>
 
         <div class="pc-credits-container">
@@ -28,20 +45,39 @@ customElement('pc-credits', ({ constructing, connecting, update, props }) => {
                 .prefix=${"pc-credits-"}
             ></pc-loading>
 
-            <h2>Credits</h2>
+            <div class="pc-credits-title-text-x-large">Credits</div>
 
-            <h3>APIs</h3>
+            <br>
 
-            <p>Podcrypt uses a variety of APIs to make itself awesome. Some of them are listed below:</p>
-            <p>Powered by <a href="https://etherscan.io/apis" target="_blank">Etherscan.io APIs</a></p>
-            <p><a href="https://ethgasstation.info" target="_blank">ETH Gas Station</a></p>
-            <p><a href="https://cors-anywhere.herokuapp.com" target="_blank">CORS Anywhere</a></p>
-            <p><a href="https://jsonp.afeld.me" target="_blank">JSONProxy</a></p>
-            <p><a href="https://www.cryptonator.com/api" target="_blank">Cryptonator</a></p>
+            <div class="pc-credits-title-text-large">APIs</div>
 
-            <h3>Open Source</h3>
-            <p>Podcrypt itself is distributed under the terms of the MIT license. Podcrypt uses many other open source libraries, distributed under the following terms:</p>
-            ${props.attribution}
+            <br>
+
+            <div class="pc-credits-secondary-text">Podcrypt uses a variety of APIs to make itself awesome. Some of them are listed below:</div>
+
+            <br>
+
+            <div class="pc-credits-secondary-text">
+                <p>Powered by <a href="https://etherscan.io/apis" target="_blank">Etherscan.io APIs</a></p>
+                <p><a href="https://ethgasstation.info" target="_blank">ETH Gas Station</a></p>
+                <p><a href="https://cors-anywhere.herokuapp.com" target="_blank">CORS Anywhere</a></p>
+                <p><a href="https://jsonp.afeld.me" target="_blank">JSONProxy</a></p>
+                <p><a href="https://www.cryptonator.com/api" target="_blank">Cryptonator</a></p>
+            </div>
+
+            <br>
+
+            <div class="pc-credits-title-text-large">Open Source</div>
+            
+            <br>
+
+            <div class="pc-credits-secondary-text">Podcrypt itself is distributed under the terms of the MIT license. Podcrypt uses many other open source libraries, distributed under the following terms:</div>
+
+            <br>
+
+            <div class="pc-credits-secondary-text">
+                ${props.attribution}
+            </div>
         </div>
     `;
 });
