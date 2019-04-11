@@ -1,6 +1,15 @@
 import { customElement, html } from 'functional-element';
 import { StorePromise } from '../services/store';
-import { pcContainerStyles } from '../services/css';
+import { 
+    pcContainerStyles,
+    pxMedium,
+    pxXSmall,
+    color1Full,
+    color1Light,
+    pxSmall,
+    pxLarge,
+    pxXXXSmall
+ } from '../services/css';
 import { 
     navigate
 } from '../services/utilities';
@@ -30,41 +39,57 @@ StorePromise.then((Store) => {
             <style>
                 .pc-podcasts-container {
                     ${pcContainerStyles}
-                    padding-left: 0;
-                    padding-right: 0;
                 }
     
                 .pc-podcasts-search-input {
-                    width: 96%;
-                    font-size: calc(15px + 1vmin);
+                    width: 100%;
+                    font-size: ${pxMedium};
                     border: none;
-                    border-bottom: 1px solid grey;
-                    margin-left: 2%;
+                    border-bottom: 1px solid ${color1Light};
                     font-family: Ubuntu;
+                    background-color: transparent;
                 }
     
                 .pc-podcasts-item {
+                    box-shadow: 0px 0px 1px ${color1Full};
                     display: flex;
-                    padding: 5%;
-                    box-shadow: 0px 5px 5px -5px grey;
+                    padding: ${pxXSmall};
+                    margin-top: ${pxXSmall};
+                    margin-bottom: ${pxXSmall};
+                    border-radius: ${pxXXXSmall};
                     justify-content: center;
+                    background-color: white;
                 }
 
                 .pc-podcasts-item-text {
-                    font-size: calc(12px + 1vmin);
+                    font-size: ${pxSmall};
                     font-family: Ubuntu;
                     text-overflow: ellipsis;
                     flex: 1;
-                    padding-top: 1%;
-                    padding-left: 5%;
-                    padding-right: 5%;
+                    padding-left: ${pxXSmall};
                     cursor: pointer;
-                    font-weight: bold;
+                }
+
+                .pc-podcasts-item-image {
+                    border-radius: ${pxXXXSmall};
+                }
+
+                .pc-podcasts-empty-text {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin-top: calc(75px + 1vmin);
+                    font-size: ${pxLarge};
+                    color: grey;
                 }
             </style>
     
             <div class="pc-podcasts-container">
-                <pc-loading .hidden=${props.loaded} .prefix=${"pc-podcasts-"}></pc-loading>
+                <pc-loading
+                    .hidden=${props.loaded}
+                    .prefix=${"pc-podcasts-"}
+                >
+                </pc-loading>
 
                 <input
                     id="search-input"
@@ -76,20 +101,28 @@ StorePromise.then((Store) => {
     
                 ${
                     Object.values(Store.getState().podcasts).length === 0 ? 
-                    html`<div style="display: flex; align-items: center; justify-content: center; margin-top: 25%; font-size: calc(20px + 1vmin); color: grey">Search for podcasts above</div>` :
-                    html`
-                        ${Object.values(Store.getState().podcasts).map((podcast) => {
-                            return html`
-                                <div class="pc-podcasts-item">
-                                    <div>
-                                        <img src="${podcast.imageUrl}" width="60" height="60" style="border-radius: 5%">
+                        html`<div class="pc-podcasts-empty-text">Search for podcasts above</div>` :
+                        html`
+                            ${Object.values(Store.getState().podcasts).map((podcast) => {
+                                return html`
+                                    <div class="pc-podcasts-item">
+                                        <div>
+                                            <img 
+                                                class="pc-podcasts-item-image"
+                                                src="${podcast.imageUrl}"
+                                                width="60"
+                                                height="60"
+                                            >
+                                        </div>
+                                        <div 
+                                            class="pc-podcasts-item-text"
+                                            @click=${() => podcastClick(podcast)}
+                                        >
+                                            ${podcast.title}
+                                        </div>
                                     </div>
-                                    <div class="pc-podcasts-item-text" @click=${() => podcastClick(podcast)}>
-                                        ${podcast.title}
-                                    </div>
-                                </div>
-                            `;
-                        })}
+                                `;
+                            })}
                     `
                 }
             </div>

@@ -45,6 +45,7 @@ StorePromise.then((Store) => {
                     display: flex;
                     box-shadow: inset 0px 5px 5px -5px grey;
                     padding: 2%;
+                    background-color: white;
                 }
 
                 .pc-podcast-overview-episode-title {

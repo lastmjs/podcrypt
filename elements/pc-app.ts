@@ -69,32 +69,35 @@ StorePromise.then((Store) => {
                     font-size: ${pxXLarge};
                 }
             </style>
-    
-            <div class="pc-app-top-bar">
 
-                <i 
-                    class="material-icons pc-app-menu-icon"
-                    @click=${mainMenuToggle}
-                >
-                    menu
-                </i>
+            <div>
+                <div class="pc-app-top-bar">
 
-                <div
-                    ?hidden=${Store.getState().payoutProblem === 'NO_PROBLEM'}
-                    class="pc-app-payout-problem-icon-container"
-                >
                     <i 
-                        class="material-icons pc-app-payout-problem-icon"
-                        @click=${() => alert(getPayoutProblemMessage(Store.getState().payoutProblem))}
+                        class="material-icons pc-app-menu-icon"
+                        @click=${mainMenuToggle}
                     >
-                        error_outline
-                    </i>  
+                        menu
+                    </i>
+
+                    <div
+                        ?hidden=${Store.getState().payoutProblem === 'NO_PROBLEM'}
+                        class="pc-app-payout-problem-icon-container"
+                    >
+                        <i 
+                            class="material-icons pc-app-payout-problem-icon"
+                            @click=${() => alert(getPayoutProblemMessage(Store.getState().payoutProblem))}
+                        >
+                            error_outline
+                        </i>  
+                    </div>
                 </div>
+        
+                <pc-main-menu></pc-main-menu>
+                <pc-router></pc-router>
+                <pc-player></pc-player>
             </div>
     
-            <pc-main-menu></pc-main-menu>
-            <pc-router></pc-router>
-            <pc-player></pc-player>
         `;
     });    
 
