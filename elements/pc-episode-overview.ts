@@ -12,6 +12,9 @@ StorePromise.then((Store) => {
     customElement('pc-episode-overview', ({ constructing, props, update }) => {
 
         if (constructing) {
+
+            Store.subscribe(update);
+
             return {
                 feedUrl: null,
                 previousFeedUrl: null,
@@ -73,7 +76,12 @@ StorePromise.then((Store) => {
                                         style="font-size: calc(30px + 1vmin); padding: calc(5px + 1vmin)"
                                         @click=${() => addEpisodeToPlaylist(Store, props.podcast, props.episode)}
                                     >playlist_add
-                                    </i> 
+                                    </i>
+                                    ${
+                                        props.episode && Store.getState().episodes[props.episode.guid].playing ? 
+                                        html`<i class="material-icons pc-playlist-item-audio-control" @click=${() => pauseEpisode(props.episode.guid)} title="Pause episode">pause</i>` : 
+                                        html`<i class="material-icons pc-playlist-item-audio-control" @click=${() => playEpisode(props.podcast, props.episode)} title="Resume episode">play_arrow</i>`
+                                    }
                                 </div>
                             </div>
                             <br>
@@ -86,6 +94,26 @@ StorePromise.then((Store) => {
             </div>
         `;
     });
+
+    function playEpisode(podcast: Readonly<Podcast>, item: any) {
+        addEpisodeToPlaylist(Store, podcast, item);
+       
+        const episodeGuid: EpisodeGuid = item.guid;
+
+        // TODO this action type should be changed, same as in the playlist
+        Store.dispatch({
+            type: 'PLAY_EPISODE_FROM_PLAYLIST',
+            episodeGuid
+        });
+    }
+
+    function pauseEpisode(episodeGuid: EpisodeGuid) {
+        // TODO this action type should be changed, same as in the playlist
+        Store.dispatch({
+            type: 'PAUSE_EPISODE_FROM_PLAYLIST',
+            episodeGuid
+        });
+    }
 
     async function loadEpisode(feedUrl: string, episodeGuid: string, update: any, props: any) {
         if (
