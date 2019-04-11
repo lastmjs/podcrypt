@@ -59,6 +59,12 @@ StorePromise.then((Store) => {
                     background-color: rgba(1, 1, 1, .1);
                 }
 
+                .pc-main-menu-logo {
+                    font-size: calc(25px + 1vmin);
+                    flex: 1;
+                    color: grey;
+                }
+
                 /* .pc-logo {
                     font-size: calc(25px + 1vmin);
                     padding-top: calc(5px + 1vmin);
@@ -86,7 +92,10 @@ StorePromise.then((Store) => {
             ></div>
     
             <div class="pc-main-menu-container">
-                <div class="pc-main-menu-item"></div>
+                <div class="pc-main-menu-item">
+                    <span class="pc-main-menu-logo">卩</span>
+                    <span class="pc-main-menu-item-text">Podcrypt Alpha</span>
+                </div>
                 
                 <hr class="pc-main-menu-divider">
 

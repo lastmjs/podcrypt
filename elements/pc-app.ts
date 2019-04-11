@@ -50,7 +50,6 @@ StorePromise.then((Store) => {
     
             <div class="pc-app-top-bar">
                 <pc-hamburger @click=${mainMenuToggle}></pc-hamburger>
-                <div style="margin-left: 5%;">Podcrypt Alpha</div>
 
                 <div
                     ?hidden=${Store.getState().payoutProblem === 'NO_PROBLEM'}
