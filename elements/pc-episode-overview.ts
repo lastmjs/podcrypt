@@ -18,7 +18,9 @@ StorePromise.then((Store) => {
                 episodeGuid: null,
                 previousEpisodeGuid: null,
                 loaded: false,
-                ui: ''
+                feed: null,
+                podcast: null,
+                episode: null
             };
         }
 
@@ -50,7 +52,37 @@ StorePromise.then((Store) => {
                     .prefix=${"pc-episode-overview-"}
                 ></pc-loading>
 
-                ${props.ui}
+                ${
+                    props.feed === null ||
+                    props.podcast === null ||
+                    props.episode === null ?
+                        html`<div>Failed to load</div>` : 
+                        html`
+                            <div style="display: flex; padding-left: 3%">
+                                <div style="flex: 1">
+                                    <img src="${props.podcast.imageUrl}" width="60" height="60">
+                                </div>
+                                <div style="font-weight: bold; font-size: calc(16px + 1vmin); flex: 3">${props.podcast.title}</div>
+                            </div>
+                            <br>
+                            <div style="display: flex">
+                                <div style="padding-left: 5%; padding-right: 5%; font-weight: bold; font-size: calc(14px + 1vmin)">${props.episode.title}</div>
+                                <div style="display: flex; align-items: center; justify-content: top">
+                                    <i 
+                                        class="material-icons"
+                                        style="font-size: calc(30px + 1vmin); padding: calc(5px + 1vmin)"
+                                        @click=${() => addEpisodeToPlaylist(Store, props.podcast, props.episode)}
+                                    >playlist_add
+                                    </i> 
+                                </div>
+                            </div>
+                            <br>
+                            <div style="padding-left: 5%; font-weight: bold; font-size: calc(12px + 1vmin); color: grey">${new Date(props.episode.isoDate).toLocaleDateString()}</div>
+                            <br>
+                            <div style="padding-left: 5%; padding-right: 5%; overflow-wrap: break-word">${props.episode.contentSnippet}</div>
+
+                        `
+                }
             </div>
         `;
     });
@@ -67,7 +99,7 @@ StorePromise.then((Store) => {
 
         const feed = await getRSSFeed(feedUrl);
         const podcast = await createPodcast(feedUrl, feed);
-        
+
         if (
             feed === null ||
             podcast === null
@@ -75,7 +107,8 @@ StorePromise.then((Store) => {
             update({
                 ...props,
                 loaded: true,
-                ui: html`<div>Failed to load</div>`
+                feed,
+                podcast
             });
             return;
         }
@@ -88,7 +121,9 @@ StorePromise.then((Store) => {
             update({
                 ...props,
                 loaded: true,
-                ui: html`<div>Failed to load</div>`
+                feed,
+                podcast,
+                episode: null
             });
             return;
         }
@@ -96,30 +131,9 @@ StorePromise.then((Store) => {
         update({
             ...props,
             loaded: true,
-            ui: html`
-                <div style="display: flex; padding-left: 3%">
-                    <div style="flex: 1">
-                        <img src="${podcast.imageUrl}" width="60" height="60">
-                    </div>
-                    <div style="font-weight: bold; font-size: calc(16px + 1vmin); flex: 3">${podcast.title}</div>
-                </div>
-                <br>
-                <div style="display: flex">
-                    <div style="padding-left: 5%; padding-right: 5%; font-weight: bold; font-size: calc(14px + 1vmin)">${episode.title}</div>
-                    <div style="display: flex; align-items: center; justify-content: top">
-                        <i 
-                            class="material-icons"
-                            style="font-size: calc(30px + 1vmin); padding: calc(5px + 1vmin)"
-                            @click=${() => addEpisodeToPlaylist(Store, podcast, episode)}
-                        >playlist_add
-                        </i> 
-                    </div>
-                </div>
-                <br>
-                <div style="padding-left: 5%; font-weight: bold; font-size: calc(12px + 1vmin); color: grey">${new Date(episode.isoDate).toLocaleDateString()}</div>
-                <br>
-                <div style="padding-left: 5%; padding-right: 5%; overflow-wrap: break-word">${episode.contentSnippet}</div>
-            `
+            feed,
+            podcast,
+            episode
         });
     }
 });
