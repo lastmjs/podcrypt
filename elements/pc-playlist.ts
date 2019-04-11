@@ -43,8 +43,6 @@ StorePromise.then((Store) => {
             <style>
                 .pc-playlist-container {
                     ${pcContainerStyles}
-                    padding-left: 0;
-                    padding-right: 0;
                 }
 
                 .pc-playlist-item {
@@ -98,7 +96,7 @@ StorePromise.then((Store) => {
     `});
 
     function loadingUI() {
-        return html`<div style="padding-left: 2%; padding-right: 2%">Loading...</div>`;
+        return html`<div>Loading...</div>`;
     }
 
     function loadedUI() {

@@ -45,6 +45,7 @@ customElement('pc-about', ({ constructing, connecting, update, props }) => {
 
             .pc-about-secondary-text {
                 font-size: ${pxSmall};
+                font-family; Ubuntu;
                 background-color: white;
                 padding: ${pxXSmall};
                 border-radius: ${pxXXXSmall};
