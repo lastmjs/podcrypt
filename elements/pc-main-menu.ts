@@ -24,22 +24,15 @@ StorePromise.then((Store) => {
                     transition: .25s;
                     width: 80%;
                     left: ${Store.getState().showMainMenu ? '0' : '-90%'};
+                    overflow-y: scroll;
                 }
     
                 .pc-main-menu-item {
                     display: flex;
                     flex-direction: row;
-                    justify-content: center;
                     align-items: center;
-                    font-weight: bold;
-                    font-size: calc(25px + 1vmin);
                     cursor: pointer;
-                    padding: calc(25px + 1vmin);
-                }
-    
-                .pc-main-menu-item a {
-                    color: inherit;
-                    text-decoration: none;
+                    padding: calc(15px + 1vmin);
                 }
 
                 .pc-main-menu-overlay {
@@ -51,6 +44,40 @@ StorePromise.then((Store) => {
                     opacity: ${Store.getState().showMainMenu ? '100%' : '0'};
                     transition: .25s;
                 }
+
+                .pc-main-menu-item-icon {
+                    flex: 1;
+                    color: grey;
+                }
+
+                .pc-main-menu-item-text {
+                    flex: 6;
+                    font-size: calc(12px + 1vmin);
+                }
+
+                .pc-main-menu-item-selected {
+                    background-color: rgba(1, 1, 1, .1);
+                }
+
+                /* .pc-logo {
+                    font-size: calc(25px + 1vmin);
+                    padding-top: calc(5px + 1vmin);
+                    padding-bottom: calc(5px + 1vmin);
+                    padding-left: calc(10px + 1vmin);
+                    padding-right: calc(10px + 1vmin);
+                    background-color: rgba(1, 1, 1, .1);
+                    color: white;
+                    text-shadow: 0px 0px 5px grey;
+                    border-radius: calc(25px + 1vmin);
+                } */
+
+                .pc-main-menu-divider {
+                    width: 100%;
+                    background-color: grey;
+                    height: 1px;
+                    border: none;
+                    opacity: .25;
+                }
             </style>
 
             <div 
@@ -59,54 +86,95 @@ StorePromise.then((Store) => {
             ></div>
     
             <div class="pc-main-menu-container">
+                <div class="pc-main-menu-item"></div>
+                
+                <hr class="pc-main-menu-divider">
+
                 <div 
-                    class="pc-main-menu-item"
+                    class="pc-main-menu-item${Store.getState().currentRoute.pathname === '/' || Store.getState().currentRoute.pathname === '/index.html' ? ' pc-main-menu-item-selected' : ''}"
                     @click=${() => menuItemClick(Store, '/')}
                 >
-                    Podcasts
+                    <i 
+                        class="material-icons pc-main-menu-item-icon"
+                    >
+                        mic
+                    </i>
+                    <span class="pc-main-menu-item-text">Podcasts</span>
                 </div>
     
                 <div
-                    class="pc-main-menu-item"
+                    class="pc-main-menu-item${Store.getState().currentRoute.pathname === '/playlist' ? ' pc-main-menu-item-selected' : ''}"
                     @click=${() => menuItemClick(Store, '/playlist')}
                 >
-                    Playlist
+                    <i 
+                        class="material-icons pc-main-menu-item-icon"
+                    >
+                        format_list_numbered
+                    </i>
+                    <span class="pc-main-menu-item-text">Playlist</span>
                 </div>
         
                 <div 
-                    class="pc-main-menu-item"
+                    class="pc-main-menu-item${Store.getState().currentRoute.pathname === '/wallet' ? ' pc-main-menu-item-selected' : ''}"
                     @click=${() => menuItemClick(Store, '/wallet')}
                 >
-                    Wallet
+                    <i 
+                        class="material-icons pc-main-menu-item-icon"
+                    >
+                        payment
+                    </i>
+                    <span class="pc-main-menu-item-text">Wallet</span>
                 </div>
 
                 <div
-                    class="pc-main-menu-item"
+                    class="pc-main-menu-item${Store.getState().currentRoute.pathname === '/privacy' ? ' pc-main-menu-item-selected' : ''}"
                     @click=${() => menuItemClick(Store, '/privacy')}
                 >
-                    Privacy
+                    <i 
+                        class="material-icons pc-main-menu-item-icon"
+                    >
+                        security
+                    </i>
+                    <span class="pc-main-menu-item-text">Privacy</span>
                 </div>
 
                 <div
-                    class="pc-main-menu-item"
+                    class="pc-main-menu-item${Store.getState().currentRoute.pathname === '/contact' ? ' pc-main-menu-item-selected' : ''}"
                     @click=${() => menuItemClick(Store, '/contact')}
                 >
-                    Contact
+                    <i 
+                        class="material-icons pc-main-menu-item-icon"
+                    >
+                        call
+                    </i>
+                    <span class="pc-main-menu-item-text">Contact</span>
                 </div>
 
                 <div
-                    class="pc-main-menu-item"
+                    class="pc-main-menu-item${Store.getState().currentRoute.pathname === '/about' ? ' pc-main-menu-item-selected' : ''}"
                     @click=${() => menuItemClick(Store, '/about')}
                 >
-                    About
+                    <i 
+                        class="material-icons pc-main-menu-item-icon"
+                    >
+                        help
+                    </i>
+                    <span class="pc-main-menu-item-text">About</span>
                 </div>
 
                 <div
-                    class="pc-main-menu-item"
+                    class="pc-main-menu-item${Store.getState().currentRoute.pathname === '/credit' ? ' pc-main-menu-item-selected' : ''}"
                     @click=${() => menuItemClick(Store, '/credit')}
                 >
-                    Credits
+                    <i 
+                        class="material-icons pc-main-menu-item-icon"
+                    >
+                        copyright
+                    </i>
+                    <span class="pc-main-menu-item-text">Credits</span>
                 </div>
+
+                <hr class="pc-main-menu-divider">
 
             </div>
         `;
