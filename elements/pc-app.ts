@@ -28,7 +28,9 @@ import {
     one,
     pxSmall,
     pxLarge,
-    pxXLarge
+    pxXLarge,
+    color1Full,
+    color2Full
 } from '../services/css';
 
 // TODO I do not like how we have to do this to get the store...top level await would be really nice
@@ -68,6 +70,15 @@ StorePromise.then((Store) => {
                     color: red;
                     font-size: ${pxXLarge};
                 }
+
+                a:link {
+                    color: ${color2Full};
+                }
+
+                a:visited {
+                    color: ${color1Full}
+                }
+
             </style>
 
             <div>
