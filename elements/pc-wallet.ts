@@ -7,6 +7,9 @@ import {
     secondaryTextSmall,
     color1Medium,
     pxXXLarge,
+    normalShadow,
+    pxXSmall,
+    pxXXXSmall
  } from '../services/css';
 import { StorePromise } from '../services/store';
 import {
@@ -91,6 +94,17 @@ StorePromise.then((Store) => {
                     border: none;
                     border-bottom: 1px solid ${color1Medium};
                     background-color: transparent;
+                }
+
+                .pc-wallet-podcrypt-container {
+                    box-shadow: ${normalShadow};
+                    display: flex;
+                    padding: ${pxXSmall};
+                    margin-top: ${pxXSmall};
+                    margin-bottom: ${pxXSmall};
+                    border-radius: ${pxXXXSmall};
+                    justify-content: center;
+                    background-color: white;
                 }
             </style>
     
@@ -241,7 +255,7 @@ StorePromise.then((Store) => {
                 `;
             })}
 
-            <div class="pc-wallet-podcast-item">
+            <div class="pc-wallet-podcrypt-container">
                 <div>
                     <img src="podcrypt-white-on-black.png" width="60" height="60" style="border-radius: 5%">
                 </div>
@@ -251,6 +265,7 @@ StorePromise.then((Store) => {
                     <div>$${new BigNumber(Store.getState().payoutTargetInUSDCents).multipliedBy(Store.getState().podcryptPayoutPercentage).dividedBy(10000).toFixed(2)}, ${Store.getState().podcryptPayoutPercentage}%</div>
                     <br>
                     <div>Last payout: ${Store.getState().previousPayoutDateInMilliseconds === 'NEVER' ? 'never' : html`<a href="https://${process.env.NODE_ENV !== 'production' ? 'ropsten.' : ''}etherscan.io/tx/${Store.getState().podcryptLatestTransactionHash}" target="_blank">${new Date(Store.getState().previousPayoutDateInMilliseconds).toLocaleString()}</a>`}</div>
+                    <br>
                     <div>Next payout: ${nextPayoutLocaleDateString}</div>
                 </div>
             </div>
