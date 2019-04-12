@@ -24,6 +24,7 @@ export const pxSmall = `calc(12px + 1vmin)`;
 export const pxMedium = `calc(16px + 1vmin)`;
 export const pxLarge = `calc(20px + 1vmin)`;
 export const pxXLarge = `calc(24px + 1vmin)`;
+export const pxXXLarge = `calc(28px + 1vmin)`;
 
 export const pcContainerStyles = `
     height: 100%;

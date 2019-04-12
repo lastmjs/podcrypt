@@ -1,6 +1,16 @@
 import { customElement, html } from 'functional-element';
 import { StorePromise } from '../services/store';
-import { pcContainerStyles } from '../services/css';
+import { 
+    pcContainerStyles,
+    pxXSmall,
+    pxSmall,
+    pxXXLarge,
+    pxXXXSmall,
+    normalShadow,
+    titleTextLarge,
+    standardTextContainer,
+    color1Full
+ } from '../services/css';
 import {
     getRSSFeed,
     navigate,
@@ -37,23 +47,43 @@ StorePromise.then((Store) => {
             <style>
                 .pc-podcast-overview-container {
                     ${pcContainerStyles}
-                    padding-left: 0;
-                    padding-right: 0;
+                }
+
+                .pc-podcast-overview-title-container {
+                    display: flex;
+                }
+
+                .pc-podcast-overview-title-text {
+                    ${titleTextLarge}
+                    flex: 4;
+                }
+
+                .pc-podcast-overview-title-image-container {
+                    flex: 1;
+                }
+
+                .pc-podcast-overview-title-image {
+                    border-radius: ${pxXXXSmall};
+                }
+
+                .pc-podcast-overview-podcast-description {
+                    ${standardTextContainer}
                 }
 
                 .pc-podcast-overview-episode {
+                    box-shadow: ${normalShadow};
                     display: flex;
-                    box-shadow: inset 0px 5px 5px -5px grey;
-                    padding: 2%;
+                    padding: ${pxXSmall};
+                    margin-top: ${pxXSmall};
+                    margin-bottom: ${pxXSmall};
+                    border-radius: ${pxXXXSmall};
+                    justify-content: center;
                     background-color: white;
                 }
 
                 .pc-podcast-overview-episode-title {
-                    font-size: calc(12px + 1vmin);
+                    font-size: ${pxSmall};
                     font-weight: bold;
-                    text-overflow: ellipsis;
-                    flex: 1;
-                    padding: 2%;
                 }
 
                 .pc-podcast-overview-episode-controls-container {
@@ -64,13 +94,20 @@ StorePromise.then((Store) => {
                 }
 
                 .pc-podcast-overview-episode-add-control {
-                    font-size: 35px;
+                    font-size: ${pxXXLarge};
                     cursor: pointer;
+                    margin-top: auto;
                 }
 
                 .pc-playlist-item-audio-control {
-                    font-size: 45px;
+                    font-size: ${pxXXLarge};
                     cursor: pointer;
+                }
+
+                .pc-podcast-overview-episode-date {
+                    font-size: ${pxXSmall};
+                    font-weight: bold;
+                    color: ${color1Full};
                 }
             </style>
 
@@ -84,12 +121,12 @@ StorePromise.then((Store) => {
                     props.podcast === null || props.feed === null ? 
                         html`<div>Failed to load</div>` : 
                         html`
-                            <div style="display: flex; margin: 0; padding: 5%; padding-top: 5%">
-                                <div style="flex: 1">
-                                    <img src="${props.podcast.imageUrl}" width="60" height="60" style="border-radius: 5%">
+                            <div class="pc-podcast-overview-title-container">
+                                <div class="pc-podcast-overview-title-image-container">
+                                    <img class="pc-podcast-overview-title-image" src="${props.podcast.imageUrl}" width="60" height="60">
                                 </div>
-                                <div style="flex: 3;">
-                                    <div style="font-weight: bold; font-size: calc(16px + 1vmin); flex: 3">${props.feed.title}</div>
+                                <div class="pc-podcast-overview-title-text">
+                                    <div>${props.feed.title}</div>
                                     <div>
                                         ${
                                             props.podcast.ethereumAddress === 'NOT_FOUND' ? 
@@ -100,8 +137,10 @@ StorePromise.then((Store) => {
                                     </div>
                                 </div>
                             </div>
+
+                            <br>
                         
-                            <h4 style="margin: 0; padding: 2%; box-shadow: inset 0px 5px 5px -5px grey;">${props.feed.description}</h4>
+                            <div class="pc-podcast-overview-podcast-description">${props.feed.description}</div>
 
                             ${props.feed.items.map((item: any) => {
                                 const episode: Readonly<Episode> | undefined = Store.getState().episodes[item.guid];
@@ -114,7 +153,7 @@ StorePromise.then((Store) => {
                                         >
                                             <div>${item.title}</div>
                                             <br>
-                                            <div style="font-size: calc(10px + 1vmin); font-weight: bold; color: grey">${new Date(item.isoDate).toLocaleDateString()}</div>
+                                            <div class="pc-podcast-overview-episode-date">${new Date(item.isoDate).toLocaleDateString()}</div>
                                         </div>
 
                                         <div class="pc-podcast-overview-episode-controls-container">
