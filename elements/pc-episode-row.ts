@@ -8,7 +8,8 @@ import {
     colorBlackMedium,
     color1Full,
     pxXXSmall,
-    pxXXLarge
+    pxXXLarge,
+    colorBlackVeryLight
  } from '../services/css';
 import { 
     navigate,
@@ -27,7 +28,8 @@ StorePromise.then((Store) => {
                 play: false,
                 playlist: false,
                 date: false,
-                podcastTitle: false
+                podcastTitle: false,
+                currentlyPlaying: false
             };
         }
 
@@ -36,6 +38,7 @@ StorePromise.then((Store) => {
                 .pc-episode-row-main-container {
                     box-shadow: ${normalShadow};
                     display: flex;
+                    position: relative;
                     padding: ${pxXSmall};
                     margin-top: ${pxXSmall};
                     margin-bottom: ${pxXSmall};
@@ -70,7 +73,11 @@ StorePromise.then((Store) => {
                 }
 
                 .pc-episode-row-arrows-container {
-
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    margin-right: ${pxXXSmall};
+                    justify-content: center;
                 }
 
                 .pc-episode-row-controls-container {
@@ -90,14 +97,47 @@ StorePromise.then((Store) => {
                     margin-top: ${pxXXSmall};
                     font-weight: bold;
                 }
+
+                .pc-episode-row-options-select {
+                    border: none;
+                    background-color: transparent;
+                    width: 35px;
+                    cursor: pointer;
+                    position: absolute;
+                    top: 5px;
+                    right: 5px;
+                }
+
+                .pc-episode-row-currently-playing {
+                    background-color: ${colorBlackVeryLight};
+                }
             </style>
 
-            <div class="pc-episode-row-main-container">
+            <div class="pc-episode-row-main-container${props.podcast && props.episode && props.currentlyPlaying ? ' pc-episode-row-currently-playing' : ''}">
                 ${
                     props.podcast && props.episode ?
                         html`
-                            <div class="pc-episode-row-arrows-container">
-                            </div>
+                            ${
+                                props.arrows ?
+                                html`
+                                    <div class="pc-episode-row-arrows-container">
+                                        <i 
+                                            class="material-icons pc-playlist-item-arrow"
+                                            @click=${() => moveEpisodeUp(props.episode.guid)}
+                                        >
+                                            keyboard_arrow_up
+                                        </i>
+
+                                        <i 
+                                            class="material-icons pc-playlist-item-arrow"
+                                            @click=${() => moveEpisodeDown(props.episode.guid)}
+                                        >
+                                            keyboard_arrow_down
+                                        </i>
+                                    </div>                                    
+                                ` :
+                                html``
+                            }
 
                             <div 
                                 class="pc-episode-row-text-container"
@@ -145,6 +185,20 @@ StorePromise.then((Store) => {
                                         </div>
                                     ` : html``
                             }
+
+                            ${
+                                props.options ?
+                                html`
+                                    <select
+                                        @change=${(e: any) => optionsChange(e, props.episode.guid)}
+                                        class="pc-episode-row-options-select"
+                                    >
+                                        <option>...</option>
+                                        <option>Remove from playlist</option>
+                                    </select>
+                                ` :
+                                html``
+                            }
                         ` : 
                         html`<div>No episode found</div>`
                 }
@@ -168,6 +222,38 @@ StorePromise.then((Store) => {
         // TODO this action type should be changed, same as in the playlist
         Store.dispatch({
             type: 'PAUSE_EPISODE_FROM_PLAYLIST',
+            episodeGuid
+        });
+    }
+
+    function moveEpisodeUp(episodeGuid: EpisodeGuid) {
+        Store.dispatch({
+            type: 'MOVE_EPISODE_UP',
+            episodeGuid
+        });
+    }
+
+    function moveEpisodeDown(episodeGuid: EpisodeGuid) {
+        Store.dispatch({
+            type: 'MOVE_EPISODE_DOWN',
+            episodeGuid
+        });
+    }
+
+    function optionsChange(e: any, episodeGuid: EpisodeGuid) {
+
+        // TODO constantize each of the options in the dropdown
+
+        if (e.target.value === 'Remove from playlist') {
+            removeEpisodeFromPlaylist(episodeGuid);
+        }
+
+        e.target.value = '...';
+    }
+
+    function removeEpisodeFromPlaylist(episodeGuid: EpisodeGuid) {
+        Store.dispatch({
+            type: 'REMOVE_EPISODE_FROM_PLAYLIST',
             episodeGuid
         });
     }

@@ -458,30 +458,34 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
         }
     
         if (action.type === 'REMOVE_EPISODE_FROM_PLAYLIST') {
+            const playlistIndex = state.playlist.indexOf(action.episodeGuid);
+
             return {
                 ...state,
-                currentPlaylistIndex: state.currentPlaylistIndex > action.playlistIndex ? state.currentPlaylistIndex - 1 : state.currentPlaylistIndex,
+                currentPlaylistIndex: state.currentPlaylistIndex > playlistIndex ? state.currentPlaylistIndex - 1 : state.currentPlaylistIndex,
                 playlist: state.playlist.filter((episodeGuid: string, index: number) => {
-                    return action.playlistIndex !== index;
+                    return playlistIndex !== index;
                 })
             };
         }
     
         if (action.type === 'MOVE_EPISODE_UP') {
+            const playlistIndex = state.playlist.indexOf(action.episodeGuid);
+
             return {
                 ...state,
-                currentPlaylistIndex: getCurrentPlaylistIndexAfterMoveUp(state, action),
+                currentPlaylistIndex: getCurrentPlaylistIndexAfterMoveUp(state, playlistIndex),
                 playlist: state.playlist.map((episodeGuid: string, index: number) => {
-                    if (action.playlistIndex === 0) {
+                    if (playlistIndex === 0) {
                         return episodeGuid;
                     }
     
-                    if (index === action.playlistIndex - 1) {
-                        return state.playlist[action.playlistIndex];
+                    if (index === playlistIndex - 1) {
+                        return state.playlist[playlistIndex];
                     }
             
-                    if (index === action.playlistIndex) {
-                        return state.playlist[action.playlistIndex - 1];
+                    if (index === playlistIndex) {
+                        return state.playlist[playlistIndex - 1];
                     }
     
                     return episodeGuid;
@@ -490,20 +494,23 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
         }
     
         if (action.type === 'MOVE_EPISODE_DOWN') {
+
+            const playlistIndex = state.playlist.indexOf(action.episodeGuid);
+
             return {
                 ...state,
-                currentPlaylistIndex: getCurrentPlaylistIndexAfterMoveDown(state, action),
+                currentPlaylistIndex: getCurrentPlaylistIndexAfterMoveDown(state, playlistIndex),
                 playlist: state.playlist.map((episodeGuid: string, index: number) => {
-                    if (action.playlistIndex === state.playlist.length - 1) {
+                    if (playlistIndex === state.playlist.length - 1) {
                         return episodeGuid;
                     }
     
-                    if (index === action.playlistIndex + 1) {
-                        return state.playlist[action.playlistIndex];
+                    if (index === playlistIndex + 1) {
+                        return state.playlist[playlistIndex];
                     }
             
-                    if (index === action.playlistIndex) {
-                        return state.playlist[action.playlistIndex + 1];
+                    if (index === playlistIndex) {
+                        return state.playlist[playlistIndex + 1];
                     }
     
                     return episodeGuid;
@@ -665,17 +672,17 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
     return Store;
 }
 
-function getCurrentPlaylistIndexAfterMoveUp(state: Readonly<State>, action: Readonly<AnyAction>): number {
+function getCurrentPlaylistIndexAfterMoveUp(state: Readonly<State>, playlistIndex: number): number {
 
     if (
-        action.playlistIndex === state.currentPlaylistIndex &&
-        action.playlistIndex !== 0
+        playlistIndex === state.currentPlaylistIndex &&
+        playlistIndex !== 0
     ) {
         return state.currentPlaylistIndex - 1;
     }
 
     if (
-        action.playlistIndex === state.currentPlaylistIndex + 1
+        playlistIndex === state.currentPlaylistIndex + 1
     ) {
         return state.currentPlaylistIndex + 1;
     }
@@ -683,17 +690,17 @@ function getCurrentPlaylistIndexAfterMoveUp(state: Readonly<State>, action: Read
     return state.currentPlaylistIndex;
 }
 
-function getCurrentPlaylistIndexAfterMoveDown(state: Readonly<State>, action: Readonly<AnyAction>) {
+function getCurrentPlaylistIndexAfterMoveDown(state: Readonly<State>, playlistIndex: number) {
 
     if (
-        action.playlistIndex === state.currentPlaylistIndex &&
-        action.playlistIndex !== state.playlist.length - 1
+        playlistIndex === state.currentPlaylistIndex &&
+        playlistIndex !== state.playlist.length - 1
     ) {
         return state.currentPlaylistIndex + 1;
     }
 
     if (
-        action.playlistIndex === state.currentPlaylistIndex - 1
+        playlistIndex === state.currentPlaylistIndex - 1
     ) {
         return state.currentPlaylistIndex - 1;
     }
