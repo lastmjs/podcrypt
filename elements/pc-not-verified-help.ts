@@ -1,7 +1,12 @@
 import { customElement, html } from 'functional-element';
-import { pcContainerStyles } from '../services/css';
 import { StorePromise } from '../services/store';
 import './pc-loading';
+import {
+    pcContainerStyles,
+    titleTextLarge,
+    titleTextXLarge,
+    standardTextContainer
+} from '../services/css';
 
 StorePromise.then((Store) => {
     customElement('pc-not-verified-help', ({ constructing, connecting, props, update }) => {
@@ -22,11 +27,38 @@ StorePromise.then((Store) => {
                 });
             });
         }
+
+        const subjectText: string = `Donating to your podcast with Podcrypt`;
+        const bodyText: string = `
+Hi,
+
+I've been listening to your podcast on podcrypt.app.
+            
+Unfortunately, I can't send you ETH donations because your podcast isn't verified: https://podcrypt.app/podcast-overview?feedUrl=${props.feedUrl}
+
+To get verified all you have to do is put your Ethereum address or ENS name into your podcast's main description.
+        
+Would you consider doing this? You'd at least get some donations from me.
+
+Thanks!
+        `;
     
         return html`
             <style>
                 .pc-not-verified-help-container {
                     ${pcContainerStyles}
+                }
+
+                .pc-not-verified-title-text-x-large {
+                    ${titleTextXLarge}
+                }
+
+                .pc-not-verified-title-text-large {
+                    ${titleTextLarge}
+                }
+
+                .pc-not-verified-secondary-text {
+                    ${standardTextContainer}
                 }
             </style>
     
@@ -36,41 +68,55 @@ StorePromise.then((Store) => {
                     .prefix=${"pc-not-verified-help-"}
                 ></pc-loading>
 
-                <h2>Podcast not verified</h2>
-                <p>
+                <div class="pc-not-verified-title-text-x-large">Podcast not verified</div>
+
+                <br>
+
+                <div class="pc-not-verified-secondary-text">
                     No Ethereum address was found for this podcast.
                     You can help by contacting the podcast owner and asking them to add their Ethereum address to their main podcast description.
-                </p>
-                <p>
-                    You could say something like the following in an email:
-                </p>
+                    An example of what you could say is included below.
+                </div>
 
-                ${props.podcastEmail ? html`<h3>To</h3> <p>${props.podcastEmail}</p>` : html``}
+                <br>
 
-                <h3>Subject</h3>
-                <p>I'd like to donate to your podcast</p>
+                ${
+                    props.podcastEmail ? 
+                        html`
+                            <div class="pc-not-verified-secondary-text">
+                                <a href="mailto:${props.podcastEmail}?subject=${subjectText}&body=${bodyText}">Click here to send this email from your email app</a>
+                            </div>
+
+                            <br>
+                        ` : 
+                        html``
+                }
+
+                ${
+                    props.podcastEmail ? 
+                        html`
+                            <div class="pc-not-verified-title-text-large">To</div> 
+                            <br> 
+                            <div class="pc-not-verified-secondary-text">${props.podcastEmail}</div>
+                            <br>
+                        ` : 
+                        html``
+                    }
+
+                <div class="pc-not-verified-title-text-large">Subject</div>
+
+                <br>
+
+                <div class="pc-not-verified-secondary-text">${subjectText}</div>
                 
-                <h3>Body</h3>
-                <p>Hi,</p>
-                <p>
-                    I've been using a podcast app called Podcrypt: https://podcrypt.app
-                </p>
-                <p style="overflow-wrap: break-word">
-                    It allows me to send cryptocurrency donations to podcasts with an Ethereum address.
-                    Your podcast does not have an Ethereum address in its main description: https://podcrypt.app/podcast-overview?feedUrl=${props.feedUrl}
-                </p>
-                <p>
-                    If you want to receive donations, all you have to do is add your Ethereum address to your podcast's main description.
-                    If you're unfamiliar with Ethereum, then Coinbase or MetaMask are good ways to get an address and start receiving donations.
-                </p>
-                <p>
-                    Coinbase: https://www.coinbase.com
-                </p>
-                <p>
-                    MetaMask: https://metamask.io
-                </p>
-    
-                <p>Thanks!</p>
+                <br>
+
+                <div class="pc-not-verified-title-text-large">Body</div>
+
+                <br>
+                
+                <div class="pc-not-verified-secondary-text" style="white-space: pre-wrap;">${bodyText}</div>
+
             </div>
         `;
     });
