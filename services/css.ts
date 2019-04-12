@@ -51,8 +51,25 @@ export const secondaryTextMedium = `
     color: ${colorBlackMedium};
 `;
 
+export const secondaryTextSmall = `
+    font-family: Ubuntu;
+    font-size: ${pxSmall};
+    color: ${colorBlackMedium};
+`;
+
 export const standardTextContainer = `
     font-size: ${pxSmall};
+    font-family; Ubuntu;
+    background-color: white;
+    padding: ${pxXSmall};
+    border-radius: ${pxXXXSmall};
+    box-shadow: ${normalShadow};
+    color: ${colorBlackMedium};
+    overflow-wrap: break-word;
+`;
+
+export const mediumTextContainer = `
+    font-size: ${pxMedium};
     font-family; Ubuntu;
     background-color: white;
     padding: ${pxXSmall};
