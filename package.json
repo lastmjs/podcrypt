@@ -8,7 +8,8 @@
   "scripts": {
     "start": "zwitterion",
     "generate-attribution": "generate-attribution",
-    "build": "zwitterion --build-static --exclude node_modules --include functional-element,redux/es"
+    "build": "zwitterion --build-static --exclude node_modules --include functional-element,redux/es",
+    "test": ""
   },
   "repository": {
     "type": "git",
