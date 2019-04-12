@@ -18,6 +18,7 @@ import {
     addEpisodeToPlaylist
 } from '../services/utilities';
 import './pc-loading';
+import './pc-podcast-row';
 
 StorePromise.then((Store) => {
     customElement('pc-podcast-overview', ({ constructing, update, props }) => {
@@ -47,23 +48,6 @@ StorePromise.then((Store) => {
             <style>
                 .pc-podcast-overview-container {
                     ${pcContainerStyles}
-                }
-
-                .pc-podcast-overview-title-container {
-                    display: flex;
-                }
-
-                .pc-podcast-overview-title-text {
-                    ${titleTextLarge}
-                    flex: 4;
-                }
-
-                .pc-podcast-overview-title-image-container {
-                    flex: 1;
-                }
-
-                .pc-podcast-overview-title-image {
-                    border-radius: ${pxXXXSmall};
                 }
 
                 .pc-podcast-overview-podcast-description {
@@ -111,6 +95,10 @@ StorePromise.then((Store) => {
                     font-weight: bold;
                     color: ${color1Full};
                 }
+
+                .pc-podcast-overview-episodes-title {
+                    ${titleTextLarge}
+                }
             </style>
 
             <div class="pc-podcast-overview-container">
@@ -123,26 +111,17 @@ StorePromise.then((Store) => {
                     props.podcast === null || props.feed === null ? 
                         html`<div>Failed to load</div>` : 
                         html`
-                            <div class="pc-podcast-overview-title-container">
-                                <div class="pc-podcast-overview-title-image-container">
-                                    <img class="pc-podcast-overview-title-image" src="${props.podcast.imageUrl}" width="60" height="60">
-                                </div>
-                                <div class="pc-podcast-overview-title-text">
-                                    <div>${props.feed.title}</div>
-                                    <div>
-                                        ${
-                                            props.podcast.ethereumAddress === 'NOT_FOUND' ? 
-                                                html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${() => notVerifiedHelpClick(props.podcast)}>Not verified - click to help</button>` :
-                                                props.podcast.ethereumAddress === 'MALFORMED' ?
-                                        html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${() => notVerifiedHelpClick(props.podcast)}>Not verified - click to help</button>` :
-                                                    html`<button style="color: green; border: none; padding: 5px; margin: 5px" @click=${(e: any) => { e.stopPropagation(); alert(`This podcast's Ethereum address: ${props.podcast.ethereumAddress}`)} }>Verified</button>` }
-                                    </div>
-                                </div>
-                            </div>
+                            <pc-podcast-row .podcast=${props.podcast} .controls=${true} .verification=${true}></pc-podcast-row>
 
                             <br>
                         
                             <div class="pc-podcast-overview-podcast-description">${props.feed.description}</div>
+
+                            <br>
+
+                            <div class="pc-podcast-overview-episodes-title">Episodes</div>
+
+                            <br>
 
                             ${props.feed.items.map((item: any) => {
                                 const episode: Readonly<Episode> | undefined = Store.getState().episodes[item.guid];
@@ -194,6 +173,8 @@ StorePromise.then((Store) => {
         const feed = await getRSSFeed(feedUrl);
         const podcast: Readonly<Podcast | null> = await createPodcast(feedUrl, feed);
 
+        console.log(feed)
+
         update({
             ...props,
             loaded: true,
@@ -218,10 +199,6 @@ StorePromise.then((Store) => {
     //         }
     //     });
     // }
-
-    function notVerifiedHelpClick(podcast: Readonly<Podcast>) {
-        navigate(Store, `/not-verified-help?feedUrl=${podcast.feedUrl}&podcastEmail=${podcast.email}`);
-    }
 
     function playEpisode(podcast: Readonly<Podcast>, item: any) {
         addEpisodeToPlaylist(Store, podcast, item);

@@ -3,18 +3,14 @@ import { StorePromise } from '../services/store';
 import { 
     pcContainerStyles,
     pxMedium,
-    pxXSmall,
     color1Medium,
-    pxSmall,
-    pxLarge,
-    pxXXXSmall,
-    normalShadow,
-    colorBlackMedium
+    pxLarge
  } from '../services/css';
 import { 
     navigate
 } from '../services/utilities';
 import './pc-loading';
+import './pc-podcast-row';
 
 StorePromise.then((Store) => {
     customElement('pc-podcasts', ({ constructing, connecting, element, update, props }) => {
@@ -51,32 +47,6 @@ StorePromise.then((Store) => {
                     background-color: transparent;
                 }
     
-                .pc-podcasts-item {
-                    box-shadow: ${normalShadow};
-                    display: flex;
-                    padding: ${pxXSmall};
-                    margin-top: ${pxXSmall};
-                    margin-bottom: ${pxXSmall};
-                    border-radius: ${pxXXXSmall};
-                    justify-content: center;
-                    background-color: white;
-                }
-
-                .pc-podcasts-item-title {
-                    font-size: ${pxSmall};
-                    font-family: Ubuntu;
-                    text-overflow: ellipsis;
-                    padding-left: ${pxXSmall};
-                    cursor: pointer;
-                    color: ${colorBlackMedium};
-                    flex: 10;
-                }
-
-                .pc-podcasts-item-image {
-                    border-radius: ${pxXXXSmall};
-                    flex: 1;
-                }
-
                 .pc-podcasts-empty-text {
                     display: flex;
                     align-items: center;
@@ -108,22 +78,7 @@ StorePromise.then((Store) => {
                         html`
                             ${Object.values(Store.getState().podcasts).map((podcast) => {
                                 return html`
-                                    <div class="pc-podcasts-item">
-                                        <div>
-                                            <img 
-                                                class="pc-podcasts-item-image"
-                                                src="${podcast.imageUrl}"
-                                                width="60"
-                                                height="60"
-                                            >
-                                        </div>
-                                        <div 
-                                            class="pc-podcasts-item-title"
-                                            @click=${() => podcastClick(podcast)}
-                                        >
-                                            ${podcast.title}
-                                        </div>
-                                    </div>
+                                    <pc-podcast-row .podcast=${podcast} .verification=${true}></pc-podcast-row>
                                 `;
                             })}
                     `
@@ -138,9 +93,5 @@ StorePromise.then((Store) => {
             const term = searchInput.value.split(' ').join('+');
             navigate(Store, `/podcast-search-results?term=${term}`);
         }
-    }
-
-    function podcastClick(podcast: any) {
-        navigate(Store, `podcast-overview?feedUrl=${podcast.feedUrl}`);
     }
 });

@@ -94,9 +94,11 @@ export async function createPodcast(feedUrl: string, feed?: any): Promise<Readon
     const ethereumAddressInfo: Readonly<EthereumAddressInfo> = await getEthereumAddressFromPodcastDescription(theFeed.description);
     const email: string | 'NOT_SET' = theFeed.itunes ? theFeed.itunes.owner ? theFeed.itunes.owner.email ? theFeed.itunes.owner.email : 'NOT_SET' : 'NOT_SET' : 'NOT_SET';
     const imageUrl: string | 'NOT_SET' = getImageUrl(theFeed);
+    const artistName: string | 'NOT_SET' = theFeed.itunes ? theFeed.itunes.author : 'NOT_SET';
 
     const podcast: Readonly<Podcast> = {
         feedUrl,
+        artistName,
         title: theFeed.title,
         description: theFeed.description,
         imageUrl,
