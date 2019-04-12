@@ -78,7 +78,11 @@ StorePromise.then((Store) => {
                         html`
                             ${Object.values(Store.getState().podcasts).map((podcast) => {
                                 return html`
-                                    <pc-podcast-row .podcast=${podcast} .verification=${true}></pc-podcast-row>
+                                    <pc-podcast-row
+                                        .podcast=${podcast}
+                                        .verification=${true}
+                                        .options=${true}
+                                    ></pc-podcast-row>
                                 `;
                             })}
                     `

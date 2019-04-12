@@ -112,7 +112,12 @@ StorePromise.then((Store) => {
                     props.podcast === null || props.feed === null ? 
                         html`<div>Failed to load</div>` : 
                         html`
-                            <pc-podcast-row .podcast=${props.podcast} .controls=${true} .verification=${true}></pc-podcast-row>
+                            <pc-podcast-row
+                                .podcast=${props.podcast}
+                                .controls=${true}
+                                .verification=${true}
+                                .options=${true}
+                            ></pc-podcast-row>
 
                             <br>
                         

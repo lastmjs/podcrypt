@@ -648,6 +648,45 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
                 ethereumBalanceInWEI: newEthereumBalanceInWEI
             };
         }
+
+        if (action.type === 'DELETE_PODCAST') {
+            const newCurrentEpisodeGuid: EpisodeGuid = action.podcast.episodeGuids.includes(state.currentEpisodeGuid) ? 'NOT_SET' : state.currentEpisodeGuid;
+            const newPlaylist: ReadonlyArray<string> = state.playlist.filter((episodeGuid: EpisodeGuid) => {
+                return !action.podcast.episodeGuids.includes(episodeGuid);
+            });
+            const newCurrentPlaylistIndex: number = newCurrentEpisodeGuid === 'NOT_SET' ? 0 : newPlaylist.indexOf(newCurrentEpisodeGuid);
+            const newEpisodes = 
+                Object.entries(state.episodes)
+                .filter((entry: [string, Readonly<Episode>]) => {
+                    return entry[1].feedUrl !== action.podcast.feedUrl;
+                })
+                .reduce((result, entry: [string, Readonly<Episode>]) => {
+                    return {
+                        ...result,
+                        [entry[0]]: entry[1]
+                    };
+                }, {});
+            const newPodcasts = 
+                Object.entries(state.podcasts)
+                .filter((entry: [string, Readonly<Podcast>]) => {
+                    return entry[1].feedUrl !== action.podcast.feedUrl;
+                })
+                .reduce((result, entry: [string, Readonly<Podcast>]) => {
+                    return {
+                        ...result,
+                        [entry[0]]: entry[1]
+                    };
+                }, {});
+
+            return {
+                ...state,
+                currentEpisodeGuid: newCurrentEpisodeGuid,
+                currentPlaylistIndex: newCurrentPlaylistIndex,
+                playlist: newPlaylist,
+                episodes: newEpisodes,
+                podcasts: newPodcasts
+            };
+        }
     
         return state;
     }
