@@ -1,7 +1,11 @@
 import { customElement, html } from 'functional-element';
 import { TemplateResult } from 'lit-html';
 import { until } from 'lit-html/directives/until';
-import { pcContainerStyles } from '../services/css';
+import { 
+    pcContainerStyles,
+    standardTextContainer,
+    secondaryTextSmall
+ } from '../services/css';
 import { StorePromise } from '../services/store';
 import {
     calculateTotalTimeForPodcastDuringIntervalInMilliseconds,
@@ -24,6 +28,7 @@ import { navigate } from '../services/utilities';
 import BigNumber from "../node_modules/bignumber.js/bignumber";
 import './pc-loading';
 import { get } from 'idb-keyval';
+import './pc-button';
 
 StorePromise.then((Store) => {
     customElement('pc-wallet', ({ constructing, connecting, props, update }) => {
@@ -51,8 +56,6 @@ StorePromise.then((Store) => {
             <style>
                 .pc-wallet-container {
                     ${pcContainerStyles}
-                    padding-left: 0;
-                    padding-right: 0;
                 }
     
                 .pc-wallet-podcast-item {
@@ -69,6 +72,14 @@ StorePromise.then((Store) => {
                     flex: 1;
                     cursor: pointer;
                     font-weight: bold;
+                }
+
+                .pc-wallet-secondary-text {
+                    ${standardTextContainer}
+                }
+
+                .pc-wallet-secondary-text-without-container {
+                    ${secondaryTextSmall}
                 }
             </style>
     
@@ -256,10 +267,10 @@ StorePromise.then((Store) => {
 
     function warningsUI(update: any, props: any) {
         return html`
-            <div style="padding-left: 2%; padding-right: 2%;">
-                <div>I understand the following (check each box):</div>
+            <div>
+                <div class="pc-wallet-secondary-text">I understand the following:</div>
                 <br>
-                <div>
+                <div class="pc-wallet-secondary-text">
                     <input 
                         type="checkbox"
                         @change=${checkbox1InputChanged}
@@ -270,7 +281,7 @@ StorePromise.then((Store) => {
 
                 <br>
 
-                <div>
+                <div class="pc-wallet-secondary-text">
                     <input
                         type="checkbox"
                         @change=${checkbox2InputChanged}
@@ -281,7 +292,7 @@ StorePromise.then((Store) => {
 
                 <br>
 
-                <div>
+                <div class="pc-wallet-secondary-text">
                     <input
                         type="checkbox"
                         @change=${checkbox3InputChanged}
@@ -292,7 +303,7 @@ StorePromise.then((Store) => {
 
                 <br>
 
-                <div>
+                <div class="pc-wallet-secondary-text">
                     <input
                         type="checkbox"
                         @change=${checkbox4InputChanged}
@@ -303,7 +314,7 @@ StorePromise.then((Store) => {
 
                 <br>
 
-                <div>
+                <div class="pc-wallet-secondary-text">
                     <input
                         type="checkbox"
                         @change=${checkbox5InputChanged}
@@ -314,7 +325,11 @@ StorePromise.then((Store) => {
 
                 <br>
 
-                <button @click=${() => createWalletClick(update, props)}>Create Wallet</button>
+                <pc-button
+                    .text=${'Create Wallet'}
+                    @click=${() => createWalletClick(update, props)}
+                ></pc-button>
+
             </div>
 
         `;
@@ -324,12 +339,25 @@ StorePromise.then((Store) => {
         const mnemonicPhrase = await get('ethereumMnemonicPhrase');
 
         return html`
-            <div style="padding-left: 2%; padding-right: 2%">
-                <p>Your secret 12 word phrase:</p>
-                <h3>${mnemonicPhrase}</h3>
-                <p>You should immediately store this phrase somewhere safe. If something terrible happens to your Podcrypt wallet, you may be able to use this phrase to restore it.</p>
-                <p>If you do not immediately store this phrase somewhere safe, you are more likely to lose any money that you send to Podcrypt.</p>
-                <div>
+            <div>
+                <br>
+                <div class="pc-wallet-secondary-text-without-container">Your secret 12 word phrase:</div>
+
+                <br>
+
+                <div class="pc-wallet-secondary-text">${mnemonicPhrase}</div>
+                
+                <br>
+                
+                <div class="pc-wallet-secondary-text-without-container">You should immediately store this phrase somewhere safe. If something terrible happens to your Podcrypt wallet, you may be able to use this phrase to restore it.</div>
+                
+                <br>
+
+                <div class="pc-wallet-secondary-text-without-container">If you do not immediately store this phrase somewhere safe, you are more likely to lose any money that you send to Podcrypt.</div>
+                
+                <br>
+
+                <div class="pc-wallet-secondary-text">
                     <input 
                         type="checkbox"
                         @change=${mnemonicPhraseWarningInputChanged}
@@ -338,7 +366,7 @@ StorePromise.then((Store) => {
                     I understand
                 </div>
                 <br>
-                <button @click=${goToMyWalletClick}>Go to my wallet</button>
+                <pc-button @click=${goToMyWalletClick} .text=${'Go to My Wallet'}></pc-button>
             </div>
         `;
     }
