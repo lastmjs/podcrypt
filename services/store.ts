@@ -117,6 +117,7 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
                         ...state.podcasts,
                         [action.podcast.feedUrl]: {
                             ...state.podcasts[action.podcast.feedUrl],
+                            artistName: action.podcast.artistName,
                             title: action.podcast.title,
                             description: action.podcast.description,
                             imageUrl: action.podcast.imageUrl,

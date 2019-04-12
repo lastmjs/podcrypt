@@ -8,6 +8,7 @@ type Feed = {
 
 type Podcast = {
     readonly feedUrl: PodcastGuid;
+    readonly artistName: string;
     readonly title: string;
     readonly description: string;
     readonly imageUrl: string | 'NOT_FOUND';

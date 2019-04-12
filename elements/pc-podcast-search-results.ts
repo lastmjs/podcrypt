@@ -1,21 +1,10 @@
 import { customElement, html } from 'functional-element';
 import { StorePromise } from '../services/store';
-import { 
-    navigate,
-    createPodcast
-} from '../services/utilities';
 import './pc-loading';
 import { 
-    pcContainerStyles,
-    pxXSmall,
-    color1Full,
-    pxSmall,
-    pxXXXSmall,
-    normalShadow,
-    colorBlackMedium,
-    pxXXSmall,
-    pxXLarge
+    pcContainerStyles
  } from '../services/css';
+ import './pc-podcast-row';
 
 StorePromise.then((Store) => {
     customElement('pc-podcast-search-results', ({ constructing, props, update }) => {
@@ -43,56 +32,7 @@ StorePromise.then((Store) => {
             <style>
                 .pc-podcast-search-results {
                     ${pcContainerStyles}
-                }
-
-                .pc-podcast-search-results-item {
-                    box-shadow: ${normalShadow};
-                    display: flex;
-                    padding: ${pxXSmall};
-                    margin-top: ${pxXSmall};
-                    margin-bottom: ${pxXSmall};
-                    border-radius: ${pxXXXSmall};
-                    justify-content: center;
-                    background-color: white;
-                }
-    
-                .pc-podcast-search-results-item-text {
-                    font-size: ${pxSmall};
-                    font-family: Ubuntu;
-                    text-overflow: ellipsis;
-                    flex: 1;
-                    padding-left: ${pxXSmall};
-                    cursor: pointer;
-                    color: ${colorBlackMedium};
-                }
-
-                .pc-podcast-search-results-item-artist-name {
-                    font-size: ${pxXSmall};
-                    color: ${color1Full};
-                    text-overflow: ellipsis;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    width: 60vw; /*TODO I want this width to be based on its container*/
-                    margin-bottom: ${pxXXSmall};
-                    font-weight: bold;
-                }
-
-                .pc-podcast-search-results-item-controls-container {
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    cursor: pointer;
-                    font-size: ${pxXLarge}
-                }
-
-                .pc-podcast-search-results-item-subscribe-control {
-                    font-size: ${pxSmall};
-                    cursor: pointer;
-                }
-
-                .pc-podcast-search-results-item-image {
-                    border-radius: ${pxXXXSmall};
-                }
+                }    
             </style>
 
             <div class="pc-podcast-search-results">
@@ -131,29 +71,26 @@ StorePromise.then((Store) => {
         }
         else {
             const podcastFeedResultsPromises = responseJSON.results.map(async (searchResult: any) => {   
+
+                const podcast: Readonly<Podcast> = {
+                    feedUrl: searchResult.feedUrl,
+                    artistName: searchResult.artistName,
+                    title: searchResult.trackName,
+                    description: '',
+                    imageUrl: searchResult.artworkUrl60,
+                    episodeGuids: [],
+                    previousPayoutDateInMilliseconds: 'NEVER',
+                    latestTransactionHash: null,
+                    ethereumAddress: 'NOT_FOUND',
+                    ensName: 'NOT_FOUND',
+                    email: 'NOT_SET'
+                };
+
                 return html`
-                    <div class="pc-podcast-search-results-item">
-                        <div>
-                            <img class="pc-podcast-search-results-item-image" src="${searchResult.artworkUrl60}" width="60" height="60">
-                        </div>
-
-                        <div
-                            class="pc-podcast-search-results-item-text"
-                            @click=${() => podcastTitleClick(searchResult.feedUrl)}
-                        >
-                            <div class="pc-podcast-search-results-item-artist-name">${searchResult.artistName}</div>
-                            ${searchResult.trackName}
-                        </div>
-
-                        <div class="pc-podcast-search-results-item-controls-container">
-                            <i 
-                                class="material-icons"
-                                @click=${() => subscribeToPodcast(searchResult.feedUrl)}
-                            >
-                                library_add
-                            </i>  
-                        </div>
-                    </div>
+                    <pc-podcast-row
+                        .podcast=${podcast}
+                        .controls=${true}
+                    ></pc-podcast-row>                      
                 `;
             });
 
@@ -186,23 +123,5 @@ StorePromise.then((Store) => {
             const responseJSON = await response.json();
             return responseJSON;
         }
-    }
-
-    async function subscribeToPodcast(feedUrl: FeedUrl) {
-        const podcast: Readonly<Podcast> | null = await createPodcast(feedUrl);
-
-        if (podcast === null) {
-            alert('Could not subscribe to podcast');
-            return;
-        }
-
-        Store.dispatch({
-            type: 'SUBSCRIBE_TO_PODCAST',
-            podcast
-        });
-    }
-
-    function podcastTitleClick(feedUrl: string) {
-        navigate(Store, `podcast-overview?feedUrl=${feedUrl}`);
     }
 });
