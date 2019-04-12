@@ -12,7 +12,9 @@ import {
  } from '../services/css';
 import { 
     navigate,
-    createPodcast
+    createPodcast,
+    getFeed,
+    addEpisodeToPlaylist
 } from '../services/utilities';
 import BigNumber from "../node_modules/bignumber.js/bignumber";
 
@@ -199,6 +201,8 @@ StorePromise.then((Store) => {
                         >
                             <option>...</option>
                             <option>Delete</option>
+                            <option>Add all episodes to playlist: oldest -> newest</option>
+                            <option>Add all episodes to playlist: newest -> oldest</option>
                         </select>
                     ` :
                     html``
@@ -231,7 +235,7 @@ StorePromise.then((Store) => {
         navigate(Store, `/not-verified-help?feedUrl=${podcast.feedUrl}&podcastEmail=${podcast.email}`);
     }
 
-    function optionsChange(e: any, podcast: Readonly<Podcast>) {
+    async function optionsChange(e: any, podcast: Readonly<Podcast>) {
 
         // TODO constantize each of the options in the dropdown
 
@@ -244,6 +248,27 @@ StorePromise.then((Store) => {
                     podcast
                 });
             }
+        }
+
+        if (e.target.value === 'Add all episodes to playlist: oldest -> newest') {
+            const feed = await getFeed(podcast.feedUrl);
+
+            // TODO beware, this is an evil mutation
+            const sortedItems = feed.items.sort((a: any, b: any) => {
+                return new Date(a.isoDate).getTime() - new Date(b.isoDate).getTime();
+            });
+
+            sortedItems.forEach((item: any) => {
+                addEpisodeToPlaylist(Store, podcast, item);
+            });
+        }
+
+        if (e.target.value === 'Add all episodes to playlist: newest -> oldest') {
+            const feed = await getFeed(podcast.feedUrl);
+
+            feed.items.forEach((item: any) => {
+                addEpisodeToPlaylist(Store, podcast, item);
+            });
         }
 
         e.target.value = '...';
