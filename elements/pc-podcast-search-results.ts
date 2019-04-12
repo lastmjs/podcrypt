@@ -1,11 +1,21 @@
 import { customElement, html } from 'functional-element';
 import { StorePromise } from '../services/store';
-import { pcContainerStyles } from '../services/css';
 import { 
     navigate,
     createPodcast
 } from '../services/utilities';
 import './pc-loading';
+import { 
+    pcContainerStyles,
+    pxXSmall,
+    color1Full,
+    pxSmall,
+    pxXXXSmall,
+    normalShadow,
+    colorBlackMedium,
+    pxXXSmall,
+    pxXLarge
+ } from '../services/css';
 
 StorePromise.then((Store) => {
     customElement('pc-podcast-search-results', ({ constructing, props, update }) => {
@@ -33,35 +43,55 @@ StorePromise.then((Store) => {
             <style>
                 .pc-podcast-search-results {
                     ${pcContainerStyles}
-                    padding-left: 0;
-                    padding-right: 0;
                 }
 
                 .pc-podcast-search-results-item {
+                    box-shadow: ${normalShadow};
                     display: flex;
-                    box-shadow: 0px 5px 5px -5px grey;
-                    padding: 2%;
+                    padding: ${pxXSmall};
+                    margin-top: ${pxXSmall};
+                    margin-bottom: ${pxXSmall};
+                    border-radius: ${pxXXXSmall};
+                    justify-content: center;
+                    background-color: white;
                 }
     
                 .pc-podcast-search-results-item-text {
-                    font-size: calc(12px + 1vmin);
-                    font-weight: bold;
+                    font-size: ${pxSmall};
+                    font-family: Ubuntu;
                     text-overflow: ellipsis;
                     flex: 1;
-                    padding-left: 5%;
-                    padding-top: 1%;
+                    padding-left: ${pxXSmall};
                     cursor: pointer;
+                    color: ${colorBlackMedium};
+                }
+
+                .pc-podcast-search-results-item-artist-name {
+                    font-size: ${pxXSmall};
+                    color: ${color1Full};
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    width: 60vw; /*TODO I want this width to be based on its container*/
+                    margin-bottom: ${pxXXSmall};
+                    font-weight: bold;
                 }
 
                 .pc-podcast-search-results-item-controls-container {
                     display: flex;
                     align-items: center;
                     justify-content: center;
+                    cursor: pointer;
+                    font-size: ${pxXLarge}
                 }
 
                 .pc-podcast-search-results-item-subscribe-control {
-                    font-size: calc(12px + 1vmin);
+                    font-size: ${pxSmall};
                     cursor: pointer;
+                }
+
+                .pc-podcast-search-results-item-image {
+                    border-radius: ${pxXXXSmall};
                 }
             </style>
 
@@ -93,7 +123,7 @@ StorePromise.then((Store) => {
                 loaded: true,
                 previousTerm: props.term,
                 searchResultsUI: html`
-                    <div style="padding: 5%">
+                    <div>
                         No results
                     </div>
                 `
@@ -104,20 +134,20 @@ StorePromise.then((Store) => {
                 return html`
                     <div class="pc-podcast-search-results-item">
                         <div>
-                            <img src="${searchResult.artworkUrl60}" width="60" height="60" style="border-radius: 5%">
+                            <img class="pc-podcast-search-results-item-image" src="${searchResult.artworkUrl60}" width="60" height="60">
                         </div>
 
                         <div
                             class="pc-podcast-search-results-item-text"
                             @click=${() => podcastTitleClick(searchResult.feedUrl)}
                         >
+                            <div class="pc-podcast-search-results-item-artist-name">${searchResult.artistName}</div>
                             ${searchResult.trackName}
                         </div>
 
                         <div class="pc-podcast-search-results-item-controls-container">
                             <i 
                                 class="material-icons"
-                                style="font-size: 25px; cursor: pointer"
                                 @click=${() => subscribeToPodcast(searchResult.feedUrl)}
                             >
                                 library_add
