@@ -13,7 +13,7 @@ StorePromise.then((Store) => {
 
         if (constructing) {
             return {
-                podcastEmail: null,
+                podcastEmail: 'NOT_SET',
                 feedUrl: null,
                 loaded: false
             };
