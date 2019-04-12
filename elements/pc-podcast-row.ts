@@ -14,6 +14,7 @@ import {
     navigate,
     createPodcast
 } from '../services/utilities';
+import BigNumber from "../node_modules/bignumber.js/bignumber";
 
 StorePromise.then((Store) => {
     customElement('pc-podcast-row', ({ props, constructing }) => {
@@ -22,7 +23,14 @@ StorePromise.then((Store) => {
             return {
                 podcast: null,
                 controls: false,
-                verification: false
+                verification: false,
+                payouts: false,
+                usage: false,
+                payoutAmountForPodcastDuringIntervalInUSD: null,
+                percentageOfTotalTimeForPodcastDuringInterval: null,
+                totalTimeForPodcastDuringIntervalInMinutes: null,
+                secondsRemainingForPodcastDuringInterval: null,
+                nextPayoutLocaleDateString: null
             };
         }
 
@@ -110,6 +118,7 @@ StorePromise.then((Store) => {
 
                             <div class="pc-podcast-row-text-title">
                                 ${props.podcast.title}
+
                                 ${
                                     props.verification ?
                                         html`
@@ -122,7 +131,27 @@ StorePromise.then((Store) => {
                                                             html`<button style="color: green; border: none; padding: 5px; margin: 5px" @click=${(e: any) => { e.stopPropagation(); alert(`This podcast's Ethereum address: ${props.podcast.ethereumAddress}`)} }>Verified</button>` }
                                             </div>
                                         ` : html``
-                            }
+                                }
+
+                                ${
+                                    props.usage ?
+                                    html`
+                                        <br>
+                                        <div>$${new BigNumber(props.payoutAmountForPodcastDuringIntervalInUSD).toFixed(2)}, ${new BigNumber(props.percentageOfTotalTimeForPodcastDuringInterval).toFixed(2)}%, ${props.totalTimeForPodcastDuringIntervalInMinutes} min ${props.secondsRemainingForPodcastDuringInterval} sec</div>
+                                    ` :
+                                    html``
+                                }
+
+                                ${
+                                    props.payouts ?
+                                    html`
+                                        <br>
+                                        <div>Last payout: ${props.podcast.previousPayoutDateInMilliseconds === 'NEVER' ? 'never' : html`<a href="https://${process.env.NODE_ENV !== 'production' ? 'ropsten.' : ''}etherscan.io/tx/${props.podcast.latestTransactionHash}" target="_blank">${new Date(props.podcast.previousPayoutDateInMilliseconds).toLocaleString()}</a>`}</div>
+                                        <br>
+                                        <div>Next payout: ${props.nextPayoutLocaleDateString}</div>
+                                    ` :
+                                    html``
+                                }
                             </div>
                         ` : `No podcast found`
                     }
@@ -139,7 +168,8 @@ StorePromise.then((Store) => {
                                     library_add
                                 </i>  
                             </div>
-                        ` : html``
+                        ` : 
+                        html``
                 }
             </div>
         `;
