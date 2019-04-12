@@ -84,7 +84,7 @@ Thanks!
                     props.podcastEmail ? 
                         html`
                             <div class="pc-not-verified-secondary-text">
-                                <a href="mailto:${props.podcastEmail}?subject=${subjectText}&body=${bodyText}">Click here to send this email from your email app</a>
+                                <a href="mailto:${props.podcastEmail}?subject=${encodeURIComponent(subjectText)}&body=${encodeURIComponent(bodyText)}">Click here to send this email from your email app</a>
                             </div>
 
                             <br>
