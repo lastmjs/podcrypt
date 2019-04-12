@@ -127,7 +127,7 @@ function getImageUrl(feed: any): string | 'NOT_FOUND' {
     return 'NOT_FOUND';
 }
 
-async function getFeed(feedUrl: string, feed?: any): Promise<any | null> {
+export async function getFeed(feedUrl: string, feed?: any): Promise<any | null> {
     try {
         if (feed) {
             return feed;
