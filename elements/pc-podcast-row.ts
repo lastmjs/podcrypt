@@ -1,12 +1,8 @@
 import { customElement, html } from 'functional-element';
 import { StorePromise } from '../services/store';
 import { 
-    pcContainerStyles,
-    pxMedium,
     pxXSmall,
-    color1Medium,
     pxSmall,
-    pxLarge,
     pxXXXSmall,
     normalShadow,
     colorBlackMedium,
@@ -14,7 +10,7 @@ import {
     pxXXSmall,
     pxXLarge
  } from '../services/css';
- import { 
+import { 
     navigate,
     createPodcast
 } from '../services/utilities';

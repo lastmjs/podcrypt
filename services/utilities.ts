@@ -209,7 +209,7 @@ export function addEpisodeToPlaylist(Store: any, podcast: any, item: any) {
             feedUrl: podcast.feedUrl,
             guid: item.guid,
             title: item.title,
-            src: item.enclosure.url,
+            src: item.enclosure ? item.enclosure.url : item.src,
             finishedListening: false,
             playing: false,
             progress: 0,

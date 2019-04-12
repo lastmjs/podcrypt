@@ -19,6 +19,7 @@ import {
 } from '../services/utilities';
 import './pc-loading';
 import './pc-podcast-row';
+import './pc-episode-row';
 
 StorePromise.then((Store) => {
     customElement('pc-podcast-overview', ({ constructing, update, props }) => {
@@ -127,32 +128,13 @@ StorePromise.then((Store) => {
                                 const episode: Readonly<Episode> | undefined = Store.getState().episodes[item.guid];
 
                                 return html`
-                                    <div class="pc-podcast-overview-episode">
-                                        <div
-                                            class="pc-podcast-overview-episode-title"
-                                            @click=${() => navigate(Store, `/episode-overview?feedUrl=${props.podcast.feedUrl}&episodeGuid=${item.guid}`)}
-                                        >
-                                            <div>${item.title}</div>
-                                            <br>
-                                            <div class="pc-podcast-overview-episode-date">${new Date(item.isoDate).toLocaleDateString()}</div>
-                                        </div>
-
-                                        <div class="pc-podcast-overview-episode-controls-container">
-                                            ${
-                                                episode && episode.playing ? 
-                                                html`<i class="material-icons pc-playlist-item-audio-control" @click=${() => pauseEpisode(item.guid)} title="Pause episode">pause</i>` : 
-                                                html`<i class="material-icons pc-playlist-item-audio-control" @click=${() => playEpisode(props.podcast, item)} title="Resume episode">play_arrow</i>`
-                                            }
-
-                                            <i 
-                                                class="material-icons pc-podcast-overview-episode-add-control"
-                                                @click=${() => addEpisodeToPlaylist(Store, props.podcast, item)}
-                                            >playlist_add
-                                            </i>  
-
-                                        </div>
-
-                                    </div>
+                                    <pc-episode-row
+                                        .podcast=${props.podcast}
+                                        .episode=${episode || item}
+                                        .play=${true}
+                                        .playlist=${true}
+                                        .date=${true}
+                                    ></pc-episode-row>
                                 `;
                             })}
                         `
@@ -172,8 +154,6 @@ StorePromise.then((Store) => {
 
         const feed = await getRSSFeed(feedUrl);
         const podcast: Readonly<Podcast | null> = await createPodcast(feedUrl, feed);
-
-        console.log(feed)
 
         update({
             ...props,
