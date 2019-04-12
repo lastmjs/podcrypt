@@ -84,6 +84,7 @@ StorePromise.then((Store) => {
                 .pc-podcast-overview-episode-title {
                     font-size: ${pxSmall};
                     font-weight: bold;
+                    flex: 10;
                 }
 
                 .pc-podcast-overview-episode-controls-container {
@@ -91,6 +92,7 @@ StorePromise.then((Store) => {
                     flex-direction: column;
                     align-items: center;
                     justify-content: center;
+                    flex: 1;
                 }
 
                 .pc-podcast-overview-episode-add-control {

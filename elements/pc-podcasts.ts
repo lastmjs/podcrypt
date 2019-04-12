@@ -66,14 +66,15 @@ StorePromise.then((Store) => {
                     font-size: ${pxSmall};
                     font-family: Ubuntu;
                     text-overflow: ellipsis;
-                    flex: 1;
                     padding-left: ${pxXSmall};
                     cursor: pointer;
                     color: ${colorBlackMedium};
+                    flex: 10;
                 }
 
                 .pc-podcasts-item-image {
                     border-radius: ${pxXXXSmall};
+                    flex: 1;
                 }
 
                 .pc-podcasts-empty-text {
