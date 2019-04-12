@@ -9,7 +9,9 @@ import {
     pxXXLarge,
     normalShadow,
     pxXSmall,
-    pxXXXSmall
+    pxXXXSmall,
+    colorBlackMedium,
+    pxSmall
  } from '../services/css';
 import { StorePromise } from '../services/store';
 import {
@@ -105,6 +107,9 @@ StorePromise.then((Store) => {
                     border-radius: ${pxXXXSmall};
                     justify-content: center;
                     background-color: white;
+                    font-size: ${pxSmall};
+                    font-family: Ubuntu;
+                    color: ${colorBlackMedium};l
                 }
             </style>
     

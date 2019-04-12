@@ -72,6 +72,10 @@ StorePromise.then((Store) => {
                 }
 
                 .pc-podcast-row-text-title {
+                    font-weight: bold;
+                }
+
+                .pc-podcast-row-text-title-container {
                     font-size: ${pxSmall};
                     font-family: Ubuntu;
                     color: ${colorBlackMedium};
@@ -116,8 +120,8 @@ StorePromise.then((Store) => {
                                     ` : html``
                             }
 
-                            <div class="pc-podcast-row-text-title">
-                                ${props.podcast.title}
+                            <div class="pc-podcast-row-text-title-container">
+                                <div class="pc-podcast-row-text-title">${props.podcast.title}</div>
 
                                 ${
                                     props.verification ?
