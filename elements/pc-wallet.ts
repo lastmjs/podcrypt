@@ -4,7 +4,9 @@ import { until } from 'lit-html/directives/until';
 import { 
     pcContainerStyles,
     standardTextContainer,
-    secondaryTextSmall
+    secondaryTextSmall,
+    color1Medium,
+    pxXXLarge,
  } from '../services/css';
 import { StorePromise } from '../services/store';
 import {
@@ -29,6 +31,7 @@ import BigNumber from "../node_modules/bignumber.js/bignumber";
 import './pc-loading';
 import { get } from 'idb-keyval';
 import './pc-button';
+import './pc-podcast-row';
 
 StorePromise.then((Store) => {
     customElement('pc-wallet', ({ constructing, connecting, props, update }) => {
@@ -80,6 +83,14 @@ StorePromise.then((Store) => {
 
                 .pc-wallet-secondary-text-without-container {
                     ${secondaryTextSmall}
+                }
+
+                .pc-wallet-input {
+                    text-align: center;
+                    font-size: ${pxXXLarge};
+                    border: none;
+                    border-bottom: 1px solid ${color1Medium};
+                    background-color: transparent;
                 }
             </style>
     
@@ -145,7 +156,7 @@ StorePromise.then((Store) => {
                                 type="number"
                                 value=${payoutTargetInUSD}
                                 @input=${payoutTargetInUSDCentsInputChanged}
-                                style="text-align: center; font-size: calc(30px + 1vmin); border: none; border-bottom: 1px solid grey;"
+                                class="pc-wallet-input"
                                 min="0"
                                 max="100"
                                 step="0.01"
@@ -166,7 +177,7 @@ StorePromise.then((Store) => {
                             type="number"
                             value=${payoutIntervalInDays}
                             @input=${payoutIntervalInDaysInputChanged}
-                            style="text-align: center; font-size: calc(30px + 1vmin); border: none; border-bottom: 1px solid grey"
+                            class="pc-wallet-input"
                             min="1"
                             max="30"
                         >
@@ -187,16 +198,16 @@ StorePromise.then((Store) => {
 
             <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: center">
                 <div style="display: flex; justify-content: center; align-items: center; margin: calc(5px + 1vmin)">
-                    <button @click=${() => alert('Coming soon to most US states: Buy ETH with your debit card')} style="font-size: calc(15px + 1vmin); border: none; background-color: white; box-shadow: 0px 0px 1px grey; padding: calc(5px + 1vmin);">Buy ETH</button>
+                    <pc-button @click=${() => alert('Coming soon to most US states: Buy ETH with your debit card')} .text=${'Buy ETH'}></pc-button>
                 </div>
                 <div style="display: flex; justify-content: center; align-items: center; margin: calc(5px + 1vmin)">
-                    <button @click=${() => navigate(Store, '/receive-eth')} style="font-size: calc(15px + 1vmin); border: none; background-color: white; box-shadow: 0px 0px 1px grey; padding: calc(5px + 1vmin);">Receive ETH</button>
+                    <pc-button @click=${() => navigate(Store, '/receive-eth')} .text=${'Receive ETH'}></pc-button>
                 </div>
                 <div style="display: flex; justify-content: center; align-items: center; margin: calc(5px + 1vmin)">
-                    <button @click=${payNowClick} style="font-size: calc(15px + 1vmin); border: none; background-color: white; box-shadow: 0px 0px 1px grey; padding: calc(5px + 1vmin);">Pay now</button>
+                    <pc-button @click=${payNowClick} .text=${'Pay now'}></pc-button>
                 </div>
                 <div style="display: flex; justify-content: center; align-items: center; margin: calc(5px + 1vmin)">
-                    <button @click=${restoreWithPhrase} style="font-size: calc(15px + 1vmin); border: none; background-color: white; box-shadow: 0px 0px 1px grey; padding: calc(5px + 1vmin);">Restore with phrase</button>
+                    <pc-button @click=${restoreWithPhrase} .text=${'Restore with phrase'}></pc-button>
                 </div>
 
             </div>
@@ -215,36 +226,24 @@ StorePromise.then((Store) => {
                 const payoutAmountForPodcastDuringIntervalInUSD: USDollars = calculatePayoutAmountForPodcastDuringIntervalInUSD(Store.getState(), podcast, previousPayoutDateInMilliseconds);
                 const percentageOfTotalTimeForPodcastDuringInterval: Percent = new BigNumber(calculateProportionOfTotalTimeForPodcastDuringInterval(Store.getState(), podcast, previousPayoutDateInMilliseconds)).multipliedBy(100).toString();
 
-                const ethereumAddress: EthereumAddress | 'NOT_FOUND' | 'MALFORMED' = podcast.ethereumAddress;
-
                 return html`
-                    <div class="pc-wallet-podcast-item">
-                        <div>
-                            <img src="${podcast.imageUrl}" width="60" height="60" style="border-radius: 5%">
-                        </div>
-                        <div style="display:flex; flex-direction: column; padding-left: 5%; padding-top: 1%; flex: 3">
-                            <div class="pc-wallet-podcast-item-text">${podcast.title}</div>
-                            <div>
-                                ${
-                                    ethereumAddress === 'NOT_FOUND' ? 
-                                        html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${() => notVerifiedHelpClick(podcast)}>Not verified - click to help</button>` :
-                                        ethereumAddress === 'MALFORMED' ?
-                                            html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${() => notVerifiedHelpClick(podcast)}>Not verified - click to help</button>` :
-                                            html`<button style="color: green; border: none; padding: 5px; margin: 5px" @click=${() => alert(`This podcast's Ethereum address: ${podcast.ethereumAddress}`)}>Verified</button>`}
-                            </div>
-                            <br>
-                            <div>$${new BigNumber(payoutAmountForPodcastDuringIntervalInUSD).toFixed(2)}, ${new BigNumber(percentageOfTotalTimeForPodcastDuringInterval).toFixed(2)}%, ${totalTimeForPodcastDuringIntervalInMinutes} min ${secondsRemainingForPodcastDuringInterval} sec</div>
-                            <br>
-                            <div>Last payout: ${podcast.previousPayoutDateInMilliseconds === 'NEVER' ? 'never' : html`<a href="https://${process.env.NODE_ENV !== 'production' ? 'ropsten.' : ''}etherscan.io/tx/${podcast.latestTransactionHash}" target="_blank">${new Date(podcast.previousPayoutDateInMilliseconds).toLocaleString()}</a>`}</div>
-                            <div>Next payout: ${nextPayoutLocaleDateString}</div>
-                        </div>
-                    </div>
+                    <pc-podcast-row
+                        .podcast=${podcast}
+                        .verification=${true}
+                        .payouts=${true}
+                        .usage=${true}
+                        .payoutAmountForPodcastDuringIntervalInUSD=${payoutAmountForPodcastDuringIntervalInUSD}
+                        .percentageOfTotalTimeForPodcastDuringInterval=${percentageOfTotalTimeForPodcastDuringInterval}
+                        .totalTimeForPodcastDuringIntervalInMinutes=${totalTimeForPodcastDuringIntervalInMinutes}
+                        .secondsRemainingForPodcastDuringInterval=${secondsRemainingForPodcastDuringInterval}
+                        .nextPayoutLocaleDateString=${nextPayoutLocaleDateString}
+                    ></pc-podcast-row>
                 `;
             })}
 
             <div class="pc-wallet-podcast-item">
                 <div>
-                    <img src="podcrypt-logo-transparent.png" width="60" height="60" style="border-radius: 5%">
+                    <img src="podcrypt-white-on-black.png" width="60" height="60" style="border-radius: 5%">
                 </div>
                 <div style="display:flex; flex-direction: column; padding-left: 5%; padding-top: 1%; flex: 3">
                     <div class="pc-wallet-podcast-item-text">Podcrypt</div>
@@ -255,13 +254,6 @@ StorePromise.then((Store) => {
                     <div>Next payout: ${nextPayoutLocaleDateString}</div>
                 </div>
             </div>
-<!-- 
-            <div class="pc-wallet-podcast-item">
-                <h4>Podcrypt</h4>
-                10%
-            </div>
-
-            <hr> -->
         `;
     }
 
