@@ -1,5 +1,12 @@
 import { customElement, html } from 'functional-element';
-import { pcContainerStyles } from '../services/css';
+import { 
+    pcContainerStyles,
+    pxXSmall,
+    color1Full,
+    pxXXXSmall,
+    normalShadow,
+    standardTextContainer
+ } from '../services/css';
 import { StorePromise } from '../services/store';
 import {
     getRSSFeed,
@@ -47,6 +54,33 @@ StorePromise.then((Store) => {
                 .pc-episode-overview-container {
                     ${pcContainerStyles}
                 }
+
+                .pc-episode-overview-podcast-title {
+                    font-size: ${pxXSmall};
+                    font-weight: bold;
+                    color: ${color1Full};
+                }
+
+                .pc-episode-overview-episode-title {
+                    box-shadow: ${normalShadow};
+                    display: flex;
+                    padding: ${pxXSmall};
+                    margin-top: ${pxXSmall};
+                    margin-bottom: ${pxXSmall};
+                    border-radius: ${pxXXXSmall};
+                    justify-content: center;
+                    background-color: white;
+                }
+
+                .pc-episode-overview-date {
+                    font-size: ${pxXSmall};
+                    font-weight: bold;
+                    color: ${color1Full};
+                }
+
+                .pc-episode-overview-description {
+                    ${standardTextContainer}
+                }
             </style>
 
             <div class="pc-episode-overview-container">
@@ -61,15 +95,12 @@ StorePromise.then((Store) => {
                     props.episode === null ?
                         html`<div>Failed to load</div>` : 
                         html`
-                            <div style="display: flex; padding-left: 3%">
-                                <div style="flex: 1">
-                                    <img src="${props.podcast.imageUrl}" width="60" height="60">
-                                </div>
-                                <div style="font-weight: bold; font-size: calc(16px + 1vmin); flex: 3">${props.podcast.title}</div>
-                            </div>
+                            <div class="pc-episode-overview-podcast-title">${props.podcast.title}</div>
+
                             <br>
-                            <div style="display: flex">
-                                <div style="padding-left: 5%; padding-right: 5%; font-weight: bold; font-size: calc(14px + 1vmin)">${props.episode.title}</div>
+
+                            <div class="pc-episode-overview-episode-title">
+                                <div>${props.episode.title}</div>
                                 <div style="display: flex; align-items: center; justify-content: top">
                                     <i 
                                         class="material-icons"
@@ -78,16 +109,16 @@ StorePromise.then((Store) => {
                                     >playlist_add
                                     </i>
                                     ${
-                                        props.episode && Store.getState().episodes[props.episode.guid].playing ? 
+                                        props.episode && Store.getState().episodes[props.episode.guid] && Store.getState().episodes[props.episode.guid].playing ? 
                                         html`<i class="material-icons pc-playlist-item-audio-control" @click=${() => pauseEpisode(props.episode.guid)} title="Pause episode">pause</i>` : 
                                         html`<i class="material-icons pc-playlist-item-audio-control" @click=${() => playEpisode(props.podcast, props.episode)} title="Resume episode">play_arrow</i>`
                                     }
                                 </div>
                             </div>
                             <br>
-                            <div style="padding-left: 5%; font-weight: bold; font-size: calc(12px + 1vmin); color: grey">${new Date(props.episode.isoDate).toLocaleDateString()}</div>
+                            <div class="pc-episode-overview-date">${new Date(props.episode.isoDate).toLocaleDateString()}</div>
                             <br>
-                            <div style="padding-left: 5%; padding-right: 5%; overflow-wrap: break-word">${props.episode.contentSnippet}</div>
+                            <div class="pc-episode-overview-description">${props.episode.contentSnippet}</div>
 
                         `
                 }
