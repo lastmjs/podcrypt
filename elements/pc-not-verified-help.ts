@@ -29,8 +29,7 @@ StorePromise.then((Store) => {
         }
 
         const subjectText: string = `Donating to your podcast with Podcrypt`;
-        const bodyText: string = `
-Hi,
+        const bodyText: string = `Hi,
 
 I've been listening to your podcast on podcrypt.app.
             
