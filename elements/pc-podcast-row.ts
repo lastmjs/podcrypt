@@ -26,6 +26,7 @@ StorePromise.then((Store) => {
                 verification: false,
                 payouts: false,
                 usage: false,
+                options: false,
                 payoutAmountForPodcastDuringIntervalInUSD: null,
                 percentageOfTotalTimeForPodcastDuringInterval: null,
                 totalTimeForPodcastDuringIntervalInMinutes: null,
@@ -45,6 +46,7 @@ StorePromise.then((Store) => {
                     border-radius: ${pxXXXSmall};
                     justify-content: center;
                     background-color: white;
+                    position: relative;
                 }
 
                 .pc-podcast-row-image-container {
@@ -86,10 +88,22 @@ StorePromise.then((Store) => {
                     padding-left: ${pxXSmall};
                     cursor: pointer;
                     font-size: ${pxXLarge};
+                    align-items: center;
+                    justify-content: center;
                 }
 
                 .pc-podcast-row-verification-container {
                     margin-top: ${pxXXSmall};
+                }
+
+                .pc-podcast-row-options-select {
+                    border: none;
+                    background-color: transparent;
+                    width: 35px;
+                    cursor: pointer;
+                    position: absolute;
+                    top: 5px;
+                    right: 5px;
                 }
 
             </style>
@@ -175,6 +189,20 @@ StorePromise.then((Store) => {
                         ` : 
                         html``
                 }
+
+                ${
+                    props.options ?
+                    html`
+                        <select
+                            @change=${(e: any) => optionsChange(e, props.podcast)}
+                            class="pc-podcast-row-options-select"
+                        >
+                            <option>...</option>
+                            <option>Delete</option>
+                        </select>
+                    ` :
+                    html``
+                }
             </div>
         `;
     });
@@ -201,5 +229,23 @@ StorePromise.then((Store) => {
         e.stopPropagation();
 
         navigate(Store, `/not-verified-help?feedUrl=${podcast.feedUrl}&podcastEmail=${podcast.email}`);
+    }
+
+    function optionsChange(e: any, podcast: Readonly<Podcast>) {
+
+        // TODO constantize each of the options in the dropdown
+
+        if (e.target.value === 'Delete') {
+            const confirmation = confirm('Are you sure you want to delete this podcast and all of its data?');
+
+            if (confirmation === true) {
+                Store.dispatch({
+                    type: 'DELETE_PODCAST',
+                    podcast
+                });
+            }
+        }
+
+        e.target.value = '...';
     }
 });

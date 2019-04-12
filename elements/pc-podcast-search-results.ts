@@ -2,7 +2,8 @@ import { customElement, html } from 'functional-element';
 import { StorePromise } from '../services/store';
 import './pc-loading';
 import { 
-    pcContainerStyles
+    pcContainerStyles,
+    titleTextLarge
  } from '../services/css';
  import './pc-podcast-row';
 
@@ -33,6 +34,10 @@ StorePromise.then((Store) => {
                 .pc-podcast-search-results {
                     ${pcContainerStyles}
                 }    
+
+                .pc-podcast-search-results-title {
+                    ${titleTextLarge}
+                }
             </style>
 
             <div class="pc-podcast-search-results">
@@ -90,6 +95,7 @@ StorePromise.then((Store) => {
                     <pc-podcast-row
                         .podcast=${podcast}
                         .controls=${true}
+                        .options=${true}
                     ></pc-podcast-row>                      
                 `;
             });
@@ -101,6 +107,7 @@ StorePromise.then((Store) => {
                 loaded: true,
                 previousTerm: props.term,
                 searchResultsUI: html`
+                    <div class="pc-podcast-search-results-title">Search results</div>
                     ${podcastFeedResults}
                 `
             });

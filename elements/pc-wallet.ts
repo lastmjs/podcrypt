@@ -251,6 +251,7 @@ StorePromise.then((Store) => {
                         .verification=${true}
                         .payouts=${true}
                         .usage=${true}
+                        .options=${true}
                         .payoutAmountForPodcastDuringIntervalInUSD=${payoutAmountForPodcastDuringIntervalInUSD}
                         .percentageOfTotalTimeForPodcastDuringInterval=${percentageOfTotalTimeForPodcastDuringInterval}
                         .totalTimeForPodcastDuringIntervalInMinutes=${totalTimeForPodcastDuringIntervalInMinutes}
