@@ -37,7 +37,7 @@ export async function createWallet(Store: Readonly<Store<Readonly<State>, AnyAct
 
     await loadEthereumAccountBalance(Store);
 
-    const nextPayoutDateInMilliseconds: Milliseconds = getNextPayoutDateInMilliseconds(Store);
+    const nextPayoutDateInMilliseconds: Milliseconds = getNextPayoutDateInMilliseconds(Store.getState());
 
     Store.dispatch({
         type: 'SET_NEXT_PAYOUT_DATE_IN_MILLISECONDS',

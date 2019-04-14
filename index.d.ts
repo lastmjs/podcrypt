@@ -116,4 +116,14 @@ type State = {
     readonly podcryptPreviousPayoutDateInMilliseconds: Milliseconds | 'NEVER';
     readonly podcryptLatestTransactionHash: string | null;
     readonly payoutProblem: PayoutProblem;
+    readonly nonce: number;
 }
+
+type HexString = string;
+type UTF8String = string;
+
+type Transaction = {
+    hash: HexString;
+};
+
+type TransactionResult = Transaction | 'ALREADY_PAID_FOR_INTERVAL' | 'FEED_NOT_FOUND' | 'PODCAST_ETHEREUM_ADDRESS_NOT_FOUND' | 'PODCAST_ETHEREUM_ADDRESS_MALFORMED';
