@@ -13,7 +13,8 @@ import {
  } from '../services/css';
 import { 
     navigate,
-    addEpisodeToPlaylist
+    addEpisodeToPlaylist,
+    corsAnywhereProxy
 } from '../services/utilities';
 import { set } from 'idb-keyval';
 
@@ -255,7 +256,7 @@ StorePromise.then((Store) => {
                 const confirmed = confirm('Downloads are experimental. Do you want to go for it anyway?');
     
                 if (confirmed) {
-                    const audioFileResponse = await fetch(episode.src);
+                    const audioFileResponse = await fetch(`${corsAnywhereProxy}${episode.src}`);
     
                     const audioFileBlob = await audioFileResponse.blob();
                  
