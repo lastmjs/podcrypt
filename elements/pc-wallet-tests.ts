@@ -28,7 +28,7 @@ StorePromise.then((Store) => {
     const button = document.createElement('button');
 
     button.innerHTML = `Run tests`;
-    button.style = `position: absolute; z-index: 1000; top: 0; right: 0`;
+    (button as any).style = `position: absolute; z-index: 1000; top: 0; right: 0`;
 
     button.addEventListener('click', () => {
         runTests();
