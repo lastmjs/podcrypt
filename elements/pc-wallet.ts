@@ -115,8 +115,9 @@ StorePromise.then((Store) => {
     
             <div class="pc-wallet-container">
                 <pc-loading
-                    .hidden=${props.loaded}
+                    .hidden=${props.loaded && !Store.getState().payoutInProgress}
                     .prefix=${"pc-wallet-"}
+                    .message=${Store.getState().payoutInProgress ? 'Processing payments' : ''}
                 ></pc-loading>
 
                 ${

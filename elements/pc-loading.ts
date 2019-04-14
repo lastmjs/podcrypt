@@ -7,7 +7,8 @@ customElement('pc-loading', ({ props, constructing }) => {
     if (constructing) {
         return {
             hidden: false,
-            prefix: ''
+            prefix: '',
+            message: ''
         };
     }
 
@@ -62,6 +63,9 @@ customElement('pc-loading', ({ props, constructing }) => {
 
         <div class="${props.prefix}loading-container">
             <div class="${props.prefix}loading-spinner" ?hidden=${props.hidden}></div>
+            <br>
+            <br>
+            <div style="font-family: Ubuntu; font-weight: bold">${props.message}</div>
         </div>
     `;
 });
