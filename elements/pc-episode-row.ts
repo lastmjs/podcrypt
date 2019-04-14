@@ -251,14 +251,19 @@ StorePromise.then((Store) => {
         }
 
         if (e.target.value === 'Download') {
-            const confirmed = confirm('Downloads are experimental. Do you want to go for it anyway?');
-
-            if (confirmed) {
-                const audioFileResponse = await fetch(episode.src);
-
-                const audioFileBlob = await audioFileResponse.blob();
-             
-                await set(`${episode.guid}-audio-file-blob`, audioFileBlob);
+            try {
+                const confirmed = confirm('Downloads are experimental. Do you want to go for it anyway?');
+    
+                if (confirmed) {
+                    const audioFileResponse = await fetch(episode.src);
+    
+                    const audioFileBlob = await audioFileResponse.blob();
+                 
+                    await set(`${episode.guid}-audio-file-blob`, audioFileBlob);
+                }
+            }
+            catch(error) {
+                alert(error);
             }
         }
 
