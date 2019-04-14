@@ -16,12 +16,16 @@ export const StorePromise: Promise<Readonly<Store<Readonly<State>, Readonly<AnyA
 
 async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<AnyAction>>>> {
     const persistedState: Readonly<State> = await get('state');
-    const version: number = 31;
+    const version: number = 32;
 
     const InitialState: Readonly<State> = getInitialState(persistedState, version);
     
     const RootReducer: (state: Readonly<State> | undefined, action: AnyAction) => Readonly<State> = (state: Readonly<State> = InitialState, action: AnyAction): Readonly<State> => {
         
+        if (action.type === 'SET_STATE') {
+            return action.state;
+        }
+
         if (action.type === 'SET_PODCRYPT_LATEST_TRANSACTION_HASH') {
             return {
                 ...state,
@@ -687,6 +691,13 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
                 podcasts: newPodcasts
             };
         }
+
+        if (action.type === 'SET_NONCE') {
+            return {
+                ...state,
+                nonce: action.nonce
+            };
+        }
     
         return state;
     }
@@ -747,7 +758,7 @@ function getCurrentPlaylistIndexAfterMoveDown(state: Readonly<State>, playlistIn
     return state.currentPlaylistIndex;
 }
 
-function getInitialState(persistedState: Readonly<State>, version: number): Readonly<State> {
+export function getInitialState(persistedState: Readonly<State> | null | undefined, version: number): Readonly<State> {
 
     if (
         persistedState === null ||
@@ -860,6 +871,18 @@ function runMigrations(persistedState: Readonly<State>, version: number): Readon
         return runMigrations(newPersistedState, version);        
     }
 
+    if (persistedState.version === 31) {
+        console.log(`running migration to upgrade version 31`);
+
+        const newPersistedState: Readonly<State> = {
+            ...persistedState,
+            version: 32,
+            nonce: 0
+        }; 
+        
+        return runMigrations(newPersistedState, version);    
+    }
+
     return persistedState;
 }
 
@@ -902,6 +925,7 @@ function getOriginalState(version: number): Readonly<State> {
         podcryptPayoutPercentage: '10',
         podcryptPreviousPayoutDateInMilliseconds: 'NEVER',
         podcryptLatestTransactionHash: null,
-        payoutProblem: 'NO_PROBLEM'
+        payoutProblem: 'NO_PROBLEM',
+        nonce: 0
     };
 }

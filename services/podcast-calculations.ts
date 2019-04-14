@@ -4,7 +4,7 @@ export function calculatePayoutAmountForPodcryptDuringIntervalInWEI(state: Reado
     const payoutTargetInUSDCents: USDCents = state.payoutTargetInUSDCents;    
     const payoutForPodcryptInUSDCents: USDCents = new BigNumber(state.podcryptPayoutPercentage).multipliedBy(payoutTargetInUSDCents).dividedBy(100).toString();
     const currentETHPriceInUSDCents: USDCents | 'UNKNOWN' = state.currentETHPriceInUSDCents;
-    
+
     if (currentETHPriceInUSDCents === 'UNKNOWN') {
         return 'UNKNOWN';
     }

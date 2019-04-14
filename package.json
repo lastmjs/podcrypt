@@ -24,6 +24,7 @@
     "Jordan Last <jordan.michael.last@gmail.com>"
   ],
   "devDependencies": {
+    "fast-check": "1.13.0",
     "jsverify-es-module": "0.0.2",
     "oss-attribution-generator": "1.7.1",
     "zwitterion": "0.29.0"

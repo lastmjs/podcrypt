@@ -392,10 +392,6 @@ StorePromise.then((Store) => {
         }
     }
 
-    function notVerifiedHelpClick(podcast: Readonly<Podcast>) {
-        navigate(Store, `/not-verified-help?feedUrl=${podcast.feedUrl}&podcastEmail=${podcast.email}`);
-    }
-
     function restoreWithPhrase() {
         navigate(Store, '/restore-with-phrase');
     }
@@ -488,7 +484,7 @@ StorePromise.then((Store) => {
             payoutIntervalInDays: e.target.value
         });
     
-        const nextPayoutDateInMilliseconds: Milliseconds = getNextPayoutDateInMilliseconds(Store);
+        const nextPayoutDateInMilliseconds: Milliseconds = getNextPayoutDateInMilliseconds(Store.getState());
     
         Store.dispatch({
             type: 'SET_NEXT_PAYOUT_DATE_IN_MILLISECONDS',
@@ -512,12 +508,6 @@ StorePromise.then((Store) => {
         const currentLocaleDateString: string = new Date().toLocaleDateString();
         const nextPayoutLocaleDateString: string = new Date(new BigNumber(Store.getState().nextPayoutDateInMilliseconds).toNumber()).toLocaleDateString();
 
-        console.log('currentLocaleDateString', currentLocaleDateString);
-        console.log('nextPayoutLocaleDateString', nextPayoutLocaleDateString);
-
-        console.log('now milliseconds', new Date().getTime());
-        console.log('nextPayoutDateInMilliseconds', Store.getState().nextPayoutDateInMilliseconds);
-
         if (
             new BigNumber(new Date().getTime()).gte(Store.getState().nextPayoutDateInMilliseconds)
         ) {
@@ -535,7 +525,6 @@ StorePromise.then((Store) => {
 
     setInterval(() => {
         if (Store.getState().currentRoute.pathname === '/wallet') {
-            console.log('loadEthereumAccountBalance');
             loadEthereumAccountBalance(Store);
         }
     }, 30000);
