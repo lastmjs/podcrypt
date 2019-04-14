@@ -4,15 +4,20 @@ import { navigate } from '../services/utilities';
 import BigNumber from 'bignumber.js';
 import {
     pxXXLarge,
-    pxXXSmall,
     pxXLarge
 } from '../services/css';
+import { get } from 'idb-keyval';
 
 StorePromise.then((Store) => {
-    customElement('pc-player', ({ constructing, update, element }) => {
+    customElement('pc-player', ({ constructing, update, element, props }) => {
     
         if (constructing) {
             Store.subscribe(update);
+
+            return {
+                src: '',
+                currentEpisode: null
+            };
         }
         
         const state = Store.getState() as any;
@@ -107,6 +112,8 @@ StorePromise.then((Store) => {
                 }
             }
         });
+
+        getSrc(currentEpisode, props, update);
     
         return html`
             <style>
@@ -215,7 +222,7 @@ StorePromise.then((Store) => {
             </div>
 
             <audio
-                src="${currentEpisode ? currentEpisode.src : ''}"
+                src="${props.src}"
                 preload="metadata"
                 @ended=${audioEnded}
                 @timeupdate=${timeUpdated}
@@ -224,6 +231,34 @@ StorePromise.then((Store) => {
             ></audio>
         `;
     });
+
+    async function getSrc(currentEpisode: Readonly<Episode>, props: any, update: any) {
+
+        if (
+            props.currentEpisode !== null &&
+            props.currentEpisode !== undefined &&
+            props.currentEpisode.guid === currentEpisode.guid
+        ) {
+            return;
+        }
+
+        if (currentEpisode) {
+            const blob = await get(`${currentEpisode.guid}-audio-file-blob`);
+
+            if (blob) {
+                update({
+                    currentEpisode,
+                    src: window.URL.createObjectURL(blob)
+                });
+            }
+            else {
+                update({
+                    currentEpisode,
+                    src: currentEpisode.src
+                });
+            }
+        }
+    }
 
     function timeSliderOnInput(e: any, element: any) {
         const progress = e.target.value;

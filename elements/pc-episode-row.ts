@@ -15,6 +15,7 @@ import {
     navigate,
     addEpisodeToPlaylist
 } from '../services/utilities';
+import { set } from 'idb-keyval';
 
 StorePromise.then((Store) => {
     customElement('pc-episode-row', ({ constructing, props }) => {
@@ -190,10 +191,11 @@ StorePromise.then((Store) => {
                                 props.options ?
                                 html`
                                     <select
-                                        @change=${(e: any) => optionsChange(e, props.episode.guid)}
+                                        @change=${(e: any) => optionsChange(e, props.episode)}
                                         class="pc-episode-row-options-select"
                                     >
                                         <option>...</option>
+                                        <option>Download</option>
                                         <option>Remove from playlist</option>
                                     </select>
                                 ` :
@@ -240,12 +242,24 @@ StorePromise.then((Store) => {
         });
     }
 
-    function optionsChange(e: any, episodeGuid: EpisodeGuid) {
+    async function optionsChange(e: any, episode: Readonly<Episode>) {
 
         // TODO constantize each of the options in the dropdown
 
         if (e.target.value === 'Remove from playlist') {
-            removeEpisodeFromPlaylist(episodeGuid);
+            removeEpisodeFromPlaylist(episode.guid);
+        }
+
+        if (e.target.value === 'Download') {
+            const confirmed = confirm('Downloads are experimental. Do you want to go for it anyway?');
+
+            if (confirmed) {
+                const audioFileResponse = await fetch(episode.src);
+
+                const audioFileBlob = await audioFileResponse.blob();
+             
+                await set(`${episode.guid}-audio-file-blob`, audioFileBlob);
+            }
         }
 
         e.target.value = '...';
