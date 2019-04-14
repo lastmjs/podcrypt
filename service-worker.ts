@@ -16,11 +16,14 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+    console.log(event.request);
     // TODO Figure out why audio requests have a destination of video
     // We do not respond to media requests because service workers don't currently support Range headers or 206 partial content responses
     if (
         event.request.destination !== 'audio' &&
-        event.request.destination !== 'video'
+        event.request.destination !== 'video' &&
+        !event.request.url.includes('.mp3') &&
+        !event.request.url.includes('.m4a')
     ) {
         event.respondWith(
             caches
