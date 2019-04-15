@@ -46,6 +46,12 @@ StorePromise.then((Store) => {
             loadEthereumAccountBalance(Store);
             loadCurrentETHPriceInUSDCents(Store);
 
+            // TODO remove this once it gets fixed for that one person
+            Store.dispatch({
+                type: 'SET_PAYOUT_IN_PROGRESS',
+                payoutInProgress: false
+            });
+
             return {
                 loaded: false
             };
