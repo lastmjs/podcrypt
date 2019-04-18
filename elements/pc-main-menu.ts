@@ -5,7 +5,8 @@ import {
 } from '../services/utilities';
 import {
     colorBlackVeryLight,
-    two
+    two,
+    three
 } from '../services/css';
 
 StorePromise.then((Store) => {    
@@ -24,7 +25,7 @@ StorePromise.then((Store) => {
                     display: flex;
                     flex-direction: column;
                     box-shadow: 0px 0px 1px black;
-                    z-index: ${two};
+                    z-index: ${three};
                     transition: .25s;
                     width: 80%;
                     left: ${Store.getState().showMainMenu ? '0' : '-90%'};

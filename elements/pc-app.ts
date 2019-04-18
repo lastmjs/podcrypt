@@ -26,6 +26,7 @@ import './pc-player';
 import {
     bottomShadow,
     one,
+    two,
     pxSmall,
     pxLarge,
     pxXLarge,
@@ -52,7 +53,7 @@ StorePromise.then((Store) => {
                     padding-bottom: ${pxSmall};
                     width: 100%;
                     box-shadow: ${bottomShadow};
-                    z-index: ${one};
+                    z-index: ${two};
                     background-color: white;
                 }
 
