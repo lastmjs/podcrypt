@@ -30,7 +30,10 @@ type Episode = {
     readonly progress: string;
     readonly timestamps: ReadonlyArray<Timestamp>;
     readonly isoDate: string;
+    readonly downloadState: EpisodeDownloadState;
 }
+
+type EpisodeDownloadState = 'NOT_DOWNLOADED' | 'DOWNLOADING' | 'DOWNLOADED';
 
 type Timestamp = {
     readonly type: 'START' | 'STOP';

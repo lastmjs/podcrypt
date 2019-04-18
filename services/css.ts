@@ -15,7 +15,12 @@ export const colorBlackFaint = `rgba(0, 0, 0, .01)`;
 export const bottomShadow = `-5px 5px 5px -5px grey`;
 export const normalShadow = `0px 0px 1px grey`;
 
+export const zero = `0`;
 export const one = `1`;
+export const two = `2`;
+export const three = `3`;
+export const four = `4`;
+export const five = `5`;
 
 export const pxXXXSmall = `calc(1vmin)`;
 export const pxXXSmall = `calc(4px + 1vmin)`;
