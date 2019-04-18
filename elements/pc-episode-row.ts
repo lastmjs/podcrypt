@@ -16,7 +16,8 @@ import {
 import { 
     navigate,
     addEpisodeToPlaylist,
-    corsAnywhereProxy
+    corsAnywhereProxy,
+    jsonpProxy
 } from '../services/utilities';
 import { set, del } from 'idb-keyval';
 import './pc-loading';
@@ -313,9 +314,9 @@ StorePromise.then((Store) => {
                         downloadState: 'DOWNLOADING'
                     });
 
-                    const audioFileResponse = await fetch(`${corsAnywhereProxy}${episode.src}`);
-    
-                    const audioFileBlob = await audioFileResponse.blob();
+                    const resourceURL: string = `${corsAnywhereProxy}${episode.src}`;
+                    const resourceLengthInBytes: number = await fetchResourceLengthInBytes(resourceURL);
+                    const audioFileBlob: Blob = await fetchFileBlob(`${corsAnywhereProxy}${episode.src}`, resourceLengthInBytes);
                  
                     await set(`${episode.guid}-audio-file-blob`, audioFileBlob);
 
@@ -352,5 +353,30 @@ StorePromise.then((Store) => {
             type: 'REMOVE_EPISODE_FROM_PLAYLIST',
             episodeGuid
         });
+    }
+
+    async function fetchResourceLengthInBytes(url: string): Promise<number> {
+        const audioFileHeadResponse = await fetch(url, {
+            method: 'HEAD'
+        });
+
+        return audioFileHeadResponse.headers.get('Content-Length');
+    }
+
+    async function fetchFileBlob(url: string, resourceLengthInBytes: number, rangeStart: number=0, rangeEnd: number=1048576, blob: Blob=new Blob()): Promise<Blob> {
+        
+        if (rangeStart >= resourceLengthInBytes - 1) {
+            return blob;
+        }
+        
+        const audioFileResponse = await fetch(url, {
+            headers: {
+                'Range': `bytes=${rangeStart}-${rangeEnd}`
+            }
+        });
+
+        const audioFileBlob = await audioFileResponse.blob();
+
+        return await fetchFileBlob(url, resourceLengthInBytes, rangeStart + 1048576, rangeEnd + 1048576, new Blob([blob, audioFileBlob]));
     }
 });
