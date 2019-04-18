@@ -267,6 +267,19 @@ async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<
                 }
             }
         }
+
+        if (action.type === 'SET_EPISODE_DOWNLOAD_STATE') {
+            return {
+                ...state,
+                episodes: {
+                    ...state.episodes,
+                    [action.episodeGuid]: {
+                        ...state.episodes[action.episodeGuid],
+                        downloadState: action.downloadState
+                    }
+                }
+            };
+        }
     
         if (action.type === 'PLAY_EPISODE_FROM_PLAYLIST') {
             const newCurrentPlaylistIndex: number = state.playlist.indexOf(action.episodeGuid);

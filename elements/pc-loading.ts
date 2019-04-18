@@ -1,5 +1,8 @@
 import { customElement, html } from 'functional-element';
-import { color1Full } from '../services/css';
+import { 
+    color1Full,
+    one
+ } from '../services/css';
 
 // TODO all of this prefix nonsense can be fixed by implementing shadow dom in functional-element
 customElement('pc-loading', ({ props, constructing }) => {
@@ -8,7 +11,10 @@ customElement('pc-loading', ({ props, constructing }) => {
         return {
             hidden: false,
             prefix: '',
-            message: ''
+            message: '',
+            spinnerWidth: '50px',
+            spinnerHeight: '50px',
+            spinnerMarginTop: '30vh'
         };
     }
 
@@ -35,7 +41,7 @@ customElement('pc-loading', ({ props, constructing }) => {
                 top: 0;
                 right: 0;
                 background-color: ${props.hidden ? 'rgba(255, 255, 255, 0)' : 'rgba(255, 255, 255, 1)'};
-                z-index: 0;
+                z-index: ${one};
                 ${props.hidden ? 'transition: background-color 1s linear;' : ''}
                 pointer-events: none;
                 text-align: center;
@@ -43,13 +49,13 @@ customElement('pc-loading', ({ props, constructing }) => {
 
             .${props.prefix}loading-spinner {
                 display: inline-block;
-                width: 50px;
-                height: 50px;
+                width: ${props.spinnerWidth};
+                height: ${props.spinnerHeight};
                 border: 3px solid ${color1Full};
                 border-radius: 50%;
                 border-top-color: #fefefe;
                 animation: spin 1s ease-in-out infinite;
-                margin-top: 30vh;
+                margin-top: ${props.spinnerMarginTop};
             }
 
             .${props.prefix}loading-spinner[hidden] {
@@ -65,7 +71,7 @@ customElement('pc-loading', ({ props, constructing }) => {
             <div class="${props.prefix}loading-spinner" ?hidden=${props.hidden}></div>
             <br>
             <br>
-            <div style="font-family: Ubuntu; font-weight: bold">${props.message}</div>
+            <div style="font-family: Ubuntu; font-weight: bold" ?hidden=${props.hidden}>${props.message}</div>
         </div>
     `;
 });

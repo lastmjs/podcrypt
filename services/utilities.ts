@@ -203,19 +203,22 @@ function parseEthereumAddressFromPodcastDescription(podcastDescription: string):
 }
 
 export function addEpisodeToPlaylist(Store: any, podcast: any, item: any) {
+    const episode: Readonly<Episode> = {
+        feedUrl: podcast.feedUrl,
+        guid: item.guid,
+        title: item.title,
+        src: item.enclosure ? item.enclosure.url : item.src,
+        finishedListening: false,
+        playing: false,
+        progress: '0',
+        isoDate: item.isoDate,
+        timestamps: [],
+        downloadState: 'NOT_DOWNLOADED'
+    };
+    
     Store.dispatch({
         type: 'ADD_EPISODE_TO_PLAYLIST',
-        episode: {
-            feedUrl: podcast.feedUrl,
-            guid: item.guid,
-            title: item.title,
-            src: item.enclosure ? item.enclosure.url : item.src,
-            finishedListening: false,
-            playing: false,
-            progress: 0,
-            isoDate: item.isoDate,
-            timestamps: []
-        },
+        episode,
         podcast
     });
 }
