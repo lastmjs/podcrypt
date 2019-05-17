@@ -326,11 +326,11 @@ StorePromise.then((Store) => {
                     // const response = await window.fetch(resourceURL);
 
                     const response = await getAudioFileResponse(episode.src);
-                    const audioFileBlob = await response.blob();
+                    const audioFileArrayBuffer = await response.arrayBuffer();
 
                     // TODO somewhere in this process iOS Safari fails with a null exception, and I believe it is while saving to indexedDB
                     // TODO I believe iOS indexeddb does not support storing blobs. try an arraybuffer instead
-                    await set(`${episode.guid}-audio-file-blob`, audioFileBlob);
+                    await set(`${episode.guid}-audio-file-array-buffer`, audioFileArrayBuffer);
 
                     Store.dispatch({
                         type: 'SET_EPISODE_DOWNLOAD_STATE',

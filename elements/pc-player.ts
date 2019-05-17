@@ -246,9 +246,13 @@ StorePromise.then((Store) => {
         }
 
         if (currentEpisode) {
-            const blob = await get(`${currentEpisode.guid}-audio-file-blob`);
+            // TODO I do not know if the types are correct here
+            const arrayBuffer: Uint8Array = await get(`${currentEpisode.guid}-audio-file-array-buffer`);
 
-            if (blob) {
+
+            if (arrayBuffer) {
+                const blob = new Blob([arrayBuffer]);
+
                 update({
                     currentEpisode,
                     src: window.URL.createObjectURL(blob)
