@@ -24,7 +24,10 @@ StorePromise.then((Store) => {
         const currentEpisode = state.episodes[state.currentEpisodeGuid];
         const currentPodcast = currentEpisode ? state.podcasts[currentEpisode.podcastId] : null;
     
-        if ('mediaSession' in window.navigator) {
+        if (
+            'mediaSession' in window.navigator &&
+            currentEpisode
+        ) {
             (window.navigator as any).mediaSession.metadata = new MediaMetadata({
                 title: currentEpisode.title,
                 // artwork: [

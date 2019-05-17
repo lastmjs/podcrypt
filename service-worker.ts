@@ -1,6 +1,6 @@
 // TODO zwitterion needs to change to not say window.process, use self.process or something like that
 
-const CACHE_NAME = 'PODCRYPT_CACHE_V7';
+const CACHE_NAME = 'PODCRYPT_CACHE_V8';
 const urlsToCache = [
     '/index.html'
 ];
@@ -16,7 +16,6 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-    console.log(event.request);
     // TODO Figure out why audio requests have a destination of video
     // We do not respond to media requests because service workers don't currently support Range headers or 206 partial content responses
     if (

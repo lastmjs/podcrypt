@@ -15,7 +15,7 @@ import './pc-receive-eth';
 import './pc-restore-with-phrase';
 import { parseQueryString } from '../services/utilities';
 
-
+// TODO we can use URLSearchParams instead of parseQueryString...native and seems to handle nested query parameters
 // TODO I would love to use the route /credits instead of /credit, but there is a strange issues with /credits: https://github.com/lastmjs/podcrypt/issues/169
 
 StorePromise.then((Store) => {
@@ -96,33 +96,42 @@ StorePromise.then((Store) => {
             Store.subscribe(update);
         }
     
-        const currentRoute = (Store.getState() as any).currentRoute;
         // await loadRouteModules(Store.getState().currentRoute);
-    
+        
+        const currentRoute = Store.getState().currentRoute;
+        
+        // TODO get rid of the use of undefined and null completely, they cause strange issues like the issue
+        // TODO i was having with the playlist never loading because of null versus undefined checks
+        const feedUrl: FeedUrl | undefined = new URLSearchParams(Store.getState().currentRoute.search).get('feedUrl') || undefined;
+        const episodeGuid: EpisodeGuid | undefined = new URLSearchParams(Store.getState().currentRoute.search).get('episodeGuid') || undefined;
+        
+        const term: string | null = new URLSearchParams(Store.getState().currentRoute.search).get('term');
+        const podcastEmail: string | null = new URLSearchParams(Store.getState().currentRoute.search).get('podcastEmail');
+
         return html`
             <pc-podcasts
                 ?hidden=${currentRoute.pathname !== '/' && currentRoute.pathname !== '/index.html'}
             ></pc-podcasts>
             <pc-playlist
                 ?hidden=${currentRoute.pathname !== '/playlist'}
-                .feedUrl=${currentRoute.query.feedUrl}
-                .episodeGuid=${currentRoute.query.episodeGuid}
+                .feedUrl=${feedUrl}
+                .episodeGuid=${episodeGuid}
             ></pc-playlist>
             <pc-wallet
                 ?hidden=${currentRoute.pathname !== '/wallet'}
             ></pc-wallet>
             <pc-podcast-overview
                 ?hidden=${currentRoute.pathname !== '/podcast-overview'}
-                .feedUrl=${Store.getState().currentRoute.query.feedUrl}
+                .feedUrl=${feedUrl}
             ></pc-podcast-overview>
             <pc-episode-overview
                 ?hidden=${currentRoute.pathname !== '/episode-overview'}
-                .feedUrl=${Store.getState().currentRoute.query.feedUrl}
-                .episodeGuid=${Store.getState().currentRoute.query.episodeGuid}
+                .feedUrl=${feedUrl}
+                .episodeGuid=${episodeGuid}
             ></pc-episode-overview>
             <pc-podcast-search-results
                 ?hidden=${currentRoute.pathname !== '/podcast-search-results'}
-                .term=${Store.getState().currentRoute.query.term}
+                .term=${term}
             ></pc-podcast-search-results>
             <pc-credits
                 ?hidden=${currentRoute.pathname !== '/credit'}
@@ -138,8 +147,8 @@ StorePromise.then((Store) => {
             ></pc-about>
             <pc-not-verified-help
                 ?hidden=${currentRoute.pathname !== '/not-verified-help'}
-                .podcastEmail=${Store.getState().currentRoute.query.podcastEmail}
-                .feedUrl=${Store.getState().currentRoute.query.feedUrl}
+                .podcastEmail=${podcastEmail}
+                .feedUrl=${feedUrl}
             ></pc-not-verified-help>
             <pc-receive-eth
                 ?hidden=${currentRoute.pathname !== '/receive-eth'}

@@ -16,8 +16,7 @@ import {
 import { 
     navigate,
     addEpisodeToPlaylist,
-    corsAnywhereProxy,
-    jsonpProxy
+    podcryptProxy
 } from '../services/utilities';
 import { set, del } from 'idb-keyval';
 import './pc-loading';
@@ -314,10 +313,22 @@ StorePromise.then((Store) => {
                         downloadState: 'DOWNLOADING'
                     });
 
-                    const resourceURL: string = `${corsAnywhereProxy}${episode.src}`;
-                    const resourceLengthInBytes: number = await fetchResourceLengthInBytes(resourceURL);
-                    const audioFileBlob: Blob = await fetchFileBlob(`${corsAnywhereProxy}${episode.src}`, resourceLengthInBytes);
-                 
+                    // TODO sometime we may want to chunk up the download again, but for now we are doing straight downloads
+                    // TODO the problem might come with doing multiple downloads at once. If we chunk, we might be able to handle
+                    // TODO many more downloads concurrently. Might though, I am not sure on the mechanics of how the browser
+                    // TODO is going to handle multiple download requests versus many chunked requests. http2 might help us here
+                    // const resourceLengthInBytes: number = await fetchResourceLengthInBytes(`${corsAnywhereProxy}${episode.src}`);
+                    // console.log('resourceLengthInBytes', resourceLengthInBytes);
+                    // const audioFileBlob: Blob = await fetchFileBlob(resourceURL, resourceLengthInBytes);
+                    // const audioFileBlob: Blob = await fetchFileBlob(`https://yacdn.org/proxy/${episode.src}`);
+                    
+                    const resourceURL: string = `${podcryptProxy}${episode.src}`;
+                    const response = await window.fetch(resourceURL);
+
+                    const audioFileBlob = await response.blob();
+
+                    // TODO somewhere in this process iOS Safari fails with a null exception, and I believe it is while saving to indexedDB
+                    // TODO I believe iOS indexeddb does not support storing blobs. try an arraybuffer instead
                     await set(`${episode.guid}-audio-file-blob`, audioFileBlob);
 
                     Store.dispatch({
@@ -355,28 +366,28 @@ StorePromise.then((Store) => {
         });
     }
 
-    async function fetchResourceLengthInBytes(url: string): Promise<number> {
-        const audioFileHeadResponse = await fetch(url, {
-            method: 'HEAD'
-        });
+    // async function fetchResourceLengthInBytes(url: string): Promise<number> {
+    //     const audioFileHeadResponse = await fetch(url, {
+    //         method: 'HEAD'
+    //     });
 
-        return audioFileHeadResponse.headers.get('Content-Length');
-    }
+    //     return audioFileHeadResponse.headers.get('Content-Length');
+    // }
 
-    async function fetchFileBlob(url: string, resourceLengthInBytes: number, rangeStart: number=0, rangeEnd: number=1048576, blob: Blob=new Blob()): Promise<Blob> {
+    // async function fetchFileBlob(url: string, resourceLengthInBytes: number, rangeStart: number=0, rangeEnd: number=1048576, blob: Blob=new Blob()): Promise<Blob> {
         
-        if (rangeStart >= resourceLengthInBytes - 1) {
-            return blob;
-        }
+    //     if (rangeStart >= resourceLengthInBytes - 1) {
+    //         return blob;
+    //     }
         
-        const audioFileResponse = await fetch(url, {
-            headers: {
-                'Range': `bytes=${rangeStart}-${rangeEnd}`
-            }
-        });
+    //     const audioFileResponse = await fetch(url, {
+    //         headers: {
+    //             'Range': `bytes=${rangeStart}-${rangeEnd}`
+    //         }
+    //     });
 
-        const audioFileBlob = await audioFileResponse.blob();
-
-        return await fetchFileBlob(url, resourceLengthInBytes, rangeStart + 1048576, rangeEnd + 1048576, new Blob([blob, audioFileBlob]));
-    }
+    //     // const audioFileBlob = await audioFileResponse.blob();
+    //     // return audioFileBlob;
+    //     return await fetchFileBlob(url, resourceLengthInBytes, rangeStart + 1048576, rangeEnd + 1048576, new Blob([blob, audioFileBlob]));
+    // }
 });
