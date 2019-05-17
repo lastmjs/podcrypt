@@ -4,6 +4,7 @@ import { ethersProvider } from './ethers-provider';
 import '../node_modules/ethers/dist/ethers.min.js';
 
 export const podcryptProxy = 'https://proxy.podcrypt.app/';
+// export const podcryptProxy = 'https://localhost:4000/';
 
 export const cryptonatorAPIEndpoint: CryptonatorETHPriceAPIEndpoint = `https://api.cryptonator.com/api/ticker/eth-usd`;
 export const etherscanAPIEndpoint: EtherscanETHPriceAPIEndpoint = `https://api.etherscan.io/api?module=stats&action=ethprice`;
@@ -44,7 +45,28 @@ export function navigateInPlace(Store: any, path: string) {
     });
 }
 
-export async function getRSSFeed(feedUrl: string, attemptNumber: number = 1): Promise<any | null> {
+// TODO we might want to abstract this request thing, we seem to be using it in mulitple places
+export async function getAudioFileResponse(url: string, attemptNumber: number = 0): Promise<any | null> {
+    try {
+        if (attemptNumber === 0) {
+            const response = await window.fetch(url);
+            return response;
+        }
+
+        if (attemptNumber === 1) {
+            const response = await window.fetch(`${podcryptProxy}${url}`);
+            return response;
+        }
+
+        return null;
+    }
+    catch(error) {
+        console.log(`getAudioFileResponse error`, error);
+        return await getAudioFileResponse(url, attemptNumber + 1);
+    }
+}
+
+export async function getRSSFeed(feedUrl: string, attemptNumber: number = 0): Promise<any | null> {
     try {
         if (attemptNumber === 0) {
             const feedResponse = await window.fetch(`${feedUrl}`);

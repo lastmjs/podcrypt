@@ -16,7 +16,7 @@ import {
 import { 
     navigate,
     addEpisodeToPlaylist,
-    podcryptProxy
+    getAudioFileResponse
 } from '../services/utilities';
 import { set, del } from 'idb-keyval';
 import './pc-loading';
@@ -322,9 +322,10 @@ StorePromise.then((Store) => {
                     // const audioFileBlob: Blob = await fetchFileBlob(resourceURL, resourceLengthInBytes);
                     // const audioFileBlob: Blob = await fetchFileBlob(`https://yacdn.org/proxy/${episode.src}`);
                     
-                    const resourceURL: string = `${podcryptProxy}${episode.src}`;
-                    const response = await window.fetch(resourceURL);
+                    // const resourceURL: string = `${podcryptProxy}${episode.src}`;
+                    // const response = await window.fetch(resourceURL);
 
+                    const response = await getAudioFileResponse(episode.src);
                     const audioFileBlob = await response.blob();
 
                     // TODO somewhere in this process iOS Safari fails with a null exception, and I believe it is while saving to indexedDB
