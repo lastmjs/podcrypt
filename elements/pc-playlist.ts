@@ -11,7 +11,6 @@ import {
 import './pc-loading';
 
 StorePromise.then((Store) => {
-    // TODO we might be repeating a lot of code, think about making a component for the episode items
     customElement('pc-playlist', ({ constructing, update, props }) => {
         if (constructing) {
             Store.subscribe(update);

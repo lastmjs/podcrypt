@@ -1,4 +1,7 @@
-import { customElement, html } from 'functional-element';
+import { 
+    customElement, 
+    html 
+} from 'functional-element';
 import { StorePromise } from '../services/store';
 import { 
     pcContainerStyles,

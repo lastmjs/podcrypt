@@ -20,6 +20,7 @@
     "url": "https://github.com/lastmjs/podcrypt/issues"
   },
   "homepage": "https://github.com/lastmjs/podcrypt#readme",
+  "author": "Jordan Last <jordan.michael.last@gmail.com>",
   "contributors": [
     "Jordan Last <jordan.michael.last@gmail.com>"
   ],
@@ -30,7 +31,7 @@
     "zwitterion": "0.29.0"
   },
   "dependencies": {
-    "bignumber.js": "^8.1.1",
+    "bignumber.js": "8.1.1",
     "ethers": "4.0.27",
     "functional-element": "0.0.12",
     "idb-keyval": "3.1.0",

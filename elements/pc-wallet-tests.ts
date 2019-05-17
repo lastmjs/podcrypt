@@ -296,7 +296,8 @@ StorePromise.then((Store) => {
                         milliseconds: fc.sample(fc.integer(), 1)[0].toString()
                     };
                 }),
-                isoDate: tup[8]
+                isoDate: tup[8],
+                downloadState: 'NOT_DOWNLOADED'
             };
         });
     }
