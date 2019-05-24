@@ -117,11 +117,14 @@ export async function createPodcast(feedUrl: string, feed?: any): Promise<Readon
         description: theFeed.description,
         imageUrl,
         episodeGuids: [],
-        previousPayoutDateInMilliseconds: 'NEVER',
-        latestTransactionHash: null,
+        previousPayoutDate: 'NEVER',
+        latestTransactionHash: 'NOT_SET',
         ethereumAddress: ethereumAddressInfo.ethereumAddress,
         ensName: ethereumAddressInfo.ensName,
-        email
+        email,
+        timeListenedTotal: 0,
+        timeListenedSincePreviousPayoutDate: 0,
+        lastStartDate: 'NEVER'
     };
 
     return podcast;
@@ -226,7 +229,6 @@ export function addEpisodeToPlaylist(Store: any, podcast: any, item: any) {
         playing: false,
         progress: '0',
         isoDate: item.isoDate,
-        timestamps: [],
         downloadState: 'NOT_DOWNLOADED'
     };
     

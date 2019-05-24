@@ -3,7 +3,7 @@
 // TODO make sure to check all error conditions, like network going out, functions failing, etc
 
 import * as fc from 'fast-check';
-import { StorePromise, getInitialState } from '../services/store';
+import { StorePromise, getInitialState } from '../state/store';
 import { 
     payout,
     getNextPayoutDateInMilliseconds,

@@ -1,5 +1,5 @@
 import { customElement, html } from 'functional-element';
-import { StorePromise } from '../services/store';
+import { StorePromise } from '../state/store';
 import './pc-loading';
 import {
     pcContainerStyles,

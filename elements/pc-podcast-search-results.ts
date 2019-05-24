@@ -1,5 +1,5 @@
 import { customElement, html } from 'functional-element';
-import { StorePromise } from '../services/store';
+import { StorePromise } from '../state/store';
 import './pc-loading';
 import { 
     pcContainerStyles,
@@ -84,11 +84,14 @@ StorePromise.then((Store) => {
                     description: '',
                     imageUrl: searchResult.artworkUrl60,
                     episodeGuids: [],
-                    previousPayoutDateInMilliseconds: 'NEVER',
-                    latestTransactionHash: null,
+                    previousPayoutDate: 'NEVER',
+                    latestTransactionHash: 'NOT_SET',
                     ethereumAddress: 'NOT_FOUND',
                     ensName: 'NOT_FOUND',
-                    email: 'NOT_SET'
+                    email: 'NOT_SET',
+                    timeListenedTotal: 0,
+                    timeListenedSincePreviousPayoutDate: 0,
+                    lastStartDate: 'NEVER'
                 };
 
                 return html`

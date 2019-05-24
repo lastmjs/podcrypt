@@ -13,14 +13,13 @@ import {
     colorBlackMedium,
     pxSmall
  } from '../services/css';
-import { StorePromise } from '../services/store';
+import { StorePromise } from '../state/store';
 import {
-    calculateTotalTimeForPodcastDuringIntervalInMilliseconds,
     calculatePayoutAmountForPodcastDuringIntervalInUSD,
     calculateProportionOfTotalTimeForPodcastDuringInterval
 } from '../services/podcast-calculations';
 import {
-    getNextPayoutDateInMilliseconds,
+    getNextPayoutDate,
     getPayoutTargetInETH,
     payout
 } from '../services/payout-calculations';
@@ -137,7 +136,7 @@ StorePromise.then((Store) => {
         const payoutTargetInETH: ETH | 'Loading...' = getPayoutTargetInETH(Store) === 'Loading...' ? 'Loading...' : new BigNumber(getPayoutTargetInETH(Store)).toFixed(4);
         const payoutTargetInUSDCents: USDCents = Store.getState().payoutTargetInUSDCents;
         const payoutTargetInUSD: USDollars = new BigNumber(payoutTargetInUSDCents).dividedBy(100).toFixed(2);
-        const nextPayoutLocaleDateString: string = new Date(new BigNumber(Store.getState().nextPayoutDateInMilliseconds).toNumber()).toLocaleDateString()
+        const nextPayoutLocaleDateString: string = new Date(Store.getState().nextPayoutDate).toLocaleDateString()
         const payoutIntervalInDays: Days = Store.getState().payoutIntervalInDays;
 
         const balanceInUSD: USDollars | 'Loading...' = getBalanceInUSD(Store) === 'Loading...' ? 'Loading...' : getBalanceInUSD(Store) === 'unknown' ? 'unknown' : new BigNumber(getBalanceInUSD(Store)).toFixed(2);
@@ -195,7 +194,7 @@ StorePromise.then((Store) => {
                     <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
                         <input 
                             type="number"
-                            value=${payoutIntervalInDays}
+                            value=${payoutIntervalInDays.toString()}
                             @input=${payoutIntervalInDaysInputChanged}
                             class="pc-wallet-input"
                             min="1"
@@ -234,17 +233,17 @@ StorePromise.then((Store) => {
 
             <br>
 
-            ${Object.values(Store.getState().podcasts).map((podcast: Podcast) => {
-                const previousPayoutDateInMilliseconds: Milliseconds = podcast.previousPayoutDateInMilliseconds !== 'NEVER' && Store.getState().previousPayoutDateInMilliseconds !== 'NEVER' && new BigNumber(podcast.previousPayoutDateInMilliseconds).gt(Store.getState().previousPayoutDateInMilliseconds) ? podcast.previousPayoutDateInMilliseconds : Store.getState().previousPayoutDateInMilliseconds;
+            ${Object.values(Store.getState().podcasts).map((podcast: Readonly<Podcast>) => {
+                const previousPayoutDate: Milliseconds | 'NEVER' = podcast.previousPayoutDate !== 'NEVER' && Store.getState().previousPayoutDate !== 'NEVER' && podcast.previousPayoutDate > Store.getState().previousPayoutDate ? podcast.previousPayoutDate : Store.getState().previousPayoutDate;
 
-                const totalTimeForPodcastDuringIntervalInMilliseconds: Milliseconds = calculateTotalTimeForPodcastDuringIntervalInMilliseconds(Store.getState(), podcast, previousPayoutDateInMilliseconds);
-                const totalTimeForPodcastDuringIntervalInMinutes: Minutes = new BigNumber(totalTimeForPodcastDuringIntervalInMilliseconds).dividedBy(60000).integerValue(BigNumber.ROUND_FLOOR).toString();
-                const secondsRemainingForPodcastDuringInterval: Seconds = new BigNumber(totalTimeForPodcastDuringIntervalInMilliseconds).mod(60000).dividedBy(1000).integerValue(BigNumber.ROUND_FLOOR).toString();
+                const totalTimeForPodcastDuringIntervalInMilliseconds: Milliseconds = podcast.timeListenedSincePreviousPayoutDate;
+                const totalTimeForPodcastDuringIntervalInMinutes: Minutes = Math.floor(totalTimeForPodcastDuringIntervalInMilliseconds / 60000);
+                const secondsRemainingForPodcastDuringInterval: Seconds = Math.floor((totalTimeForPodcastDuringIntervalInMilliseconds % 60000) / 1000);
                 // const totalTimeForPodcastDuringIntervalInMinutes: Minutes = Math.floor(totalTimeForPodcastDuringIntervalInMilliseconds / 60000);
                 // const secondsRemainingForPodcastDuringInterval: Seconds = Math.round((totalTimeForPodcastDuringIntervalInMilliseconds % 60000) / 1000);
 
-                const payoutAmountForPodcastDuringIntervalInUSD: USDollars = calculatePayoutAmountForPodcastDuringIntervalInUSD(Store.getState(), podcast, previousPayoutDateInMilliseconds);
-                const percentageOfTotalTimeForPodcastDuringInterval: Percent = new BigNumber(calculateProportionOfTotalTimeForPodcastDuringInterval(Store.getState(), podcast, previousPayoutDateInMilliseconds)).multipliedBy(100).toString();
+                const payoutAmountForPodcastDuringIntervalInUSD: USDollars = calculatePayoutAmountForPodcastDuringIntervalInUSD(Store.getState(), podcast, previousPayoutDate);
+                const percentageOfTotalTimeForPodcastDuringInterval: Percent = new BigNumber(calculateProportionOfTotalTimeForPodcastDuringInterval(Store.getState(), podcast, previousPayoutDate)).multipliedBy(100).toString();
 
                 return html`
                     <pc-podcast-row
@@ -271,7 +270,7 @@ StorePromise.then((Store) => {
                     <br>
                     <div>$${new BigNumber(Store.getState().payoutTargetInUSDCents).multipliedBy(Store.getState().podcryptPayoutPercentage).dividedBy(10000).toFixed(2)}, ${Store.getState().podcryptPayoutPercentage}%</div>
                     <br>
-                    <div>Last payout: ${Store.getState().previousPayoutDateInMilliseconds === 'NEVER' ? 'never' : html`<a href="https://${process.env.NODE_ENV !== 'production' ? 'ropsten.' : ''}etherscan.io/tx/${Store.getState().podcryptLatestTransactionHash}" target="_blank">${new Date(parseInt(Store.getState().podcryptPreviousPayoutDateInMilliseconds)).toLocaleString()}</a>`}</div>
+                    <div>Last payout: ${Store.getState().previousPayoutDate === 'NEVER' ? 'never' : html`<a href="https://${process.env.NODE_ENV !== 'production' ? 'ropsten.' : ''}etherscan.io/tx/${Store.getState().podcryptLatestTransactionHash}" target="_blank">${new Date(Store.getState().podcryptPreviousPayoutDate).toLocaleString()}</a>`}</div>
                     <br>
                     <div>Next payout: ${nextPayoutLocaleDateString}</div>
                 </div>
@@ -389,7 +388,7 @@ StorePromise.then((Store) => {
         const result = confirm('Are you sure you want to pay out now?');
 
         if (result === true) {
-            payout(Store, '500');
+            payout(Store, 500);
         }
     }
 
@@ -485,11 +484,11 @@ StorePromise.then((Store) => {
             payoutIntervalInDays: e.target.value
         });
     
-        const nextPayoutDateInMilliseconds: Milliseconds = getNextPayoutDateInMilliseconds(Store.getState());
+        const nextPayoutDate: Milliseconds = getNextPayoutDate(Store.getState());
     
         Store.dispatch({
-            type: 'SET_NEXT_PAYOUT_DATE_IN_MILLISECONDS',
-            nextPayoutDateInMilliseconds
+            type: 'SET_NEXT_PAYOUT_DATE',
+            nextPayoutDate
         });
 
         loadEthereumAccountBalance(Store);
@@ -499,18 +498,18 @@ StorePromise.then((Store) => {
         await loadCurrentETHPriceInUSDCents(Store);
         Store.dispatch({
             type: 'SET_PAYOUT_TARGET_IN_USD_CENTS',
-            payoutTargetInUSDCents: parseInt(e.target.value) * 100
+            payoutTargetInUSDCents: (parseInt(e.target.value) * 100).toString()
         });
 
         loadEthereumAccountBalance(Store);
     }
 
     setInterval(() => {
-        const currentLocaleDateString: string = new Date().toLocaleDateString();
-        const nextPayoutLocaleDateString: string = new Date(new BigNumber(Store.getState().nextPayoutDateInMilliseconds).toNumber()).toLocaleDateString();
+        // const currentLocaleDateString: string = new Date().toLocaleDateString();
+        // const nextPayoutLocaleDateString: string = new Date(new BigNumber(Store.getState().nextPayoutDate).toNumber()).toLocaleDateString();
 
         if (
-            new BigNumber(new Date().getTime()).gte(Store.getState().nextPayoutDateInMilliseconds)
+            new Date().getTime() >= Store.getState().nextPayoutDate
         ) {
             // TODO Figure out what to do here
             // TODO we only want the interval check to kick in if there is no payment in progress
@@ -519,7 +518,7 @@ StorePromise.then((Store) => {
             // TODO we could use a variable just in memory, but that seems messy and I do not want to store state
             // TODO outside of Redux if at all possible...think about it
             // if (!Store.getState().payoutInProgress) {
-                payout(Store, '500');
+                payout(Store, 500);
             // }
         }
     }, 30000);

@@ -1,9 +1,8 @@
 import { 
-    Store,
-    AnyAction
+    Store
 } from 'redux';
 import { set } from 'idb-keyval';
-import { getNextPayoutDateInMilliseconds } from './payout-calculations';
+import { getNextPayoutDate } from './payout-calculations';
 import {
     cryptonatorAPIEndpoint,
     etherscanAPIEndpoint
@@ -12,7 +11,7 @@ import BigNumber from "../node_modules/bignumber.js/bignumber";
 import { ethersProvider } from './ethers-provider';
 import '../node_modules/ethers/dist/ethers.min.js';
 
-export async function createWallet(Store: Readonly<Store<Readonly<State>, AnyAction>>, mnemonicPhrase?: string): Promise<void> {
+export async function createWallet(Store: Readonly<Store<Readonly<State>, Readonly<PodcryptAction>>>, mnemonicPhrase?: string): Promise<void> {
     Store.dispatch({
         type: 'SET_WALLET_CREATION_STATE',
         walletCreationState: 'CREATING'
@@ -37,15 +36,15 @@ export async function createWallet(Store: Readonly<Store<Readonly<State>, AnyAct
 
     await loadEthereumAccountBalance(Store);
 
-    const nextPayoutDateInMilliseconds: Milliseconds = getNextPayoutDateInMilliseconds(Store.getState());
+    const nextPayoutDate: Milliseconds = getNextPayoutDate(Store.getState());
 
     Store.dispatch({
-        type: 'SET_NEXT_PAYOUT_DATE_IN_MILLISECONDS',
-        nextPayoutDateInMilliseconds
+        type: 'SET_NEXT_PAYOUT_DATE',
+        nextPayoutDate
     });
 }
 
-export function getBalanceInUSD(Store: Readonly<Store<Readonly<State>, AnyAction>>): 'unknown' | 'Loading...' | string {
+export function getBalanceInUSD(Store: Readonly<Store<Readonly<State>, Readonly<PodcryptAction>>>): 'unknown' | 'Loading...' | string {
     const currentETHPriceState: CurrentETHPriceState = Store.getState().currentETHPriceState;
 
     if (currentETHPriceState === 'NOT_FETCHED') {
@@ -77,11 +76,11 @@ export function getBalanceInUSD(Store: Readonly<Store<Readonly<State>, AnyAction
     return 'unknown';
 }
 
-export function getBalanceInETH(Store: Readonly<Store<Readonly<State>, AnyAction>>): ETH {
+export function getBalanceInETH(Store: Readonly<Store<Readonly<State>, Readonly<PodcryptAction>>>): ETH {
     return new BigNumber(Store.getState().ethereumBalanceInWEI).dividedBy(new BigNumber(1e18)).toString();
 }
 
-export async function loadEthereumAccountBalance(Store: Readonly<Store<Readonly<State>, AnyAction>>): Promise<void> {
+export async function loadEthereumAccountBalance(Store: Readonly<Store<Readonly<State>, Readonly<PodcryptAction>>>): Promise<void> {
     const ethereumAddress: EthereumAddress | 'NOT_CREATED' = Store.getState().ethereumAddress;
 
     if (ethereumAddress === 'NOT_CREATED') {
@@ -96,7 +95,7 @@ export async function loadEthereumAccountBalance(Store: Readonly<Store<Readonly<
     });
 }
 
-export async function loadCurrentETHPriceInUSDCents(Store: Readonly<Store<Readonly<State>, AnyAction>>): Promise<void> {
+export async function loadCurrentETHPriceInUSDCents(Store: Readonly<Store<Readonly<State>, Readonly<PodcryptAction>>>): Promise<void> {
     Store.dispatch({
         type: 'SET_CURRENT_ETH_PRICE_STATE',
         currentETHPriceState: 'FETCHING'
