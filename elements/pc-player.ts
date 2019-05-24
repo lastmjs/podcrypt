@@ -230,7 +230,7 @@ StorePromise.then((Store) => {
                 @ended=${audioEnded}
                 @timeupdate=${timeUpdated}
                 @loadstart=${() => loadStarted(currentEpisode, element)}
-                .playbackRate=${(Store.getState() as any).playbackRate}
+                .playbackRate=${Store.getState().playbackRate}
             ></audio>
         `;
     });
