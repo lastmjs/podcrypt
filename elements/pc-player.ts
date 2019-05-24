@@ -249,8 +249,9 @@ StorePromise.then((Store) => {
             // TODO I do not know if the types are correct here
             const arrayBuffer: Uint8Array = await get(`${currentEpisode.guid}-audio-file-array-buffer`);
 
-
             if (arrayBuffer) {
+                window.URL.revokeObjectURL(props.src);
+
                 const blob = new Blob([arrayBuffer]);
 
                 update({
