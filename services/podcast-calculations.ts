@@ -1,6 +1,7 @@
 import BigNumber from "../node_modules/bignumber.js/bignumber";
 
 export function calculatePayoutAmountForPodcryptDuringIntervalInWEI(state: Readonly<State>): WEI | 'UNKNOWN' {    
+    return '0';
     const payoutTargetInUSDCents: USDCents = state.payoutTargetInUSDCents;    
     const payoutForPodcryptInUSDCents: USDCents = new BigNumber(state.podcryptPayoutPercentage).multipliedBy(payoutTargetInUSDCents).dividedBy(100).toString();
     const currentETHPriceInUSDCents: USDCents | 'UNKNOWN' = state.currentETHPriceInUSDCents;
@@ -16,6 +17,7 @@ export function calculatePayoutAmountForPodcryptDuringIntervalInWEI(state: Reado
 
 
 export function calculatePayoutAmountForPodcastDuringIntervalInWEI(state: Readonly<State>, podcast: Readonly<Podcast>, previousPayoutDateInMilliseconds: Milliseconds): WEI | 'UNKNOWN' {    
+    return '0';
     const payoutForPodcastInUSDCents: USDCents = calculatePayoutAmountForPodcastDuringIntervalInUSDCents(state, podcast, previousPayoutDateInMilliseconds);
     const currentETHPriceInUSDCents: USDCents | 'UNKNOWN' = state.currentETHPriceInUSDCents;
     
@@ -29,12 +31,14 @@ export function calculatePayoutAmountForPodcastDuringIntervalInWEI(state: Readon
 }
 
 export function calculatePayoutAmountForPodcastDuringIntervalInUSD(state: Readonly<State>, podcast: Readonly<Podcast>, previousPayoutDateInMilliseconds: Milliseconds): USDollars {    
+    return '0';
     const payoutForPodcastInUSDCents: USDCents = calculatePayoutAmountForPodcastDuringIntervalInUSDCents(state, podcast, previousPayoutDateInMilliseconds);
     const payoutForPodcastInUSD: USDollars = new BigNumber(payoutForPodcastInUSDCents).dividedBy(100).toString();
     return payoutForPodcastInUSD;
 }
 
 function calculatePayoutAmountForPodcastDuringIntervalInUSDCents(state: Readonly<State>, podcast: Readonly<Podcast>, previousPayoutDateInMilliseconds: Milliseconds): USDCents {
+    return '0';
     const proportionOfTotalTimeForPodcastDuringInterval: Proportion = calculateProportionOfTotalTimeForPodcastDuringInterval(state, podcast, previousPayoutDateInMilliseconds);        
     const payoutTargetInUSDCents: USDCents = state.payoutTargetInUSDCents;
     const payoutForPodcastInUSDCents: USDCents = new BigNumber(proportionOfTotalTimeForPodcastDuringInterval).multipliedBy(payoutTargetInUSDCents).toString();
@@ -43,6 +47,7 @@ function calculatePayoutAmountForPodcastDuringIntervalInUSDCents(state: Readonly
 }
 
 export function calculateTotalTimeForPodcastDuringIntervalInMilliseconds(state: Readonly<State>, podcast: Readonly<Podcast>, previousPayoutDateInMilliseconds: Milliseconds): Milliseconds {
+    return '0';
     return podcast.episodeGuids.reduce((result: BigNumber, episodeGuid: EpisodeGuid) => {
         const episode: Readonly<Episode> = state.episodes[episodeGuid];
         const timestampsDuringInterval: ReadonlyArray<Timestamp> = getTimestampsDuringInterval(podcast, episode.timestamps, previousPayoutDateInMilliseconds);
@@ -83,6 +88,7 @@ export function calculateTotalTimeForPodcastDuringIntervalInMilliseconds(state: 
 
 // TODO this is not truly the proportion of total time, more the proportion of the donation, since Podcrypt may take a piece of the proportion, and by default will
 export function calculateProportionOfTotalTimeForPodcastDuringInterval(state: Readonly<State>, podcast: Readonly<Podcast>, previousPayoutDateInMilliseconds: Milliseconds): Proportion {
+    return '0';
     const grossTotalTimeDuringIntervalInMilliseconds: Milliseconds = calculateTotalTimeDuringIntervalInMilliseconds(state, previousPayoutDateInMilliseconds);
     
     if (new BigNumber(grossTotalTimeDuringIntervalInMilliseconds).eq(0)) {
@@ -97,12 +103,14 @@ export function calculateProportionOfTotalTimeForPodcastDuringInterval(state: Re
 }
 
 function calculateTotalTimeDuringIntervalInMilliseconds(state: Readonly<State>, previousPayoutDateInMilliseconds: Milliseconds): Milliseconds {
+    return '0';
     return Object.values(state.podcasts).reduce((result: BigNumber, podcast: Readonly<Podcast>) => {
         return result.plus(calculateTotalTimeForPodcastDuringIntervalInMilliseconds(state, podcast, previousPayoutDateInMilliseconds));
     }, new BigNumber(0)).toString();
 }
 
 function getTimestampsDuringInterval(podcast: Readonly<Podcast>, timestamps: ReadonlyArray<Timestamp>, previousPayoutDateInMilliseconds: Milliseconds): ReadonlyArray<Timestamp> {
+    return [];
     // const previousPayoutDateInMilliseconds: Milliseconds = podcast.previousPayoutDateInMilliseconds === 'NEVER' ? '0' : podcast.previousPayoutDateInMilliseconds;
     
     return timestamps.filter((timestamp: Readonly<Timestamp>) => {
