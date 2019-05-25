@@ -245,10 +245,6 @@ export function PlaylistReducer(
         }
         else {
             const currentEpisode: Readonly<Episode> = state.episodes[state.currentEpisodeGuid];
-            const currentPodcast: Readonly<Podcast> = state.podcasts[currentEpisode.feedUrl];
-
-            const currentPodcastLastStartDate: Milliseconds = currentPodcast.lastStartDate === 'NEVER' ? new Date().getTime() : currentPodcast.lastStartDate;
-            const timeDifference: Milliseconds = new Date().getTime() - currentPodcastLastStartDate;    
 
             return {
                 ...state,
@@ -257,12 +253,7 @@ export function PlaylistReducer(
                 playerPlaying: true,
                 podcasts: {
                     ...state.podcasts,
-                    [modifiedNewCurrentPodcast.feedUrl]: modifiedNewCurrentPodcast,
-                    [currentPodcast.feedUrl]: {
-                        ...currentPodcast,
-                        timeListenedSincePreviousPayoutDate: currentPodcast.timeListenedSincePreviousPayoutDate + timeDifference,
-                        timeListenedTotal: currentPodcast.timeListenedTotal + timeDifference
-                    }
+                    [modifiedNewCurrentPodcast.feedUrl]: modifiedNewCurrentPodcast
                 },
                 episodes: {
                     ...state.episodes,
