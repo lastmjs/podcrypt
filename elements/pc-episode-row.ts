@@ -346,7 +346,7 @@ StorePromise.then((Store) => {
 
         if (value === 'Delete') {
             try {
-                await del(`${episode.guid}-audio-file-blob`);
+                await del(`${episode.guid}-audio-file-array-buffer`);
 
                 Store.dispatch({
                     type: 'SET_EPISODE_DOWNLOAD_STATE',
