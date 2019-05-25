@@ -20,9 +20,9 @@ StorePromise.then((Store) => {
             };
         }
         
-        const state = Store.getState() as any;
-        const currentEpisode = state.episodes[state.currentEpisodeGuid];
-        const currentPodcast = currentEpisode ? state.podcasts[currentEpisode.podcastId] : null;
+        const state: Readonly<State> = Store.getState();
+        const currentEpisode: Readonly<Episode> = state.episodes[state.currentEpisodeGuid];
+        const currentPodcast: Readonly<Podcast> | null = currentEpisode ? state.podcasts[currentEpisode.feedUrl] : null;
     
         if (
             'mediaSession' in window.navigator &&
@@ -116,7 +116,23 @@ StorePromise.then((Store) => {
             }
         });
 
-        getSrc(currentEpisode, props, update);
+        if (
+            currentEpisode &&
+            (
+                props.currentEpisode === null ||
+                (
+                    props.currentEpisode &&
+                    currentEpisode.guid !== props.currentEpisode.guid
+                )
+            )
+        ) {
+            // TODO it would be good if update returned the props, then I could pass them into the next function
+            update({
+                ...props,
+                currentEpisode
+            });
+            getSrc(currentEpisode, props, update);
+        }
     
         return html`
             <style>
@@ -150,7 +166,7 @@ StorePromise.then((Store) => {
             <div class="pc-player-container">
 
                 <div style="padding: calc(10px + 1vmin); display: flex">
-                    <input @input=${(e: any) => timeSliderOnInput(e, element)} type="range" style="width: 100%; position: absolute; top: 0; height: 0" min="0" max="${getDuration(element)}" .value=${currentEpisode ? currentEpisode.progress : 0}>
+                    <input @input=${(e: any) => timeSliderOnInput(e, element)} type="range" style="width: 100%; position: absolute; top: 0; height: 0" min="0" max="${getDuration(element)}" .value=${currentEpisode ? currentEpisode.progress : '0'}>
                     <div style="width: 100%; position: absolute; top: 0; right: 0; height: 100%; background-color: rgba(1, 1, 1, .05); z-index: -1;"></div>
                     <div style="width: ${getProgressPercentage(element)}%; position: absolute; top: 0; left: 0; height: 100%; background-color: rgba(1, 1, 1, .1); z-index: -1"></div>
                     <!-- <i 
@@ -230,21 +246,12 @@ StorePromise.then((Store) => {
                 @ended=${audioEnded}
                 @timeupdate=${timeUpdated}
                 @loadstart=${() => loadStarted(currentEpisode, element)}
-                .playbackRate=${Store.getState().playbackRate}
+                .playbackRate=${parseInt(Store.getState().playbackRate)}
             ></audio>
         `;
     });
 
     async function getSrc(currentEpisode: Readonly<Episode>, props: any, update: any) {
-
-        if (
-            props.currentEpisode !== null &&
-            props.currentEpisode !== undefined &&
-            props.currentEpisode.guid === currentEpisode.guid
-        ) {
-            return;
-        }
-
         if (currentEpisode) {
             // TODO I do not know if the types are correct here
             const arrayBuffer: Uint8Array = await get(`${currentEpisode.guid}-audio-file-array-buffer`);
@@ -255,12 +262,14 @@ StorePromise.then((Store) => {
                 const blob = new Blob([arrayBuffer]);
 
                 update({
+                    ...props,
                     currentEpisode,
                     src: window.URL.createObjectURL(blob)
                 });
             }
             else {
                 update({
+                    ...props,
                     currentEpisode,
                     src: currentEpisode.src
                 });
