@@ -192,9 +192,9 @@ function runMigrations(persistedState: Readonly<State>, version: number): Readon
         const newPersistedState: Readonly<State> = {
             ...version32StateWithoutFields,
             version: 33,
-            previousPayoutDate: parseInt(version32State.previousPayoutDateInMilliseconds),
+            previousPayoutDate: version32State.previousPayoutDateInMilliseconds === 'NEVER' ? 'NEVER' : parseInt(version32State.previousPayoutDateInMilliseconds),
             nextPayoutDate: parseInt(version32State.nextPayoutDateInMilliseconds),
-            podcryptPreviousPayoutDate: parseInt(version32State.podcryptPreviousPayoutDateInMilliseconds),
+            podcryptPreviousPayoutDate: version32State.podcryptPreviousPayoutDateInMilliseconds === 'NEVER' ? 'NEVER' : parseInt(version32State.podcryptPreviousPayoutDateInMilliseconds),
             podcasts: Object.values(version32State.podcasts).reduce((result: {
                 [key: string]: Readonly<Podcast>
             }, version32Podcast: Readonly<Version32Podcast>) => {
@@ -209,7 +209,7 @@ function runMigrations(persistedState: Readonly<State>, version: number): Readon
 
                 const newPodcast: Readonly<Podcast> = {
                     ...version32PodcastWithoutFields,
-                    previousPayoutDate: parseInt(version32Podcast.previousPayoutDateInMilliseconds),
+                    previousPayoutDate: version32Podcast.previousPayoutDateInMilliseconds === 'NEVER' ? 'NEVER' : parseInt(version32Podcast.previousPayoutDateInMilliseconds),
                     lastStartDate: 'NEVER',
                     timeListenedTotal,
                     timeListenedSincePreviousPayoutDate,
