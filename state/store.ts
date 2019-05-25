@@ -200,7 +200,7 @@ function runMigrations(persistedState: Readonly<State>, version: number): Readon
             }, version32Podcast: Readonly<Version32Podcast>) => {
 
                 const timeListenedTotal: Milliseconds = parseInt(calculateTotalTimeForPodcastDuringIntervalInMilliseconds(version32State, version32Podcast, new Date(0).getTime().toString()));
-                const timeListenedSincePreviousPayoutDate: Milliseconds = parseInt(calculateTotalTimeForPodcastDuringIntervalInMilliseconds(version32State, version32Podcast, version32Podcast.previousPayoutDateInMilliseconds));
+                const timeListenedSincePreviousPayoutDate: Milliseconds = parseInt(calculateTotalTimeForPodcastDuringIntervalInMilliseconds(version32State, version32Podcast, version32State.previousPayoutDateInMilliseconds));
 
                 const { 
                     previousPayoutDateInMilliseconds,

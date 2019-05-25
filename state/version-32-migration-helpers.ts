@@ -127,6 +127,10 @@ export function calculateTotalTimeForPodcastDuringIntervalInMilliseconds(state: 
 function getTimestampsDuringInterval(podcast: Readonly<Version32Podcast>, timestamps: ReadonlyArray<Version32Timestamp> = [], previousPayoutDateInMilliseconds: Version32Milliseconds): ReadonlyArray<Version32Timestamp> {
     // const previousPayoutDateInMilliseconds: Milliseconds = podcast.previousPayoutDateInMilliseconds === 'NEVER' ? '0' : podcast.previousPayoutDateInMilliseconds;
     
+    if (previousPayoutDateInMilliseconds === 'NEVER') {
+        return timestamps;
+    }
+
     return timestamps.filter((timestamp: Readonly<Version32Timestamp>) => {
         return new BigNumber(timestamp.milliseconds).gt(previousPayoutDateInMilliseconds) && new BigNumber(timestamp.milliseconds).lte(new Date().getTime());
     });
