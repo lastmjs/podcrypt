@@ -1,6 +1,6 @@
 import { customElement, html } from 'functional-element';
 import { pcContainerStyles } from '../services/css';
-import { StorePromise } from '../services/store';
+import { StorePromise } from '../state/store';
 import './pc-loading';
 
 StorePromise.then((Store) => {

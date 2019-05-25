@@ -1,5 +1,5 @@
 import { customElement, html } from 'functional-element';
-import { StorePromise } from '../services/store';
+import { StorePromise } from '../state/store';
 import { 
     pxXSmall,
     pxSmall,
@@ -166,7 +166,7 @@ StorePromise.then((Store) => {
                                     props.payouts ?
                                     html`
                                         <br>
-                                        <div @click=${(e: any) => e.stopPropagation()}>Last payout: ${props.podcast.previousPayoutDateInMilliseconds === 'NEVER' ? 'never' : html`<a href="https://${process.env.NODE_ENV !== 'production' ? 'ropsten.' : ''}etherscan.io/tx/${props.podcast.latestTransactionHash}" target="_blank">${new Date(parseInt(props.podcast.previousPayoutDateInMilliseconds)).toLocaleString()}</a>`}</div>
+                                        <div @click=${(e: any) => e.stopPropagation()}>Last payout: ${props.podcast.previousPayoutDate === 'NEVER' ? 'never' : html`<a href="https://${process.env.NODE_ENV !== 'production' ? 'ropsten.' : ''}etherscan.io/tx/${props.podcast.latestTransactionHash}" target="_blank">${new Date(parseInt(props.podcast.previousPayoutDate)).toLocaleString()}</a>`}</div>
                                         <br>
                                         <div>Next payout: ${props.nextPayoutLocaleDateString}</div>
                                     ` :

@@ -1,6 +1,5 @@
 import { 
-    Store,
-    AnyAction
+    Store
 } from 'redux';
 import {
     calculatePayoutAmountForPodcastDuringIntervalInWEI,
@@ -21,28 +20,28 @@ import { getEthereumAddressFromPodcastDescription } from './utilities';
 import '../node_modules/ethers/dist/ethers.min.js';
 import { ethersProvider } from './ethers-provider';
 
-export function getNextPayoutDateInMilliseconds(state: Readonly<State>): Milliseconds {
-    const previousPayoutDateInMilliseconds: Milliseconds | 'NEVER' = state.previousPayoutDateInMilliseconds;
+export function getNextPayoutDate(state: Readonly<State>): Milliseconds {
+    const previousPayoutDate: Milliseconds | 'NEVER' = state.previousPayoutDate;
     const payoutIntervalInDays: Days = state.payoutIntervalInDays;
-    const oneDayInSeconds: Seconds = '86400';
-    const oneDayInMilliseconds: Milliseconds = new BigNumber(oneDayInSeconds).multipliedBy(1000).toString();
-    const payoutIntervalInMilliseconds: Milliseconds = new BigNumber(oneDayInMilliseconds).multipliedBy(payoutIntervalInDays).toString();
+    const oneDayInSeconds: Seconds = 86400;
+    const oneDayInMilliseconds: Milliseconds = oneDayInSeconds * 1000;
+    const payoutIntervalInMilliseconds: Milliseconds = oneDayInMilliseconds * payoutIntervalInDays;
 
-    if (previousPayoutDateInMilliseconds === 'NEVER') {
-        const nextPayoutDate: Date = new Date(new BigNumber(new Date().getTime()).plus(new BigNumber(payoutIntervalInMilliseconds)).toNumber());
+    if (previousPayoutDate === 'NEVER') {
+        const nextPayoutDate: Date = new Date(new Date().getTime() + payoutIntervalInMilliseconds);
         const nextPayoutDateRoundedToNearestStartOfDay: Date = new Date(nextPayoutDate.getFullYear(), nextPayoutDate.getMonth(), nextPayoutDate.getDate());
-        const nextPayoutDateInMilliseconds: Milliseconds = nextPayoutDateRoundedToNearestStartOfDay.getTime().toString();
+        const nextPayoutDateInMilliseconds: Milliseconds = nextPayoutDateRoundedToNearestStartOfDay.getTime();
         return nextPayoutDateInMilliseconds;
     }
     else {
-        const nextPayoutDate: Date = new Date(new BigNumber(previousPayoutDateInMilliseconds).plus(new BigNumber(payoutIntervalInMilliseconds)).toNumber());
+        const nextPayoutDate: Date = new Date(previousPayoutDate + payoutIntervalInMilliseconds);
         const nextPayoutDateRoundedToNearestStartOfDay: Date = new Date(nextPayoutDate.getFullYear(), nextPayoutDate.getMonth(), nextPayoutDate.getDate());
-        const nextPayoutDateInMilliseconds = nextPayoutDateRoundedToNearestStartOfDay.getTime().toString();
+        const nextPayoutDateInMilliseconds = nextPayoutDateRoundedToNearestStartOfDay.getTime();
         return nextPayoutDateInMilliseconds;   
     }
 }
 
-export function getPayoutTargetInETH(Store: Readonly<Store<Readonly<State>, AnyAction>>): string | 'Loading...' {
+export function getPayoutTargetInETH(Store: Readonly<Store<Readonly<State>, Readonly<PodcryptAction>>>): string | 'Loading...' {
     const payoutTargetInETH: ETH = new BigNumber(Store.getState().payoutTargetInUSDCents).dividedBy(new BigNumber(Store.getState().currentETHPriceInUSDCents)).toString();
     return Store.getState().currentETHPriceInUSDCents === 'UNKNOWN' ? 'Loading...' : payoutTargetInETH;
 }
@@ -52,7 +51,7 @@ export function getPayoutTargetInWEI(state: Readonly<State>): string | 'Loading.
     return state.currentETHPriceInUSDCents === 'UNKNOWN' ? 'Loading...' : payoutTargetInWEI;
 }
 
-export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>, retryDelayInMilliseconds: Milliseconds): Promise<void> {
+export async function payout(Store: Readonly<Store<Readonly<State>, Readonly<PodcryptAction>>>, retryDelayInMilliseconds: Milliseconds): Promise<void> {
         
     await loadCurrentETHPriceInUSDCents(Store);
     await loadEthereumAccountBalance(Store);
@@ -67,9 +66,9 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
     });
 
     if (Store.getState().currentETHPriceInUSDCents === 'UNKNOWN') {
-        const newRetryDelayInMilliseconds: number = new BigNumber(retryDelayInMilliseconds).multipliedBy(2).toNumber();
+        const newRetryDelayInMilliseconds: number = retryDelayInMilliseconds * 2;
         await wait(newRetryDelayInMilliseconds);
-        await payout(Store, newRetryDelayInMilliseconds.toString());
+        await payout(Store, newRetryDelayInMilliseconds);
         return;
     }
 
@@ -96,10 +95,15 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
         });
 
         Store.dispatch({
-            type: 'SET_PODCAST_PREVIOUS_PAYOUT_DATE_IN_MILLISECONDS',
+            type: 'SET_PODCAST_PREVIOUS_PAYOUT_DATE',
             feedUrl: podcast.feedUrl,
-            previousPayoutDateInMilliseconds: new Date().getTime()
+            previousPayoutDate: new Date().getTime()
         });
+
+        Store.dispatch({
+            type: 'RESET_PODCAST_TIME_LISTENED_SINCE_PREVIOUS_PAYOUT',
+            feedUrl: podcast.feedUrl
+        })
     }
 
     const podcryptTransactionResult = await payPodcrypt(Store, Store.getState(), retryDelayInMilliseconds);
@@ -116,21 +120,21 @@ export async function payout(Store: Readonly<Store<Readonly<State>, AnyAction>>,
         });
     
         Store.dispatch({
-            type: 'SET_PODCRYPT_PREVIOUS_PAYOUT_DATE_IN_MILLISECONDS',
-            podcryptPreviousPayoutDateInMilliseconds: new Date().getTime().toString()
+            type: 'SET_PODCRYPT_PREVIOUS_PAYOUT_DATE',
+            podcryptPreviousPayoutDate: new Date().getTime()
         });
     }
 
     Store.dispatch({
-        type: 'SET_PREVIOUS_PAYOUT_DATE_IN_MILLISECONDS',
-        previousPayoutDateInMilliseconds: new Date().getTime().toString()
+        type: 'SET_PREVIOUS_PAYOUT_DATE',
+        previousPayoutDate: new Date().getTime()
     });
 
-    const nextPayoutDateInMilliseconds: Milliseconds = getNextPayoutDateInMilliseconds(Store.getState());
+    const nextPayoutDate: Milliseconds = getNextPayoutDate(Store.getState());
 
     Store.dispatch({
-        type: 'SET_NEXT_PAYOUT_DATE_IN_MILLISECONDS',
-        nextPayoutDateInMilliseconds
+        type: 'SET_NEXT_PAYOUT_DATE',
+        nextPayoutDate
     });
 
     await loadEthereumAccountBalance(Store);
@@ -187,7 +191,7 @@ async function payPodcast(Store: Readonly<Store>, podcast: Readonly<Podcast>, re
     catch(error) {
         const newRetryDelayInMilliseconds: number = new BigNumber(retryDelayInMilliseconds).multipliedBy(2).toNumber();
         await wait(newRetryDelayInMilliseconds);
-        return await payPodcast(Store, podcast, newRetryDelayInMilliseconds.toString()); 
+        return await payPodcast(Store, podcast, newRetryDelayInMilliseconds); 
     }    
 }
 
@@ -196,8 +200,8 @@ export async function getPayoutInfoForPodcast(state: Readonly<State>, podcast: R
     readonly gasPriceInWEI: WEI;
 }> {
     const gasPriceInWEI: WEI = await getSafeLowGasPriceInWEI();    
-    const previousPayoutDateInMilliseconds: Milliseconds = podcast.previousPayoutDateInMilliseconds !== 'NEVER' && state.previousPayoutDateInMilliseconds !== 'NEVER' && new BigNumber(podcast.previousPayoutDateInMilliseconds).gt(state.previousPayoutDateInMilliseconds) ? podcast.previousPayoutDateInMilliseconds : state.previousPayoutDateInMilliseconds;
-    const valueInWEI: WEI = new BigNumber(calculatePayoutAmountForPodcastDuringIntervalInWEI(state, podcast, previousPayoutDateInMilliseconds)).toFixed(0);
+    const previousPayoutDate: Milliseconds | 'NEVER' = podcast.previousPayoutDate !== 'NEVER' && state.previousPayoutDate !== 'NEVER' && podcast.previousPayoutDate > state.previousPayoutDate ? podcast.previousPayoutDate : state.previousPayoutDate;
+    const valueInWEI: WEI = new BigNumber(calculatePayoutAmountForPodcastDuringIntervalInWEI(state, podcast, previousPayoutDate)).toFixed(0);
     const valueLessGasPriceInWEI: BigNumber = new BigNumber(valueInWEI).minus(gasPriceInWEI);
     const netValueInWEI: BigNumber = valueLessGasPriceInWEI.gt(0) ? valueLessGasPriceInWEI : new BigNumber(0);
 
@@ -228,7 +232,7 @@ async function payPodcrypt(Store: Readonly<Store>, state: Readonly<State>, retry
     catch(error) {
         const newRetryDelayInMilliseconds: number = new BigNumber(retryDelayInMilliseconds).multipliedBy(2).toNumber();
         await wait(newRetryDelayInMilliseconds);
-        return await payPodcrypt(Store, state, newRetryDelayInMilliseconds.toString()); 
+        return await payPodcrypt(Store, state, newRetryDelayInMilliseconds); 
     }
 }
 

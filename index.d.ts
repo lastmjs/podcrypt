@@ -13,11 +13,14 @@ type Podcast = {
     readonly description: string;
     readonly imageUrl: string | 'NOT_FOUND';
     readonly episodeGuids: ReadonlyArray<EpisodeGuid>;
-    readonly previousPayoutDateInMilliseconds: string | 'NEVER';
-    readonly latestTransactionHash: string | null;
+    readonly previousPayoutDate: Milliseconds | 'NEVER';
+    readonly latestTransactionHash: string | 'NOT_SET';
     readonly ethereumAddress: EthereumAddress | 'NOT_FOUND' | 'MALFORMED';
     readonly ensName: ENSName | 'NOT_FOUND';
     readonly email: string | 'NOT_SET';
+    readonly timeListenedTotal: Milliseconds;
+    readonly timeListenedSincePreviousPayoutDate: Milliseconds;
+    readonly lastStartDate: Milliseconds | 'NEVER';
 }
 
 type Episode = {
@@ -28,18 +31,11 @@ type Episode = {
     readonly playing: boolean;
     readonly finishedListening: boolean;
     readonly progress: string;
-    readonly timestamps: ReadonlyArray<Timestamp>;
     readonly isoDate: string;
     readonly downloadState: EpisodeDownloadState;
 }
 
 type EpisodeDownloadState = 'NOT_DOWNLOADED' | 'DOWNLOADING' | 'DOWNLOADED';
-
-type Timestamp = {
-    readonly type: 'START' | 'STOP';
-    readonly actionType: 'CURRENT_EPISODE_PLAYED' | 'CURRENT_EPISODE_PAUSED' | 'CURRENT_EPISODE_COMPLETED'| 'PAUSE_EPISODE_FROM_PLAYLIST' | 'PLAY_EPISODE_FROM_PLAYLIST';
-    readonly milliseconds: string;
-}
 
 type PayoutProblem = 'BALANCE_0' | 'PAYOUT_TARGET_0' | 'BALANCE_LESS_THAN_PAYOUT_TARGET' | 'NO_PROBLEM';
 
@@ -64,25 +60,27 @@ type ETH = string;
 type GWEI = string;
 type WEI = string;
 
-type Days = string;
-type Minutes = string;
-type Seconds = string;
-type Milliseconds = string;
+type Days = number;
+type Minutes = number;
+type Seconds = number;
+type Milliseconds = number;
 
 type EthereumAddressInfo = {
     ethereumAddress: EthereumAddress | 'NOT_FOUND' | 'MALFORMED';
     ensName: ENSName | 'NOT_FOUND';
 }
 
+type Route = {
+    readonly pathname: string;
+    readonly search: string;
+    readonly query: {
+        [key: string]: string;
+    };
+}
+
 type State = {
     readonly version: number;
-    readonly currentRoute: {
-        readonly pathname: string;
-        readonly search: string;
-        readonly query: {
-            [key: string]: string;
-        };
-    }
+    readonly currentRoute: Readonly<Route>;
     readonly showMainMenu: boolean;
     readonly currentEpisodeGuid: EpisodeGuid | 'NOT_SET';
     readonly playlist: ReadonlyArray<EpisodeGuid>;
@@ -96,8 +94,8 @@ type State = {
     readonly payoutTargetInUSDCents: USDCents;
     readonly payoutIntervalInDays: Days;
     readonly currentETHPriceInUSDCents: USDCents | 'UNKNOWN';
-    readonly previousPayoutDateInMilliseconds: Milliseconds | 'NEVER';
-    readonly nextPayoutDateInMilliseconds: Milliseconds | 'NEVER';
+    readonly previousPayoutDate: Milliseconds | 'NEVER';
+    readonly nextPayoutDate: Milliseconds | 'NEVER';
     readonly ethereumAddress: EthereumAddress | 'NOT_CREATED';
     readonly ethereumBalanceInWEI: WEI;
     readonly warningCheckbox1Checked: boolean;
@@ -116,7 +114,7 @@ type State = {
     readonly payoutInProgress: boolean; //TODO this is not used for anything currently
     readonly preparingPlaylist: boolean;
     readonly podcryptPayoutPercentage: Percent;
-    readonly podcryptPreviousPayoutDateInMilliseconds: Milliseconds | 'NEVER';
+    readonly podcryptPreviousPayoutDate: Milliseconds | 'NEVER';
     readonly podcryptLatestTransactionHash: string | null;
     readonly payoutProblem: PayoutProblem;
     readonly nonce: number;
@@ -130,3 +128,280 @@ type Transaction = {
 };
 
 type TransactionResult = Transaction | 'ALREADY_PAID_FOR_INTERVAL' | 'FEED_NOT_FOUND' | 'PODCAST_ETHEREUM_ADDRESS_NOT_FOUND' | 'PODCAST_ETHEREUM_ADDRESS_MALFORMED';
+
+// Uncategorized actions
+
+type SetStateAction = {
+    readonly type: 'SET_STATE';
+    readonly state: Readonly<State>;
+}
+
+type SetPodcastEthereumAddressAction = {
+    readonly type: 'SET_PODCAST_ETHEREUM_ADDRESS';
+    readonly feedUrl: FeedUrl;
+    readonly ethereumAddress: EthereumAddress;
+}
+
+type SetCurrentEthPriceStateAction = {
+    readonly type: 'SET_CURRENT_ETH_PRICE_STATE';
+    readonly currentETHPriceState: CurrentETHPriceState;
+}
+
+type ChangeCurrentRouteAction = {
+    readonly type: 'CHANGE_CURRENT_ROUTE';
+    readonly currentRoute: Readonly<Route>;
+}
+
+type ToggleShowMainMenuAction = {
+    readonly type: 'TOGGLE_SHOW_MAIN_MENU';
+}
+
+type SetEpisodeDownloadStateAction = {
+    readonly type: 'SET_EPISODE_DOWNLOAD_STATE';
+    readonly episodeGuid: EpisodeGuid;
+    readonly downloadState: EpisodeDownloadState;
+}
+
+type SetWarningCheckbox1CheckedAction = {
+    readonly type: 'SET_WARNING_CHECKBOX_1_CHECKED';
+    readonly checked: boolean;
+}
+
+type SetWarningCheckbox2CheckedAction = {
+    readonly type: 'SET_WARNING_CHECKBOX_2_CHECKED';
+    readonly checked: boolean;
+}
+
+type SetWarningCheckbox3CheckedAction = {
+    readonly type: 'SET_WARNING_CHECKBOX_3_CHECKED';
+    readonly checked: boolean;
+}
+
+type SetWarningCheckbox4CheckedAction = {
+    readonly type: 'SET_WARNING_CHECKBOX_4_CHECKED';
+    readonly checked: boolean;
+}
+
+type SetWarningCheckbox5CheckedAction = {
+    readonly type: 'SET_WARNING_CHECKBOX_5_CHECKED';
+    readonly checked: boolean;
+}
+
+type SetMnemonicPhraseWarningCheckboxCheckedAction = {
+    readonly type: 'SET_MNEMONIC_PHRASE_WARNING_CHECKBOX_CHECKED';
+    readonly checked: boolean;
+}
+
+type SetWalletCreationStateAction = {
+    readonly type: 'SET_WALLET_CREATION_STATE';
+    readonly walletCreationState: WalletCreationState;
+}
+
+type SetEthereumAddressAction = {
+    readonly type: 'SET_ETHEREUM_ADDRESS';
+    readonly ethereumAddress: EthereumAddress;
+}
+
+type DeletePodcastAction = {
+    readonly type: 'DELETE_PODCAST';
+    readonly podcast: Readonly<Podcast>;
+}
+
+type SetNonceAction = {
+    readonly type: 'SET_NONCE';
+    readonly nonce: number;
+}
+
+// Payout actions
+
+type SetPodcryptLatestTransactionHashAction = {
+    readonly type: 'SET_PODCRYPT_LATEST_TRANSACTION_HASH';
+    readonly podcryptLatestTransactionHash: HexString;
+}
+
+type SetPodcryptPreviousPayoutDateAction = {
+    readonly type: 'SET_PODCRYPT_PREVIOUS_PAYOUT_DATE';
+    readonly podcryptPreviousPayoutDate: Milliseconds;
+}
+
+type SetPayoutInProgressAction = {
+    readonly type: 'SET_PAYOUT_IN_PROGRESS';
+    readonly payoutInProgress: boolean;
+}
+
+type SetPodcastLatestTransactionHash = {
+    readonly type: 'SET_PODCAST_LATEST_TRANSACTION_HASH';
+    readonly feedUrl: FeedUrl;
+    readonly latestTransactionHash: HexString;
+}
+
+type SetCurrentETHPriceInUSDCentsAction = {
+    readonly type: 'SET_CURRENT_ETH_PRICE_IN_USD_CENTS';
+    readonly currentETHPriceInUSDCents: USDCents;
+}
+
+type SetPayoutTargetInUSDCentsAction = {
+    readonly type: 'SET_PAYOUT_TARGET_IN_USD_CENTS';
+    readonly payoutTargetInUSDCents: USDCents;
+}
+
+type SetPayoutIntervalInDaysAction = {
+    readonly type: 'SET_PAYOUT_INTERVAL_IN_DAYS';
+    readonly payoutIntervalInDays: Days;
+}
+
+type SetNextPayoutDateAction = {
+    readonly type: 'SET_NEXT_PAYOUT_DATE';
+    readonly nextPayoutDate: Milliseconds;
+}
+
+type SetPreviousPayoutDateAction = {
+    readonly type: 'SET_PREVIOUS_PAYOUT_DATE';
+    readonly previousPayoutDate: Milliseconds;
+}
+
+type SetPodcastPreviousPayoutDate = {
+    readonly type: 'SET_PODCAST_PREVIOUS_PAYOUT_DATE';
+    readonly feedUrl: FeedUrl;
+    readonly previousPayoutDate: Milliseconds;
+}
+
+type SetEthereumBalanceInWEIAction = {
+    readonly type: 'SET_ETHEREUM_BALANCE_IN_WEI';
+    readonly ethereumBalanceInWEI: WEI;
+}
+
+type ResetPodcastTimeListenedSincePreviousPayoutAction = {
+    readonly type: 'RESET_PODCAST_TIME_LISTENED_SINCE_PREVIOUS_PAYOUT';
+    readonly feedUrl: FeedUrl;
+}
+
+// Player / playlist / playback actions
+
+type SetPlaybackRateAction = {
+    readonly type: 'SET_PLAYBACK_RATE';
+    readonly playbackRate: string;
+}
+
+type TogglePlaybackRateMenuAction = {
+    readonly type: 'TOGGLE_PLAYBACK_RATE_MENU';
+    readonly showPlaybackRateMenu: boolean;
+}
+
+type SubscribeToPodcastAction = {
+    readonly type: 'SUBSCRIBE_TO_PODCAST';
+    readonly podcast: Readonly<Podcast>;
+}
+
+type SetPreparingPlaylistAction = {
+    readonly type: 'SET_PREPARING_PLAYLIST';
+    readonly preparingPlaylist: boolean;
+}
+
+type PlayPreviousEpisodeAction = {
+    readonly type: 'PLAY_PREVIOUS_EPISODE';
+}
+
+type PlayNextEpisodeAction = {
+    readonly type: 'PLAY_NEXT_EPISODE';
+}
+
+type AddEpisodeToPlaylistAction = {
+    readonly type: 'ADD_EPISODE_TO_PLAYLIST';
+    readonly podcast: Readonly<Podcast>;
+    readonly episode: Readonly<Episode>;
+}
+
+type PlayEpisodeFromPlaylistAction = {
+    readonly type: 'PLAY_EPISODE_FROM_PLAYLIST';
+    readonly episodeGuid: EpisodeGuid;
+}
+
+type PauseEpisodeFromPlaylistAction = {
+    readonly type: 'PAUSE_EPISODE_FROM_PLAYLIST';
+    readonly episodeGuid: EpisodeGuid;
+}
+
+type CurrentEpisodeCompletedAction = {
+    readonly type: 'CURRENT_EPISODE_COMPLETED';
+}
+
+type UpdateCurrentEpisodeProgressAction = {
+    readonly type: 'UPDATE_CURRENT_EPISODE_PROGRESS';
+    readonly progress: string;
+}
+
+type CurrentEpisodePlayedAction = {
+    readonly type: 'CURRENT_EPISODE_PLAYED';
+}
+
+type CurrentEpisodePausedAction = {
+    readonly type: 'CURRENT_EPISODE_PAUSED';
+}
+
+type RemoveEpisodeFromPlaylistAction = {
+    readonly type: 'REMOVE_EPISODE_FROM_PLAYLIST';
+    readonly episodeGuid: EpisodeGuid;
+}
+
+type MoveEpisodeUpAction = {
+    readonly type: 'MOVE_EPISODE_UP';
+    readonly episodeGuid: EpisodeGuid;
+}
+
+type MoveEpisodeDownAction = {
+    readonly type: 'MOVE_EPISODE_DOWN';
+    readonly episodeGuid: EpisodeGuid;
+}
+
+type SetCurrentEpisodeAction = {
+    readonly type: 'SET_CURRENT_EPISODE';
+    readonly episode: Readonly<Episode>;
+}
+
+type PodcryptAction = 
+    SetStateAction |
+    SetPodcastEthereumAddressAction |
+    SetCurrentEthPriceStateAction |
+    ChangeCurrentRouteAction |
+    ToggleShowMainMenuAction |
+    SetEpisodeDownloadStateAction |
+    SetWarningCheckbox1CheckedAction |
+    SetWarningCheckbox2CheckedAction |
+    SetWarningCheckbox3CheckedAction |
+    SetWarningCheckbox4CheckedAction |
+    SetWarningCheckbox5CheckedAction |
+    SetMnemonicPhraseWarningCheckboxCheckedAction |
+    SetWalletCreationStateAction |
+    SetEthereumAddressAction |
+    DeletePodcastAction |
+    SetNonceAction |
+    SetPodcryptLatestTransactionHashAction |
+    SetPodcryptPreviousPayoutDateAction |
+    SetPayoutInProgressAction |
+    SetPodcastLatestTransactionHash |
+    SetCurrentETHPriceInUSDCentsAction |
+    SetPayoutTargetInUSDCentsAction |
+    SetPayoutIntervalInDaysAction |
+    SetNextPayoutDateAction |
+    SetPreviousPayoutDateAction |
+    SetPodcastPreviousPayoutDate |
+    SetEthereumBalanceInWEIAction |
+    ResetPodcastTimeListenedSincePreviousPayoutAction |
+    SetPlaybackRateAction |
+    TogglePlaybackRateMenuAction |
+    SubscribeToPodcastAction |
+    SetPreparingPlaylistAction |
+    PlayPreviousEpisodeAction |
+    PlayNextEpisodeAction |
+    AddEpisodeToPlaylistAction |
+    PlayEpisodeFromPlaylistAction |
+    PauseEpisodeFromPlaylistAction |
+    CurrentEpisodeCompletedAction |
+    UpdateCurrentEpisodeProgressAction |
+    CurrentEpisodePlayedAction |
+    CurrentEpisodePausedAction |
+    RemoveEpisodeFromPlaylistAction |
+    MoveEpisodeUpAction |
+    MoveEpisodeDownAction |
+    SetCurrentEpisodeAction;

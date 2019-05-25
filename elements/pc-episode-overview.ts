@@ -3,7 +3,7 @@ import {
     pcContainerStyles,
     standardTextContainer
  } from '../services/css';
-import { StorePromise } from '../services/store';
+import { StorePromise } from '../state/store';
 import {
     getRSSFeed,
     createPodcast
