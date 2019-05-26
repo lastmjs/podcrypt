@@ -259,7 +259,7 @@ StorePromise.then((Store) => {
             if (arrayBuffer) {
                 window.URL.revokeObjectURL(props.src);
 
-                const blob = new Blob([arrayBuffer]);
+                const blob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
 
                 update({
                     ...props,
