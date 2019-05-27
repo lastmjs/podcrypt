@@ -287,7 +287,7 @@ StorePromise.then((Store) => {
         }
 
         Store.dispatch({
-            type: 'UPDATE_CURRENT_EPISODE_PROGRESS',
+            type: 'UPDATE_CURRENT_EPISODE_PROGRESS_FROM_SLIDER',
             progress: new BigNumber(progress).toString()
         });
     }

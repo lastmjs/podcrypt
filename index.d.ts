@@ -331,6 +331,11 @@ type UpdateCurrentEpisodeProgressAction = {
     readonly progress: string;
 }
 
+type UpdateCurrentEpisodeProgressFromSliderAction = {
+    readonly type: 'UPDATE_CURRENT_EPISODE_PROGRESS_FROM_SLIDER';
+    readonly progress: string;
+}
+
 type CurrentEpisodePlayedAction = {
     readonly type: 'CURRENT_EPISODE_PLAYED';
 }
@@ -399,6 +404,7 @@ type PodcryptAction =
     PauseEpisodeFromPlaylistAction |
     CurrentEpisodeCompletedAction |
     UpdateCurrentEpisodeProgressAction |
+    UpdateCurrentEpisodeProgressFromSliderAction |
     CurrentEpisodePlayedAction |
     CurrentEpisodePausedAction |
     RemoveEpisodeFromPlaylistAction |

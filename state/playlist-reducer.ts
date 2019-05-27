@@ -12,6 +12,7 @@ export function PlaylistReducer(
         PauseEpisodeFromPlaylistAction |
         CurrentEpisodeCompletedAction |
         UpdateCurrentEpisodeProgressAction |
+        UpdateCurrentEpisodeProgressFromSliderAction |
         CurrentEpisodePlayedAction |
         CurrentEpisodePausedAction |
         RemoveEpisodeFromPlaylistAction |
@@ -303,27 +304,29 @@ export function PlaylistReducer(
     }
 
     if (action.type === 'CURRENT_EPISODE_COMPLETED') {
-        const nextPlaylistIndex: number = state.currentPlaylistIndex + 1;
-        const nextEpisodeGuid: EpisodeGuid = state.playlist[nextPlaylistIndex];
+        const currentEpisode: Readonly<Episode> = state.episodes[state.currentEpisodeGuid];
+        const currentPodcast: Readonly<Podcast> = state.podcasts[currentEpisode.feedUrl];
         
         const newCurrentEpisode: Readonly<Episode> = {
-            ...state.episodes[state.currentEpisodeGuid],
+            ...currentEpisode,
             finishedListening: true,
             progress: '0',
             playing: false
         };
 
-        const podcast: Readonly<Podcast> = state.podcasts[newCurrentEpisode.feedUrl];
-        const podcastLastStartDate: Milliseconds = podcast.lastStartDate === 'NEVER' ? new Date().getTime() : podcast.lastStartDate;
-        const timeDifference: Milliseconds = new Date().getTime() - podcastLastStartDate;    
+        const currentPodcastLastStartDate: Milliseconds = currentPodcast.lastStartDate === 'NEVER' ? new Date().getTime() : currentPodcast.lastStartDate;
+        const timeDifference: Milliseconds = new Date().getTime() - currentPodcastLastStartDate;
 
         const newCurrentPodcast: Readonly<Podcast> = {
-            ...state.podcasts[newCurrentEpisode.feedUrl],
-            timeListenedSincePreviousPayoutDate: state.podcasts[newCurrentEpisode.feedUrl].timeListenedSincePreviousPayoutDate + timeDifference,
-            timeListenedTotal: state.podcasts[newCurrentEpisode.feedUrl].timeListenedTotal + timeDifference
+            ...currentPodcast,
+            timeListenedSincePreviousPayoutDate: currentPodcast.timeListenedSincePreviousPayoutDate + timeDifference,
+            timeListenedTotal: currentPodcast.timeListenedTotal + timeDifference
         };
 
-        if (!nextEpisodeGuid) {
+        const nextPlaylistIndex: number = state.currentPlaylistIndex + 1;
+        const nextCurrentEpisodeGuid: EpisodeGuid = state.playlist[nextPlaylistIndex];
+
+        if (!nextCurrentEpisodeGuid) {
             return {
                 ...state,
                 playerPlaying: false,
@@ -333,31 +336,38 @@ export function PlaylistReducer(
                 },
                 episodes: {
                     ...state.episodes,
-                    [state.currentEpisodeGuid]: newCurrentEpisode
+                    [newCurrentEpisode.guid]: newCurrentEpisode
                 }
             };
         }
 
+        const nextCurrentEpisode: Readonly<Episode> = state.episodes[nextCurrentEpisodeGuid];
+        const nextCurrentPodcast: Readonly<Podcast> = state.podcasts[nextCurrentEpisode.feedUrl];
+
+        const newNextCurrentEpisode: Readonly<Episode> = {
+            ...nextCurrentEpisode,
+            playing: true
+        };
+
+        const newNextCurrentPodcast: Readonly<Podcast> = {
+            ...nextCurrentPodcast,
+            lastStartDate: new Date().getTime()
+        };
+
         return {
             ...state,
-            currentEpisodeGuid: nextEpisodeGuid,
+            currentEpisodeGuid: nextCurrentEpisodeGuid,
             currentPlaylistIndex: nextPlaylistIndex,
+            playerPlaying: true,
             podcasts: {
                 ...state.podcasts,
-                [newCurrentPodcast.feedUrl]: {}
+                [newCurrentPodcast.feedUrl]: newCurrentPodcast,
+                [newNextCurrentPodcast.feedUrl]: newNextCurrentPodcast
             },
             episodes: {
                 ...state.episodes,
-                [state.currentEpisodeGuid]: newCurrentEpisode,
-                [nextEpisodeGuid]: {
-                    ...state.episodes[nextEpisodeGuid],
-                    playing: true,
-                    timestamps: [...state.episodes[nextEpisodeGuid].timestamps, {
-                        type: 'START',
-                        actionType: 'CURRENT_EPISODE_COMPLETED',
-                        milliseconds: new Date().getTime().toString()
-                    }]
-                }
+                [newCurrentEpisode.guid]: newCurrentEpisode,
+                [newNextCurrentEpisode.guid]: newNextCurrentEpisode
             }
         };
     }
@@ -387,6 +397,22 @@ export function PlaylistReducer(
                 ...state.podcasts,
                 [newCurrentPodcast.feedUrl]: newCurrentPodcast
             },
+            episodes: {
+                ...state.episodes,
+                [newCurrentEpisode.guid]: newCurrentEpisode
+            }
+        };
+    }
+
+    if (action.type === 'UPDATE_CURRENT_EPISODE_PROGRESS_FROM_SLIDER') {
+        const currentEpisode: Readonly<Episode> = state.episodes[state.currentEpisodeGuid];
+        const newCurrentEpisode: Readonly<Episode> = {
+            ...currentEpisode,
+            progress: action.progress
+        };
+
+        return {
+            ...state,
             episodes: {
                 ...state.episodes,
                 [newCurrentEpisode.guid]: newCurrentEpisode
