@@ -12,6 +12,7 @@ export function PlaylistReducer(
         PauseEpisodeFromPlaylistAction |
         CurrentEpisodeCompletedAction |
         UpdateCurrentEpisodeProgressAction |
+        UpdateCurrentEpisodeProgressFromSliderAction |
         CurrentEpisodePlayedAction |
         CurrentEpisodePausedAction |
         RemoveEpisodeFromPlaylistAction |
@@ -396,6 +397,22 @@ export function PlaylistReducer(
                 ...state.podcasts,
                 [newCurrentPodcast.feedUrl]: newCurrentPodcast
             },
+            episodes: {
+                ...state.episodes,
+                [newCurrentEpisode.guid]: newCurrentEpisode
+            }
+        };
+    }
+
+    if (action.type === 'UPDATE_CURRENT_EPISODE_PROGRESS_FROM_SLIDER') {
+        const currentEpisode: Readonly<Episode> = state.episodes[state.currentEpisodeGuid];
+        const newCurrentEpisode: Readonly<Episode> = {
+            ...currentEpisode,
+            progress: action.progress
+        };
+
+        return {
+            ...state,
             episodes: {
                 ...state.episodes,
                 [newCurrentEpisode.guid]: newCurrentEpisode
