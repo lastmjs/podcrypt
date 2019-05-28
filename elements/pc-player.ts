@@ -105,6 +105,13 @@ StorePromise.then((Store) => {
             const audioElement: HTMLAudioElement | null = element.querySelector('audio');
 
             if (
+                audioElement &&
+                audioElement.src !== props.src
+            ) {
+                audioElement.pause();
+            }
+
+            if (
                 currentEpisode &&
                 (
                     props.currentEpisode === null ||
@@ -403,7 +410,10 @@ StorePromise.then((Store) => {
     }
     
     function loadStarted(currentEpisode: any, element: any) {
-        if (currentEpisode === null || currentEpisode === undefined) {
+        if (
+            currentEpisode === null ||
+            currentEpisode === undefined
+        ) {
             return;
         }
 
