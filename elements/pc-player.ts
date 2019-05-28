@@ -102,6 +102,8 @@ StorePromise.then((Store) => {
             // const state: Readonly<State> = Store.getState();
             // const currentEpisode: Readonly<Episode> = state.episodes[state.currentEpisodeGuid];
 
+            const audioElement: HTMLAudioElement | null = element.querySelector('audio');
+
             if (
                 currentEpisode &&
                 (
@@ -112,6 +114,12 @@ StorePromise.then((Store) => {
                     )
                 )
             ) {
+
+                if (audioElement) {
+                    audioElement.pause();
+                }
+                
+
                 // TODO it would be good if update returned the props, then I could pass them into the next function
                 update({
                     ...props,
@@ -119,8 +127,6 @@ StorePromise.then((Store) => {
                 });
                 await setSrc(currentEpisode, props, update);
             }
-
-            const audioElement: HTMLAudioElement | null = element.querySelector('audio');
             
             if (
                 audioElement &&
