@@ -94,11 +94,31 @@ StorePromise.then((Store) => {
             // });
         }
 
+        // TODO this whole setTimeout and setSrc gettup is crazy...we really need to get the custom element definition
+        // TODO function to be asynchronous, then we could simplify the whole control flow and make it much more declarative
         // TODO this might be necessary so that the src gets set first when switching episodes
         // TODO the src gets set, then we click play on a new episode
-        setTimeout(() => {
-            const state: Readonly<State> = Store.getState();
-            const currentEpisode: Readonly<Episode> = state.episodes[state.currentEpisodeGuid];
+        setTimeout(async () => {
+            // const state: Readonly<State> = Store.getState();
+            // const currentEpisode: Readonly<Episode> = state.episodes[state.currentEpisodeGuid];
+
+            if (
+                currentEpisode &&
+                (
+                    props.currentEpisode === null ||
+                    (
+                        props.currentEpisode &&
+                        currentEpisode.guid !== props.currentEpisode.guid
+                    )
+                )
+            ) {
+                // TODO it would be good if update returned the props, then I could pass them into the next function
+                update({
+                    ...props,
+                    currentEpisode
+                });
+                await setSrc(currentEpisode, props, update);
+            }
 
             const audioElement: HTMLAudioElement | null = element.querySelector('audio');
             
@@ -115,24 +135,6 @@ StorePromise.then((Store) => {
                 }
             }
         });
-
-        if (
-            currentEpisode &&
-            (
-                props.currentEpisode === null ||
-                (
-                    props.currentEpisode &&
-                    currentEpisode.guid !== props.currentEpisode.guid
-                )
-            )
-        ) {
-            // TODO it would be good if update returned the props, then I could pass them into the next function
-            update({
-                ...props,
-                currentEpisode
-            });
-            getSrc(currentEpisode, props, update);
-        }
     
         return html`
             <style>
@@ -251,7 +253,7 @@ StorePromise.then((Store) => {
         `;
     });
 
-    async function getSrc(currentEpisode: Readonly<Episode>, props: any, update: any) {
+    async function setSrc(currentEpisode: Readonly<Episode>, props: any, update: any) {
         if (currentEpisode) {
             // TODO I do not know if the types are correct here
             const arrayBuffer: Uint8Array = await get(`${currentEpisode.guid}-audio-file-array-buffer`);
