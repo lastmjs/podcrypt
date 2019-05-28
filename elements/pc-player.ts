@@ -102,14 +102,12 @@ StorePromise.then((Store) => {
             // const state: Readonly<State> = Store.getState();
             // const currentEpisode: Readonly<Episode> = state.episodes[state.currentEpisodeGuid];
 
-            const audioElement: HTMLAudioElement | null = element.querySelector('audio');
-
-            if (
-                audioElement &&
-                audioElement.src !== props.src
-            ) {
-                audioElement.pause();
-            }
+            // if (
+            //     audioElement &&
+            //     audioElement.src !== props.src
+            // ) {
+            //     audioElement.pause();
+            // }
 
             if (
                 currentEpisode &&
@@ -122,9 +120,9 @@ StorePromise.then((Store) => {
                 )
             ) {
 
-                if (audioElement) {
-                    audioElement.pause();
-                }
+                // if (audioElement) {
+                //     audioElement.pause();
+                // }
                 
 
                 // TODO it would be good if update returned the props, then I could pass them into the next function
@@ -134,17 +132,25 @@ StorePromise.then((Store) => {
                 });
                 await setSrc(currentEpisode, props, update);
             }
+
+            // TODO remember, this entire element is a disgrace right now.
+            const audioElement: HTMLAudioElement | null = element.querySelector('audio');
             
             if (
                 audioElement &&
                 currentEpisode
             ) {
-                if (currentEpisode.playing === true) {
-                    audioElement.play();    
-                }
-    
-                if (currentEpisode.playing === false) {
+                if (audioElement.src !== props.src) {
                     audioElement.pause();
+                }
+                else {
+                    if (currentEpisode.playing === true) {
+                        audioElement.play();    
+                    }
+        
+                    if (currentEpisode.playing === false) {
+                        audioElement.pause();
+                    }
                 }
             }
         });
