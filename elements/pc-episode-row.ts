@@ -326,6 +326,17 @@ StorePromise.then((Store) => {
                     // const response = await window.fetch(resourceURL);
 
                     const response = await getAudioFileResponse(episode.src);
+                    
+                    if (
+                        response.ok === false
+                        // TODO I am not sure if checking the ok property or the status code will be best here
+                        // response.status.toString().startsWith('4') ||
+                        // response.status.toString().startsWith('5')
+                    ) {
+                        // TODO perhaps make a very easy way for people to get in contact with the Podcrypt team
+                        throw new Error(`The file could not be downloaded. The response status was ${response.status}`);
+                    }
+
                     const audioFileArrayBuffer = await response.arrayBuffer();
 
                     // TODO somewhere in this process iOS Safari fails with a null exception, and I believe it is while saving to indexedDB
