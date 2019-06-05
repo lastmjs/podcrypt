@@ -444,26 +444,4 @@ StorePromise.then((Store) => {
             type: 'CURRENT_EPISODE_PAUSED'
         });
     }
-    
-    function loadStarted(currentEpisode: any, element: any) {
-        if (
-            currentEpisode === null ||
-            currentEpisode === undefined
-        ) {
-            return;
-        }
-
-        const audioElement = element.querySelector('audio');
-        audioElement.currentTime = currentEpisode.progress;
-
-        // if (currentEpisode.playing) {
-        //     audioElement.play();
-        // }
-    }
-
-    // function togglePlaybackRateMenu() {
-    //     Store.dispatch({
-    //         type: 'TOGGLE_PLAYBACK_RATE_MENU'
-    //     });
-    // }
 });
