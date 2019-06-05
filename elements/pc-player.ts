@@ -109,6 +109,31 @@ StorePromise.then((Store) => {
             //     audioElement.pause();
             // }
 
+            const audioElement: HTMLAudioElement | null = element.querySelector('audio');
+
+            if (
+                audioElement &&
+                props.currentEpisode
+            ) {
+                // if (audioElement.src !== props.src) {
+                //     audioElement.pause();
+                // }
+                // else {
+                    if (props.currentEpisode.playing === true) {
+
+                        if (audioElement.paused === true) {
+                            audioElement.currentTime = parseInt(currentEpisode.progress);                
+                        }
+
+                        audioElement.play();    
+                    }
+        
+                    if (props.currentEpisode.playing === false) {
+                        audioElement.pause();
+                    }
+                // }
+            }
+
             if (
                 currentEpisode &&
                 (
@@ -126,15 +151,16 @@ StorePromise.then((Store) => {
                 
 
                 // TODO it would be good if update returned the props, then I could pass them into the next function
+                // TODO we need to pause until the new src object is created...the problem is that it blocks the main thread...
                 update({
                     ...props,
                     currentEpisode
                 });
-                await setSrc(currentEpisode, props, update);
+                setSrc(currentEpisode, props, update);
             }
 
             // TODO remember, this entire element is a disgrace right now.
-            const audioElement: HTMLAudioElement | null = element.querySelector('audio');
+            // const audioElement: HTMLAudioElement | null = element.querySelector('audio');
             
             if (
                 audioElement &&
@@ -145,7 +171,12 @@ StorePromise.then((Store) => {
                 }
                 else {
                     if (currentEpisode.playing === true) {
-                        audioElement.play();    
+
+                        if (audioElement.paused === true) {
+                            audioElement.currentTime = parseInt(currentEpisode.progress);
+                        }
+
+                        audioElement.play();  
                     }
         
                     if (currentEpisode.playing === false) {
@@ -266,7 +297,6 @@ StorePromise.then((Store) => {
                 preload="metadata"
                 @ended=${audioEnded}
                 @timeupdate=${timeUpdated}
-                @loadstart=${() => loadStarted(currentEpisode, element)}
                 .playbackRate=${parseInt(Store.getState().playbackRate)}
             ></audio>
         `;
@@ -414,26 +444,4 @@ StorePromise.then((Store) => {
             type: 'CURRENT_EPISODE_PAUSED'
         });
     }
-    
-    function loadStarted(currentEpisode: any, element: any) {
-        if (
-            currentEpisode === null ||
-            currentEpisode === undefined
-        ) {
-            return;
-        }
-
-        const audioElement = element.querySelector('audio');
-        audioElement.currentTime = currentEpisode.progress;
-
-        // if (currentEpisode.playing) {
-        //     audioElement.play();
-        // }
-    }
-
-    // function togglePlaybackRateMenu() {
-    //     Store.dispatch({
-    //         type: 'TOGGLE_PLAYBACK_RATE_MENU'
-    //     });
-    // }
 });
