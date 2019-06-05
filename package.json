@@ -33,7 +33,7 @@
   "dependencies": {
     "bignumber.js": "8.1.1",
     "ethers": "4.0.27",
-    "functional-element": "0.0.12",
+    "functional-element": "0.0.14",
     "idb-keyval": "3.1.0",
     "redux": "4.0.1",
     "rss-parser": "3.6.2"

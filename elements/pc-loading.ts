@@ -4,13 +4,21 @@ import {
     one
  } from '../services/css';
 
-// TODO all of this prefix nonsense can be fixed by implementing shadow dom in functional-element
-customElement('pc-loading', ({ props, constructing }) => {
+// TODO all of this prename nonsense can be fixed by implementing shadow dom in functional-element
+customElement('pc-loading', ({ 
+    constructing,
+    hidden,
+    prename,
+    message,
+    spinnerWidth,
+    spinnerHeight,
+    spinnerMarginTop
+ }) => {
     
     if (constructing) {
         return {
             hidden: false,
-            prefix: '',
+            prename: '',
             message: '',
             spinnerWidth: '50px',
             spinnerHeight: '50px',
@@ -34,31 +42,31 @@ customElement('pc-loading', ({ props, constructing }) => {
         THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         -->           
         <style>
-            .${props.prefix}loading-container {
+            .${prename}loading-container {
                 position: absolute;
                 width: 100%;
                 height: 100%;
                 top: 0;
                 right: 0;
-                background-color: ${props.hidden ? 'rgba(255, 255, 255, 0)' : 'rgba(255, 255, 255, 1)'};
+                background-color: ${hidden ? 'rgba(255, 255, 255, 0)' : 'rgba(255, 255, 255, 1)'};
                 z-index: ${one};
-                ${props.hidden ? 'transition: background-color 1s linear;' : ''}
+                ${hidden ? 'transition: background-color 1s linear;' : ''}
                 pointer-events: none;
                 text-align: center;
             }
 
-            .${props.prefix}loading-spinner {
+            .${prename}loading-spinner {
                 display: inline-block;
-                width: ${props.spinnerWidth};
-                height: ${props.spinnerHeight};
+                width: ${spinnerWidth};
+                height: ${spinnerHeight};
                 border: 3px solid ${color1Full};
                 border-radius: 50%;
                 border-top-color: #fefefe;
                 animation: spin 1s ease-in-out infinite;
-                margin-top: ${props.spinnerMarginTop};
+                margin-top: ${spinnerMarginTop};
             }
 
-            .${props.prefix}loading-spinner[hidden] {
+            .${prename}loading-spinner[hidden] {
                 display: none;
             }
 
@@ -67,11 +75,11 @@ customElement('pc-loading', ({ props, constructing }) => {
             }
         </style>
 
-        <div class="${props.prefix}loading-container">
-            <div class="${props.prefix}loading-spinner" ?hidden=${props.hidden}></div>
+        <div class="${prename}loading-container">
+            <div class="${prename}loading-spinner" ?hidden=${hidden}></div>
             <br>
             <br>
-            <div style="font-family: Ubuntu; font-weight: bold" ?hidden=${props.hidden}>${props.message}</div>
+            <div style="font-family: Ubuntu; font-weight: bold" ?hidden=${hidden}>${message}</div>
         </div>
     `;
 });

@@ -36,7 +36,7 @@ import {
 
 // TODO I do not like how we have to do this to get the store...top level await would be really nice
 StorePromise.then((Store) => {
-    customElement('pc-app', async ({ constructing, update }) => {
+    customElement('pc-app', ({ constructing, update }) => {
 
         if (constructing) {
             Store.subscribe(update);

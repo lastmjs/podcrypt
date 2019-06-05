@@ -4,7 +4,7 @@ import { StorePromise } from '../state/store';
 import './pc-loading';
 
 StorePromise.then((Store) => {
-    customElement('pc-receive-eth', ({ constructing, connecting, update, props }) => {
+    customElement('pc-receive-eth', ({ constructing, connecting, update, loaded }) => {
 
         if (constructing) {
             Store.subscribe(update);
@@ -17,7 +17,6 @@ StorePromise.then((Store) => {
         if (connecting) {
             setTimeout(() => {
                 update({
-                    ...props,
                     loaded: true
                 });
             });
@@ -32,8 +31,8 @@ StorePromise.then((Store) => {
     
             <div class="pc-receive-eth-container">
                 <pc-loading
-                    .hidden=${props.loaded}
-                    .prefix=${"pc-receive-eth-"}
+                    .hidden=${loaded}
+                    .prename=${"pc-receive-eth-"}
                 ></pc-loading>
 
                 <h2>Receive ETH</h2>

@@ -9,7 +9,7 @@ import {
 import { get } from 'idb-keyval';
 
 StorePromise.then((Store) => {
-    customElement('pc-player', ({ constructing, update, element, props }) => {
+    customElement('pc-player', ({ constructing, update, element, src, currentEpisode }) => {
     
         if (constructing) {
             Store.subscribe(update);
@@ -21,15 +21,15 @@ StorePromise.then((Store) => {
         }
         
         const state: Readonly<State> = Store.getState();
-        const currentEpisode: Readonly<Episode> = state.episodes[state.currentEpisodeGuid];
+        const theCurrentEpisode: Readonly<Episode> = state.episodes[state.currentEpisodeGuid];
         const currentPodcast: Readonly<Podcast> | null = currentEpisode ? state.podcasts[currentEpisode.feedUrl] : null;
     
         if (
             'mediaSession' in window.navigator &&
-            currentEpisode
+            theCurrentEpisode
         ) {
             (window.navigator as any).mediaSession.metadata = new MediaMetadata({
-                title: currentEpisode.title,
+                title: theCurrentEpisode.title,
                 // artwork: [
                 //     {
                 //         src: currentPodcast.imageUrl,
@@ -41,7 +41,7 @@ StorePromise.then((Store) => {
     
             (window.navigator as any).mediaSession.setActionHandler('play', () => {
                 // const audioElement = element.querySelector('audio');
-                // if (audioElement && currentEpisode) {
+                // if (audioElement && theCurrentEpisode) {
                 //     audioElement.play();
                 // }
                 // TODO perhaps we want to make a new action type that plays the currenty episode?
@@ -104,7 +104,7 @@ StorePromise.then((Store) => {
 
             // if (
             //     audioElement &&
-            //     audioElement.src !== props.src
+            //     audioElement.src !== src
             // ) {
             //     audioElement.pause();
             // }
@@ -113,22 +113,22 @@ StorePromise.then((Store) => {
 
             if (
                 audioElement &&
-                props.currentEpisode
+                theCurrentEpisode
             ) {
-                // if (audioElement.src !== props.src) {
+                // if (audioElement.src !== src) {
                 //     audioElement.pause();
                 // }
                 // else {
-                    if (props.currentEpisode.playing === true) {
+                    if (theCurrentEpisode.playing === true) {
 
                         if (audioElement.paused === true) {
-                            audioElement.currentTime = parseInt(currentEpisode.progress);                
+                            audioElement.currentTime = parseInt(theCurrentEpisode.progress);                
                         }
 
                         audioElement.play();    
                     }
         
-                    if (props.currentEpisode.playing === false) {
+                    if (theCurrentEpisode.playing === false) {
                         audioElement.pause();
                     }
                 // }
@@ -137,10 +137,10 @@ StorePromise.then((Store) => {
             if (
                 currentEpisode &&
                 (
-                    props.currentEpisode === null ||
+                    currentEpisode === null ||
                     (
-                        props.currentEpisode &&
-                        currentEpisode.guid !== props.currentEpisode.guid
+                        currentEpisode &&
+                        currentEpisode.guid !== currentEpisode.guid
                     )
                 )
             ) {
@@ -153,10 +153,9 @@ StorePromise.then((Store) => {
                 // TODO it would be good if update returned the props, then I could pass them into the next function
                 // TODO we need to pause until the new src object is created...the problem is that it blocks the main thread...
                 update({
-                    ...props,
-                    currentEpisode
+                    currentEpisode: theCurrentEpisode
                 });
-                setSrc(currentEpisode, props, update);
+                setSrc(theCurrentEpisode, update, src);
             }
 
             // TODO remember, this entire element is a disgrace right now.
@@ -164,22 +163,22 @@ StorePromise.then((Store) => {
             
             if (
                 audioElement &&
-                currentEpisode
+                theCurrentEpisode
             ) {
-                if (audioElement.src !== props.src) {
+                if (audioElement.src !== src) {
                     audioElement.pause();
                 }
                 else {
-                    if (currentEpisode.playing === true) {
+                    if (theCurrentEpisode.playing === true) {
 
                         if (audioElement.paused === true) {
-                            audioElement.currentTime = parseInt(currentEpisode.progress);
+                            audioElement.currentTime = parseInt(theCurrentEpisode.progress);
                         }
 
                         audioElement.play();  
                     }
         
-                    if (currentEpisode.playing === false) {
+                    if (theCurrentEpisode.playing === false) {
                         audioElement.pause();
                     }
                 }
@@ -218,7 +217,7 @@ StorePromise.then((Store) => {
             <div class="pc-player-container">
 
                 <div style="padding: calc(10px + 1vmin); display: flex">
-                    <input @input=${(e: any) => timeSliderOnInput(e, element)} type="range" style="width: 100%; position: absolute; top: 0; height: 0" min="0" max="${getDuration(element)}" .value=${currentEpisode ? currentEpisode.progress : '0'}>
+                    <input @input=${(e: any) => timeSliderOnInput(e, element)} type="range" style="width: 100%; position: absolute; top: 0; height: 0" min="0" max="${getDuration(element)}" .value=${theCurrentEpisode ? theCurrentEpisode.progress : '0'}>
                     <div style="width: 100%; position: absolute; top: 0; right: 0; height: 100%; background-color: rgba(1, 1, 1, .05); z-index: -1;"></div>
                     <div style="width: ${getProgressPercentage(element)}%; position: absolute; top: 0; left: 0; height: 100%; background-color: rgba(1, 1, 1, .1); z-index: -1"></div>
                     <!-- <i 
@@ -228,7 +227,7 @@ StorePromise.then((Store) => {
                     </i> -->
 
                     <div style="display: flex; flex-direction: column; flex: 1; align-items: center; justify-content: center; flex: 1">
-                        <div style="font-size: calc(10px + 1vmin);">${currentEpisode ? secondsToHoursMinutesSeconds(currentEpisode.progress) : ''}</div>
+                        <div style="font-size: calc(10px + 1vmin);">${theCurrentEpisode ? secondsToHoursMinutesSeconds(theCurrentEpisode.progress) : ''}</div>
                         <div><hr style="width: 100%"></div>
                         <div style="font-size: calc(10px + 1vmin);">${getDuration(element) ? secondsToHoursMinutesSeconds(getDuration(element)) : ''}</div>
                     </div>
@@ -293,7 +292,7 @@ StorePromise.then((Store) => {
             </div>
 
             <audio
-                src="${props.src}"
+                src="${src}"
                 preload="metadata"
                 @ended=${audioEnded}
                 @timeupdate=${timeUpdated}
@@ -302,25 +301,23 @@ StorePromise.then((Store) => {
         `;
     });
 
-    async function setSrc(currentEpisode: Readonly<Episode>, props: any, update: any) {
+    async function setSrc(currentEpisode: Readonly<Episode>, update: any, src: any) {
         if (currentEpisode) {
             // TODO I do not know if the types are correct here
             const arrayBuffer: Uint8Array = await get(`${currentEpisode.guid}-audio-file-array-buffer`);
 
             if (arrayBuffer) {
-                window.URL.revokeObjectURL(props.src);
+                window.URL.revokeObjectURL(src);
 
                 const blob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
 
                 update({
-                    ...props,
                     currentEpisode,
                     src: window.URL.createObjectURL(blob)
                 });
             }
             else {
                 update({
-                    ...props,
                     currentEpisode,
                     src: currentEpisode.src
                 });

@@ -13,12 +13,17 @@ import './pc-loading';
 import './pc-podcast-row';
 
 StorePromise.then((Store) => {
-    customElement('pc-podcasts', ({ constructing, connecting, element, update, props }) => {
+    customElement('pc-podcasts', ({ 
+        constructing, 
+        connecting, 
+        element, 
+        update, 
+        loaded
+    }) => {
 
         if (constructing) {
             Store.subscribe(update);
             return {
-                searchResults: [],
                 loaded: false
             };
         }
@@ -26,7 +31,6 @@ StorePromise.then((Store) => {
         if (connecting) {
             setTimeout(() => {
                 update({
-                    ...props,
                     loaded: true
                 });
             });
@@ -59,8 +63,8 @@ StorePromise.then((Store) => {
     
             <div class="pc-podcasts-container">
                 <pc-loading
-                    .hidden=${props.loaded}
-                    .prefix=${"pc-podcasts-"}
+                    .hidden=${loaded}
+                    .prename=${"pc-podcasts-"}
                 >
                 </pc-loading>
 
