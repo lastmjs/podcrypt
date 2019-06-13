@@ -11,7 +11,15 @@ import {
 import './pc-loading';
 
 StorePromise.then((Store) => {
-    customElement('pc-playlist', ({ constructing, update, props }) => {
+    customElement('pc-playlist', ({ 
+        constructing, 
+        update,
+        feedUrl,
+        previousFeedUrl,
+        episodeGuid,
+        previousEpisodeGuid,
+        loaded
+    }) => {
         if (constructing) {
             Store.subscribe(update);
             return {
@@ -25,14 +33,13 @@ StorePromise.then((Store) => {
 
         if (
             Store.getState().currentRoute.pathname === '/playlist' &&
-            props.feedUrl !== props.previousFeedUrl &&
-            props.episodeGuid !== props.previousEpisodeGuid
+            feedUrl !== previousFeedUrl &&
+            episodeGuid !== previousEpisodeGuid
         ) {
             const newProps = {
-                ...props,
                 loaded: false,
-                previousFeedUrl: props.feedUrl,
-                previousEpisodeGuid: props.episodeGuid
+                previousFeedUrl: feedUrl,
+                previousEpisodeGuid: episodeGuid
             };
 
             update(newProps);
@@ -49,10 +56,10 @@ StorePromise.then((Store) => {
 
             <div class="pc-playlist-container">
                 <pc-loading
-                    .hidden=${props.loaded}
-                    .prefix=${"pc-playlist-"}
+                    .hidden=${true}
+                    .prename=${"pc-playlist-"}
                 ></pc-loading>
-                ${props.loaded ? loadedUI() : loadingUI()}
+                ${true ? loadedUI() : loadingUI()}
             </div>
     `});
 
@@ -99,7 +106,6 @@ StorePromise.then((Store) => {
         ) {
             setTimeout(() => {
                 update({
-                    ...props,
                     loaded: true
                 });
             });
@@ -135,7 +141,6 @@ StorePromise.then((Store) => {
         }
         
         update({
-            ...props,
             loaded: true
         });
     }

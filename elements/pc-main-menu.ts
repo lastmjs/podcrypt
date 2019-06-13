@@ -10,7 +10,7 @@ import {
 } from '../services/css';
 
 StorePromise.then((Store) => {    
-    customElement('pc-main-menu', ({ element, update, constructing }) => {
+    customElement('pc-main-menu', ({ constructing, update }) => {
 
         if (constructing) {
             Store.subscribe(update);

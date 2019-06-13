@@ -19,7 +19,20 @@ import {
 import BigNumber from "../node_modules/bignumber.js/bignumber";
 
 StorePromise.then((Store) => {
-    customElement('pc-podcast-row', ({ props, constructing }) => {
+    customElement('pc-podcast-row', ({ 
+        constructing,
+        podcast,
+        controls,
+        verification,
+        payouts,
+        usage,
+        options,
+        payoutAmountForPodcastDuringIntervalInUSD,
+        percentageOfTotalTimeForPodcastDuringInterval,
+        totalTimeForPodcastDuringIntervalInMinutes,
+        secondsRemainingForPodcastDuringInterval,
+        nextPayoutLocaleDateString
+    }) => {
 
         if (constructing) {
             return {
@@ -112,10 +125,10 @@ StorePromise.then((Store) => {
 
             <div class="pc-podcast-row-main-container">
                 <div class="pc-podcast-row-image-container">
-                    ${props.podcast !== null ? html`
+                    ${podcast !== null ? html`
                         <img 
                             class="pc-podcast-row-image"
-                            src="${props.podcast.imageUrl}"
+                            src="${podcast.imageUrl}"
                             width="60"
                             height="60"
                         >
@@ -124,51 +137,51 @@ StorePromise.then((Store) => {
 
                 <div 
                     class="pc-podcast-row-text-container"
-                    @click=${() => podcastClick(props.podcast)}
+                    @click=${() => podcastClick(podcast)}
                 >
                     ${
-                        props.podcast !== null ? html`
+                        podcast !== null ? html`
                             
                             ${
-                                props.podcast.artistName ?
+                                podcast.artistName ?
                                     html`
-                                        <div class="pc-podcast-row-text-artist-name">${props.podcast.artistName}</div>
+                                        <div class="pc-podcast-row-text-artist-name">${podcast.artistName}</div>
                                     ` : html``
                             }
 
                             <div class="pc-podcast-row-text-title-container">
-                                <div class="pc-podcast-row-text-title">${props.podcast.title}</div>
+                                <div class="pc-podcast-row-text-title">${podcast.title}</div>
 
                                 ${
-                                    props.verification ?
+                                    verification ?
                                         html`
                                             <div class="pc-podcast-row-verification-container">
                                                 ${
-                                                    props.podcast.ethereumAddress === 'NOT_FOUND' ? 
-                                                        html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${(e: any) => notVerifiedHelpClick(e, props.podcast)}>Not verified - click to help</button>` :
-                                                        props.podcast.ethereumAddress === 'MALFORMED' ?
-                                                html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${(e: any) => notVerifiedHelpClick(e, props.podcast)}>Not verified - click to help</button>` :
-                                                            html`<button style="color: green; border: none; padding: 5px; margin: 5px" @click=${(e: any) => { e.stopPropagation(); alert(`This podcast's Ethereum address: ${props.podcast.ethereumAddress}`)} }>Verified</button>` }
+                                                    podcast.ethereumAddress === 'NOT_FOUND' ? 
+                                                        html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${(e: any) => notVerifiedHelpClick(e, podcast)}>Not verified - click to help</button>` :
+                                                        podcast.ethereumAddress === 'MALFORMED' ?
+                                                html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${(e: any) => notVerifiedHelpClick(e, podcast)}>Not verified - click to help</button>` :
+                                                            html`<button style="color: green; border: none; padding: 5px; margin: 5px" @click=${(e: any) => { e.stopPropagation(); alert(`This podcast's Ethereum address: ${podcast.ethereumAddress}`)} }>Verified</button>` }
                                             </div>
                                         ` : html``
                                 }
 
                                 ${
-                                    props.usage ?
+                                    usage ?
                                     html`
                                         <br>
-                                        <div>$${new BigNumber(props.payoutAmountForPodcastDuringIntervalInUSD).toFixed(2)}, ${new BigNumber(props.percentageOfTotalTimeForPodcastDuringInterval).toFixed(2)}%, ${props.totalTimeForPodcastDuringIntervalInMinutes} min ${props.secondsRemainingForPodcastDuringInterval} sec</div>
+                                        <div>$${new BigNumber(payoutAmountForPodcastDuringIntervalInUSD).toFixed(2)}, ${new BigNumber(percentageOfTotalTimeForPodcastDuringInterval).toFixed(2)}%, ${totalTimeForPodcastDuringIntervalInMinutes} min ${secondsRemainingForPodcastDuringInterval} sec</div>
                                     ` :
                                     html``
                                 }
 
                                 ${
-                                    props.payouts ?
+                                    payouts ?
                                     html`
                                         <br>
-                                        <div @click=${(e: any) => e.stopPropagation()}>Last payout: ${props.podcast.previousPayoutDate === 'NEVER' ? 'never' : html`<a href="https://${process.env.NODE_ENV !== 'production' ? 'ropsten.' : ''}etherscan.io/tx/${props.podcast.latestTransactionHash}" target="_blank">${new Date(parseInt(props.podcast.previousPayoutDate)).toLocaleString()}</a>`}</div>
+                                        <div @click=${(e: any) => e.stopPropagation()}>Last payout: ${podcast.previousPayoutDate === 'NEVER' ? 'never' : html`<a href="https://${process.env.NODE_ENV !== 'production' ? 'ropsten.' : ''}etherscan.io/tx/${podcast.latestTransactionHash}" target="_blank">${new Date(parseInt(podcast.previousPayoutDate)).toLocaleString()}</a>`}</div>
                                         <br>
-                                        <div>Next payout: ${props.nextPayoutLocaleDateString}</div>
+                                        <div>Next payout: ${nextPayoutLocaleDateString}</div>
                                     ` :
                                     html``
                                 }
@@ -178,12 +191,12 @@ StorePromise.then((Store) => {
                 </div>
 
                 ${
-                    props.podcast && props.controls ? 
+                    podcast && controls ? 
                         html`
                             <div class="pc-podcast-row-controls-container">
                                 <i 
                                     class="material-icons"
-                                    @click=${() => subscribeToPodcast(props.podcast.feedUrl)}
+                                    @click=${() => subscribeToPodcast(podcast.feedUrl)}
                                 >
                                     library_add
                                 </i>  
@@ -193,10 +206,10 @@ StorePromise.then((Store) => {
                 }
 
                 ${
-                    props.options ?
+                    options ?
                     html`
                         <select
-                            @change=${(e: any) => optionsChange(e, props.podcast)}
+                            @change=${(e: any) => optionsChange(e, podcast)}
                             class="pc-podcast-row-options-select"
                         >
                             <option>...</option>

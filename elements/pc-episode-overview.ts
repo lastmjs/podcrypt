@@ -12,7 +12,18 @@ import './pc-loading';
 import './pc-episode-row';
 
 StorePromise.then((Store) => {
-    customElement('pc-episode-overview', ({ constructing, props, update }) => {
+    customElement('pc-episode-overview', ({ 
+        constructing,
+        update,
+        episode,
+        feedUrl,
+        previousFeedUrl,
+        episodeGuid,
+        previousEpisodeGuid,
+        feed,
+        podcast,
+        loaded
+    }) => {
 
         if (constructing) {
 
@@ -31,21 +42,20 @@ StorePromise.then((Store) => {
         }
 
         if (
-            props.feedUrl !== props.previousFeedUrl ||
-            props.episodeGuid !== props.previousEpisodeGuid
+            feedUrl !== previousFeedUrl ||
+            episodeGuid !== previousEpisodeGuid
         ) {
             const newProps = {
-                ...props,
                 loaded: false,
-                previousFeedUrl: props.feedUrl,
-                previousEpisodeGuid: props.episodeGuid
+                previousFeedUrl: feedUrl,
+                previousEpisodeGuid: episodeGuid
             };
 
             update(newProps);
-            loadEpisode(props.feedUrl, props.episodeGuid, update, newProps);
+            loadEpisode(feedUrl, episodeGuid, update, newProps);
         }
 
-        const episode: Readonly<Episode> = props.episode ? Store.getState().episodes[props.episode.guid] || props.episode : props.episode;
+        const theEpisode: Readonly<Episode> = episode ? Store.getState().episodes[episode.guid] || episode : episode;
 
         return html`
             <style>
@@ -60,32 +70,33 @@ StorePromise.then((Store) => {
 
             <div class="pc-episode-overview-container">
                 <pc-loading
-                    .hidden=${props.loaded}
-                    .prefix=${"pc-episode-overview-"}
+                    .hidden=${loaded}
+                    .prename=${"pc-episode-overview-"}
                 ></pc-loading>
 
                 ${
-                    props.feed === null ||
-                    props.podcast === null ||
-                    props.episode === null ?
+                    feed === null ||
+                    podcast === null ||
+                    episode === null ?
                         html`<div>Failed to load</div>` : 
                         html`
                             <pc-episode-row
-                                .podcast=${props.podcast}
-                                .episode=${episode}
+                                .podcast=${podcast}
+                                .episode=${theEpisode}
                                 .play=${true}
                                 .playlist=${true}
                                 .podcastTitle=${true}
                                 .date=${true}
                             ></pc-episode-row>
                             <br>
-                            <div class="pc-episode-overview-description">${props.episode.contentSnippet}</div>
+                            <div class="pc-episode-overview-description">${episode.contentSnippet}</div>
                         `
                 }
             </div>
         `;
     });
 
+    // TODO refactor the props here, we do not necessarily need the spread
     async function loadEpisode(feedUrl: string, episodeGuid: string, update: any, props: any) {
         if (
             feedUrl === null ||
@@ -104,7 +115,6 @@ StorePromise.then((Store) => {
             podcast === null
         ) {
             update({
-                ...props,
                 loaded: true,
                 feed,
                 podcast
@@ -118,7 +128,6 @@ StorePromise.then((Store) => {
 
         if (episode === undefined) {
             update({
-                ...props,
                 loaded: true,
                 feed,
                 podcast,
@@ -128,7 +137,6 @@ StorePromise.then((Store) => {
         }
 
         update({
-            ...props,
             loaded: true,
             feed,
             podcast,

@@ -7,7 +7,7 @@ import {
     color1Medium
 } from '../services/css';
 
-customElement('pc-button', ({ constructing, props }) => {
+customElement('pc-button', ({ constructing, text }) => {
 
     if (constructing) {
         return {
@@ -33,6 +33,6 @@ customElement('pc-button', ({ constructing, props }) => {
             }
         </style>
 
-        <button class="pc-button">${props.text || 'Text not set'}</button>
+        <button class="pc-button">${text || 'Text not set'}</button>
     `;
 });

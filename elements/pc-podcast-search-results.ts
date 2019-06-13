@@ -8,7 +8,14 @@ import {
  import './pc-podcast-row';
 
 StorePromise.then((Store) => {
-    customElement('pc-podcast-search-results', ({ constructing, props, update }) => {
+    customElement('pc-podcast-search-results', ({ 
+        constructing, 
+        update,
+        term,
+        previousTerm,
+        loaded,
+        searchResultsUI
+    }) => {
 
         if (constructing) {
             return {
@@ -19,15 +26,14 @@ StorePromise.then((Store) => {
             };
         }
 
-        if (props.term !== props.previousTerm) {
+        if (term !== previousTerm) {
             update({
-                ...props,
-                previousTerm: props.term,
+                previousTerm: term,
                 loaded: false
             });
         }
 
-        searchForPodcasts(props, update);
+        searchForPodcasts(update, term, loaded);
 
         return html`
             <style>
@@ -42,31 +48,30 @@ StorePromise.then((Store) => {
 
             <div class="pc-podcast-search-results">
                 <pc-loading
-                    .hidden=${props.loaded}
-                    .prefix=${"pc-podcast-search-results-"}
+                    .hidden=${loaded}
+                    .prename=${"pc-podcast-search-results-"}
                 ></pc-loading>
-                ${props.searchResultsUI}
+                ${searchResultsUI}
             </div>
         `;
     });
 
-    async function searchForPodcasts(props: any, update: any) {
+    async function searchForPodcasts(update: any, term: any, loaded: any) {
 
         if (
-            props.term === null ||
-            props.term === undefined ||
-            props.loaded === true
+            term === null ||
+            term === undefined ||
+            loaded === true
         ) {
             return;
         }
 
-        const responseJSON = await getResponseJSON(props.term);
+        const responseJSON = await getResponseJSON(term);
 
         if (responseJSON.results.length === 0) {
             update({
-                ...props,
                 loaded: true,
-                previousTerm: props.term,
+                previousTerm: term,
                 searchResultsUI: html`
                     <div>
                         No results
@@ -106,9 +111,8 @@ StorePromise.then((Store) => {
             const podcastFeedResults = await Promise.all(podcastFeedResultsPromises);
 
             update({
-                ...props,
                 loaded: true,
-                previousTerm: props.term,
+                previousTerm: term,
                 searchResultsUI: html`
                     <div class="pc-podcast-search-results-title">Search results</div>
                     ${podcastFeedResults}

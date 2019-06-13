@@ -7,7 +7,7 @@ import {
     standardTextContainer
 } from '../services/css';
 
-customElement('pc-contact', ({ constructing, connecting, props, update}) => {
+customElement('pc-contact', ({ constructing, connecting, update, loaded }) => {
 
     if (constructing) {
         return {
@@ -18,7 +18,6 @@ customElement('pc-contact', ({ constructing, connecting, props, update}) => {
     if (connecting) {
         setTimeout(() => {
             update({
-                ...props,
                 loaded: true
             });
         });
@@ -45,8 +44,8 @@ customElement('pc-contact', ({ constructing, connecting, props, update}) => {
 
         <div class="pc-contact-container">
             <pc-loading
-                .hidden=${props.loaded}
-                .prefix=${"pc-contact-"}
+                .hidden=${loaded}
+                .prename=${"pc-contact-"}
             ></pc-loading>
 
             <div class="pc-contact-title-text-x-large">Contact</div>
@@ -81,7 +80,7 @@ customElement('pc-contact', ({ constructing, connecting, props, update}) => {
             
             <br>
 
-            <div class="pc-contact-secondary-text"><a href="mailto:jordan.michael.last@gmail.com">jordan.michael.last@gmail.com</a></div>
+            <div class="pc-contact-secondary-text"><a href="mailto:jordanlast@podcrypt.app">jordanlast@podcrypt.app</a></div>
             
 
         </div>

@@ -7,7 +7,7 @@ import {
     standardTextContainer
 } from '../services/css';
 
-customElement('pc-credits', ({ constructing, connecting, update, props }) => {
+customElement('pc-credits', async ({ constructing, connecting, update, loaded, attribution }) => {
 
     if (constructing) {
         return {
@@ -17,7 +17,11 @@ customElement('pc-credits', ({ constructing, connecting, update, props }) => {
     }
 
     if (connecting) {
-        loadOSSAttribution(update, props);
+        update();
+        return {
+            attribution: await loadOSSAttribution(),
+            loaded: true
+        };
     }
 
     return html`
@@ -41,8 +45,8 @@ customElement('pc-credits', ({ constructing, connecting, update, props }) => {
 
         <div class="pc-credits-container">
             <pc-loading
-                .hidden=${props.loaded}
-                .prefix=${"pc-credits-"}
+                .hidden=${loaded}
+                .prename=${"pc-credits-"}
             ></pc-loading>
 
             <div class="pc-credits-title-text-x-large">Credits</div>
@@ -76,19 +80,15 @@ customElement('pc-credits', ({ constructing, connecting, update, props }) => {
             <br>
 
             <div class="pc-credits-secondary-text">
-                ${props.attribution}
+                ${attribution}
             </div>
         </div>
     `;
 });
 
-async function loadOSSAttribution(update: any, props: any) {
+async function loadOSSAttribution() {
     const attributionResponse = await window.fetch('oss-attribution/attribution.txt');
     const attribution = await attributionResponse.text();
 
-    update({
-        ...props,
-        loaded: true,
-        attribution
-    });
+    return attribution;
 }

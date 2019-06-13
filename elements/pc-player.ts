@@ -9,183 +9,38 @@ import {
 import { get } from 'idb-keyval';
 
 StorePromise.then((Store) => {
-    customElement('pc-player', ({ constructing, update, element, props }) => {
+    customElement('pc-player', async ({ constructing, update, element, previousEpisode, previousSrc }) => {
     
         if (constructing) {
             Store.subscribe(update);
 
             return {
-                src: '',
-                currentEpisode: null
+                previousSrc: 'NOT_SET',
+                previousEpisode: 'NOT_SET'
             };
         }
-        
+
         const state: Readonly<State> = Store.getState();
         const currentEpisode: Readonly<Episode> = state.episodes[state.currentEpisodeGuid];
-        const currentPodcast: Readonly<Podcast> | null = currentEpisode ? state.podcasts[currentEpisode.feedUrl] : null;
-    
-        if (
-            'mediaSession' in window.navigator &&
-            currentEpisode
-        ) {
-            (window.navigator as any).mediaSession.metadata = new MediaMetadata({
-                title: currentEpisode.title,
-                // artwork: [
-                //     {
-                //         src: currentPodcast.imageUrl,
-                //         sizes: '60x60',
-                //         type: 'image/jpg'
-                //     }
-                // ] // TODO I can't get the artwork to work, not sure why
-            });
-    
-            (window.navigator as any).mediaSession.setActionHandler('play', () => {
-                // const audioElement = element.querySelector('audio');
-                // if (audioElement && currentEpisode) {
-                //     audioElement.play();
-                // }
-                // TODO perhaps we want to make a new action type that plays the currenty episode?
-                // Store.dispatch({
-                //     type: 'PLAY_EPISODE_FROM_PLAYLIST',
-                //     playlistIndex: (Store.getState() as any).currentPlaylistIndex
-                // });
-                Store.dispatch({
-                    type: 'CURRENT_EPISODE_PLAYED'
-                });
-            });
+        const audioElement: HTMLAudioElement | null = element.querySelector('audio');
+        const episodeChanged: boolean = previousEpisode === 'NOT_SET' || (audioElement && !audioElement.src) || (currentEpisode && previousEpisode && currentEpisode.guid !== previousEpisode.guid);
+
+        if (episodeChanged) {
+            const currentSrc: string = await getSrc(currentEpisode, previousSrc);
             
-            (window.navigator as any).mediaSession.setActionHandler('pause', () => {
-                // const audioElement = element.querySelector('audio');
-                // if (audioElement) {
-                //     audioElement.pause();
-                // }
-                // Store.dispatch({
-                //     type: 'PAUSE_EPISODE_FROM_PLAYLIST'
-                // });
-                Store.dispatch({
-                    type: 'CURRENT_EPISODE_PAUSED'
-                });
+            if (audioElement) {
+                // TODO this is imperative but works well for now
+                audioElement.src = currentSrc;
+                audioElement.currentTime = parseInt(currentEpisode.progress);
+            }
+
+            update({
+                previousEpisode: currentEpisode
             });
-            
-            (window.navigator as any).mediaSession.setActionHandler('seekbackward', () => {
-                const audioElement = element.querySelector('audio');
-                if (audioElement) {
-                    audioElement.currentTime = audioElement.currentTime - 10;
-                }
-            });
-            
-            (window.navigator as any).mediaSession.setActionHandler('seekforward', () => {
-                const audioElement = element.querySelector('audio');
-                if (audioElement) {
-                    audioElement.currentTime = audioElement.currentTime + 10;
-                }
-            });
-            // navigator.mediaSession.setActionHandler('previoustrack', () => {
-            //     Store.dispatch({
-            //         type: 'PLAY_EPISODE_FROM_PLAYLIST',
-            //         playlistIndex: Store.getState().playlistIndex + 1
-            //     });
-            // });
-            // navigator.mediaSession.setActionHandler('nexttrack', () => {
-            //     Store.dispatch({
-            //         type: 'PLAY_EPISODE_FROM_PLAYLIST',
-            //         playlistIndex: Store.getState().playlistIndex - 1
-            //     });
-            // });
         }
 
-        // TODO this whole setTimeout and setSrc gettup is crazy...we really need to get the custom element definition
-        // TODO function to be asynchronous, then we could simplify the whole control flow and make it much more declarative
-        // TODO this might be necessary so that the src gets set first when switching episodes
-        // TODO the src gets set, then we click play on a new episode
-        setTimeout(async () => {
-            // const state: Readonly<State> = Store.getState();
-            // const currentEpisode: Readonly<Episode> = state.episodes[state.currentEpisodeGuid];
+        await playOrPause(audioElement, currentEpisode);
 
-            // if (
-            //     audioElement &&
-            //     audioElement.src !== props.src
-            // ) {
-            //     audioElement.pause();
-            // }
-
-            const audioElement: HTMLAudioElement | null = element.querySelector('audio');
-
-            if (
-                audioElement &&
-                props.currentEpisode
-            ) {
-                // if (audioElement.src !== props.src) {
-                //     audioElement.pause();
-                // }
-                // else {
-                    if (props.currentEpisode.playing === true) {
-
-                        if (audioElement.paused === true) {
-                            audioElement.currentTime = parseInt(currentEpisode.progress);                
-                        }
-
-                        audioElement.play();    
-                    }
-        
-                    if (props.currentEpisode.playing === false) {
-                        audioElement.pause();
-                    }
-                // }
-            }
-
-            if (
-                currentEpisode &&
-                (
-                    props.currentEpisode === null ||
-                    (
-                        props.currentEpisode &&
-                        currentEpisode.guid !== props.currentEpisode.guid
-                    )
-                )
-            ) {
-
-                // if (audioElement) {
-                //     audioElement.pause();
-                // }
-                
-
-                // TODO it would be good if update returned the props, then I could pass them into the next function
-                // TODO we need to pause until the new src object is created...the problem is that it blocks the main thread...
-                update({
-                    ...props,
-                    currentEpisode
-                });
-                setSrc(currentEpisode, props, update);
-            }
-
-            // TODO remember, this entire element is a disgrace right now.
-            // const audioElement: HTMLAudioElement | null = element.querySelector('audio');
-            
-            if (
-                audioElement &&
-                currentEpisode
-            ) {
-                if (audioElement.src !== props.src) {
-                    audioElement.pause();
-                }
-                else {
-                    if (currentEpisode.playing === true) {
-
-                        if (audioElement.paused === true) {
-                            audioElement.currentTime = parseInt(currentEpisode.progress);
-                        }
-
-                        audioElement.play();  
-                    }
-        
-                    if (currentEpisode.playing === false) {
-                        audioElement.pause();
-                    }
-                }
-            }
-        });
-    
         return html`
             <style>
                 .pc-player-container {
@@ -293,7 +148,6 @@ StorePromise.then((Store) => {
             </div>
 
             <audio
-                src="${props.src}"
                 preload="metadata"
                 @ended=${audioEnded}
                 @timeupdate=${timeUpdated}
@@ -302,29 +156,47 @@ StorePromise.then((Store) => {
         `;
     });
 
-    async function setSrc(currentEpisode: Readonly<Episode>, props: any, update: any) {
-        if (currentEpisode) {
-            // TODO I do not know if the types are correct here
-            const arrayBuffer: Uint8Array = await get(`${currentEpisode.guid}-audio-file-array-buffer`);
-
-            if (arrayBuffer) {
-                window.URL.revokeObjectURL(props.src);
-
-                const blob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
-
-                update({
-                    ...props,
-                    currentEpisode,
-                    src: window.URL.createObjectURL(blob)
-                });
+    async function playOrPause(audioElement: Readonly<HTMLAudioElement> | null, currentEpisode: Readonly<Episode>) {
+        try {
+            if (
+                audioElement &&
+                audioElement.src &&
+                audioElement.paused === true &&
+                currentEpisode.playing === true
+            ) {
+                await audioElement.play();
+                
             }
-            else {
-                update({
-                    ...props,
-                    currentEpisode,
-                    src: currentEpisode.src
-                });
+    
+            if (
+                audioElement &&
+                audioElement.src &&
+                audioElement.paused === false &&
+                currentEpisode.playing === false
+            ) {
+                audioElement.pause();
             }
+        }
+        catch(error) {
+            // I believe the main reason this error is being thrown is because the user has not yet interacted with the app
+            // So, just pause it for them. The next time they click play it should work
+            paused();
+        }
+    }
+
+    async function getSrc(episode: Readonly<Episode>, previousSrc: any) {
+        // TODO I do not know if the types are correct here
+        const arrayBuffer: Uint8Array = await get(`${episode.guid}-audio-file-array-buffer`);
+
+        if (arrayBuffer) {
+            window.URL.revokeObjectURL(previousSrc);
+
+            const blob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
+
+            return window.URL.createObjectURL(blob);
+        }
+        else {
+            return episode.src;
         }
     }
 
@@ -445,3 +317,178 @@ StorePromise.then((Store) => {
         });
     }
 });
+
+
+        // if (constructing) {
+        //     Store.subscribe(update);
+
+        //     return {
+        //         src: '',
+        //         currentEpisode: null
+        //     };
+        // }
+        
+        // const state: Readonly<State> = Store.getState();
+        // const theCurrentEpisode: Readonly<Episode> = state.episodes[state.currentEpisodeGuid];
+        // const currentPodcast: Readonly<Podcast> | null = currentEpisode ? state.podcasts[currentEpisode.feedUrl] : null;
+    
+        // if (
+        //     'mediaSession' in window.navigator &&
+        //     theCurrentEpisode
+        // ) {
+        //     (window.navigator as any).mediaSession.metadata = new MediaMetadata({
+        //         title: theCurrentEpisode.title,
+        //         // artwork: [
+        //         //     {
+        //         //         src: currentPodcast.imageUrl,
+        //         //         sizes: '60x60',
+        //         //         type: 'image/jpg'
+        //         //     }
+        //         // ] // TODO I can't get the artwork to work, not sure why
+        //     });
+    
+        //     (window.navigator as any).mediaSession.setActionHandler('play', () => {
+        //         // const audioElement = element.querySelector('audio');
+        //         // if (audioElement && theCurrentEpisode) {
+        //         //     audioElement.play();
+        //         // }
+        //         // TODO perhaps we want to make a new action type that plays the currenty episode?
+        //         // Store.dispatch({
+        //         //     type: 'PLAY_EPISODE_FROM_PLAYLIST',
+        //         //     playlistIndex: (Store.getState() as any).currentPlaylistIndex
+        //         // });
+        //         Store.dispatch({
+        //             type: 'CURRENT_EPISODE_PLAYED'
+        //         });
+        //     });
+            
+        //     (window.navigator as any).mediaSession.setActionHandler('pause', () => {
+        //         // const audioElement = element.querySelector('audio');
+        //         // if (audioElement) {
+        //         //     audioElement.pause();
+        //         // }
+        //         // Store.dispatch({
+        //         //     type: 'PAUSE_EPISODE_FROM_PLAYLIST'
+        //         // });
+        //         Store.dispatch({
+        //             type: 'CURRENT_EPISODE_PAUSED'
+        //         });
+        //     });
+            
+        //     (window.navigator as any).mediaSession.setActionHandler('seekbackward', () => {
+        //         const audioElement = element.querySelector('audio');
+        //         if (audioElement) {
+        //             audioElement.currentTime = audioElement.currentTime - 10;
+        //         }
+        //     });
+            
+        //     (window.navigator as any).mediaSession.setActionHandler('seekforward', () => {
+        //         const audioElement = element.querySelector('audio');
+        //         if (audioElement) {
+        //             audioElement.currentTime = audioElement.currentTime + 10;
+        //         }
+        //     });
+        //     // navigator.mediaSession.setActionHandler('previoustrack', () => {
+        //     //     Store.dispatch({
+        //     //         type: 'PLAY_EPISODE_FROM_PLAYLIST',
+        //     //         playlistIndex: Store.getState().playlistIndex + 1
+        //     //     });
+        //     // });
+        //     // navigator.mediaSession.setActionHandler('nexttrack', () => {
+        //     //     Store.dispatch({
+        //     //         type: 'PLAY_EPISODE_FROM_PLAYLIST',
+        //     //         playlistIndex: Store.getState().playlistIndex - 1
+        //     //     });
+        //     // });
+        // }
+
+        // // TODO this whole setTimeout and setSrc gettup is crazy...we really need to get the custom element definition
+        // // TODO function to be asynchronous, then we could simplify the whole control flow and make it much more declarative
+        // // TODO this might be necessary so that the src gets set first when switching episodes
+        // // TODO the src gets set, then we click play on a new episode
+        // setTimeout(async () => {
+        //     // const state: Readonly<State> = Store.getState();
+        //     // const currentEpisode: Readonly<Episode> = state.episodes[state.currentEpisodeGuid];
+
+        //     // if (
+        //     //     audioElement &&
+        //     //     audioElement.src !== src
+        //     // ) {
+        //     //     audioElement.pause();
+        //     // }
+
+        //     const audioElement: HTMLAudioElement | null = element.querySelector('audio');
+
+        //     if (
+        //         audioElement &&
+        //         theCurrentEpisode
+        //     ) {
+        //         // if (audioElement.src !== src) {
+        //         //     audioElement.pause();
+        //         // }
+        //         // else {
+        //             if (theCurrentEpisode.playing === true) {
+
+        //                 if (audioElement.paused === true) {
+        //                     audioElement.currentTime = parseInt(theCurrentEpisode.progress);                
+        //                 }
+
+        //                 audioElement.play();    
+        //             }
+        
+        //             if (theCurrentEpisode.playing === false) {
+        //                 audioElement.pause();
+        //             }
+        //         // }
+        //     }
+
+        //     if (
+        //         currentEpisode &&
+        //         (
+        //             currentEpisode === null ||
+        //             (
+        //                 currentEpisode &&
+        //                 currentEpisode.guid !== currentEpisode.guid
+        //             )
+        //         )
+        //     ) {
+
+        //         // if (audioElement) {
+        //         //     audioElement.pause();
+        //         // }
+                
+
+        //         // TODO it would be good if update returned the props, then I could pass them into the next function
+        //         // TODO we need to pause until the new src object is created...the problem is that it blocks the main thread...
+        //         update({
+        //             currentEpisode: theCurrentEpisode
+        //         });
+        //         setSrc(theCurrentEpisode, update, src);
+        //     }
+
+        //     // TODO remember, this entire element is a disgrace right now.
+        //     // const audioElement: HTMLAudioElement | null = element.querySelector('audio');
+            
+        //     if (
+        //         audioElement &&
+        //         theCurrentEpisode
+        //     ) {
+        //         if (audioElement.src !== src) {
+        //             audioElement.pause();
+        //         }
+        //         else {
+        //             if (theCurrentEpisode.playing === true) {
+
+        //                 if (audioElement.paused === true) {
+        //                     audioElement.currentTime = parseInt(theCurrentEpisode.progress);
+        //                 }
+
+        //                 audioElement.play();  
+        //             }
+        
+        //             if (theCurrentEpisode.playing === false) {
+        //                 audioElement.pause();
+        //             }
+        //         }
+        //     }
+        // });

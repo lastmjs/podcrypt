@@ -7,7 +7,7 @@ import {
     standardTextContainer
 } from '../services/css';
 
-customElement('pc-privacy', ({ constructing, connecting, update, props }) => {
+customElement('pc-privacy', ({ constructing, connecting, update, loaded }) => {
 
     if (constructing) {
         return {
@@ -18,7 +18,6 @@ customElement('pc-privacy', ({ constructing, connecting, update, props }) => {
     if (connecting) {
         setTimeout(() => {
             update({
-                ...props,
                 loaded: true
             });
         });
@@ -41,8 +40,8 @@ customElement('pc-privacy', ({ constructing, connecting, update, props }) => {
 
         <div class="pc-privacy-container">
             <pc-loading
-                .hidden=${props.loaded}
-                .prefix=${"pc-privacy-"}
+                .hidden=${loaded}
+                .prename=${"pc-privacy-"}
             ></pc-loading>
 
             <div class="pc-privacy-title-text-x-large">Privacy</div>

@@ -22,7 +22,18 @@ import { set, del } from 'idb-keyval';
 import './pc-loading';
 
 StorePromise.then((Store) => {
-    customElement('pc-episode-row', ({ constructing, props }) => {
+    customElement('pc-episode-row', ({ 
+        constructing,
+        podcast,
+        episode,
+        arrows,
+        options,
+        play,
+        playlist,
+        date,
+        podcastTitle,
+        currentlyPlaying
+     }) => {
 
         if (constructing) {
             return {
@@ -134,14 +145,14 @@ StorePromise.then((Store) => {
                 }
             </style>
 
-            <div class="pc-episode-row-main-container${props.podcast && props.episode && props.currentlyPlaying ? ' pc-episode-row-currently-playing' : ''}">
+            <div class="pc-episode-row-main-container${podcast && episode && currentlyPlaying ? ' pc-episode-row-currently-playing' : ''}">
                 <pc-loading
                     .hidden=${
-                        !props.episode ||
-                        !Store.getState().episodes[props.episode.guid] ||
-                        Store.getState().episodes[props.episode.guid].downloadState !== 'DOWNLOADING'
+                        !episode ||
+                        !Store.getState().episodes[episode.guid] ||
+                        Store.getState().episodes[episode.guid].downloadState !== 'DOWNLOADING'
                     }
-                    .prefix=${`pc-episode-row-${props.episode ? props.episode.guid : ''}`}
+                    .prename=${`pc-episode-row-${episode ? episode.guid : ''}`}
                     .message=${'Downloading'}
                     .spinnerWidth=${'25px'}
                     .spinnerHeight=${'25px'}
@@ -149,22 +160,22 @@ StorePromise.then((Store) => {
                 ></pc-loading>
                 
                 ${
-                    props.podcast && props.episode ?
+                    podcast && episode ?
                         html`
                             ${
-                                props.arrows ?
+                                arrows ?
                                 html`
                                     <div class="pc-episode-row-arrows-container">
                                         <i 
                                             class="material-icons pc-playlist-item-arrow"
-                                            @click=${() => moveEpisodeUp(props.episode.guid)}
+                                            @click=${() => moveEpisodeUp(episode.guid)}
                                         >
                                             keyboard_arrow_up
                                         </i>
 
                                         <i 
                                             class="material-icons pc-playlist-item-arrow"
-                                            @click=${() => moveEpisodeDown(props.episode.guid)}
+                                            @click=${() => moveEpisodeDown(episode.guid)}
                                         >
                                             keyboard_arrow_down
                                         </i>
@@ -175,36 +186,36 @@ StorePromise.then((Store) => {
 
                             <div 
                                 class="pc-episode-row-text-container"
-                                @click=${() => navigate(Store, `/episode-overview?feedUrl=${props.podcast.feedUrl}&episodeGuid=${props.episode.guid}`)}
+                                @click=${() => navigate(Store, `/episode-overview?feedUrl=${podcast.feedUrl}&episodeGuid=${episode.guid}`)}
                             >
                                 ${
-                                    props.podcastTitle ?
+                                    podcastTitle ?
                                     html`
-                                        <div class="pc-episode-row-podcast-title">${props.podcast.title}</div>
+                                        <div class="pc-episode-row-podcast-title">${podcast.title}</div>
                                     ` :
                                     html``
                                 }
 
-                                <div class="pc-episode-row-episode-title${props.episode.finishedListening ? ' pc-episode-row-episode-title-finished-listening' : ''}">${props.episode.title}</div>
+                                <div class="pc-episode-row-episode-title${episode.finishedListening ? ' pc-episode-row-episode-title-finished-listening' : ''}">${episode.title}</div>
 
                                 ${
-                                    props.date ?
-                                    html`<div class="pc-episode-row-date">${new Date(props.episode.isoDate).toLocaleDateString()}</div>`:
+                                    date ?
+                                    html`<div class="pc-episode-row-date">${new Date(episode.isoDate).toLocaleDateString()}</div>`:
                                     html``
                                 }
                             </div>
 
                             ${
-                                props.play || props.playlist ?
+                                play || playlist ?
                                     html`
                                         <div class="pc-episode-row-controls-container">
                                             
                                             ${
-                                                props.playlist ? 
+                                                playlist ? 
                                                     html`
                                                         <i 
                                                             class="material-icons pc-episode-row-control"
-                                                             @click=${() => addEpisodeToPlaylist(Store, props.podcast, props.episode)}
+                                                             @click=${() => addEpisodeToPlaylist(Store, podcast, episode)}
                                                         >
                                                             playlist_add
                                                         </i>
@@ -212,19 +223,19 @@ StorePromise.then((Store) => {
                                             }
                                             
                                             ${
-                                                props.play && props.episode.playing ? 
-                                                html`<i class="material-icons pc-episode-row-control" @click=${() => pauseEpisode(props.episode.guid)} title="Pause episode">pause</i>` : 
-                                                html`<i class="material-icons pc-episode-row-control" @click=${() => playEpisode(props.podcast, props.episode)} title="Resume episode">play_arrow</i>`
+                                                play && episode.playing ? 
+                                                html`<i class="material-icons pc-episode-row-control" @click=${() => pauseEpisode(episode.guid)} title="Pause episode">pause</i>` : 
+                                                html`<i class="material-icons pc-episode-row-control" @click=${() => playEpisode(podcast, episode)} title="Resume episode">play_arrow</i>`
                                             }
                                         </div>
                                     ` : html``
                             }
 
                             ${
-                                props.options ?
+                                options ?
                                 html`
                                     <select
-                                        @change=${(e: any) => optionsChange(e, props.episode)}
+                                        @change=${(e: any) => optionsChange(e, episode)}
                                         class="pc-episode-row-options-select"
                                     >
                                         <option>...</option>
@@ -237,7 +248,7 @@ StorePromise.then((Store) => {
                             }
 
                             ${
-                                Store.getState().episodes[props.episode.guid] && Store.getState().episodes[props.episode.guid].downloadState === 'DOWNLOADED' ?
+                                Store.getState().episodes[episode.guid] && Store.getState().episodes[episode.guid].downloadState === 'DOWNLOADED' ?
                                 html`
                                     <div class="pc-episode-row-downloaded-container">
                                         <i 

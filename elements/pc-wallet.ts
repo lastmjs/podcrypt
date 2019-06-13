@@ -38,7 +38,7 @@ import './pc-button';
 import './pc-podcast-row';
 
 StorePromise.then((Store) => {
-    customElement('pc-wallet', ({ constructing, connecting, props, update }) => {
+    customElement('pc-wallet', ({ constructing, connecting, update, loaded }) => {
         if (constructing) {
             Store.subscribe(update);
 
@@ -53,7 +53,6 @@ StorePromise.then((Store) => {
         if (connecting) {
             setTimeout(() => {
                 update({
-                    ...props,
                     loaded: true
                 });
             });
@@ -114,8 +113,8 @@ StorePromise.then((Store) => {
     
             <div class="pc-wallet-container">
                 <pc-loading
-                    .hidden=${props.loaded && !Store.getState().payoutInProgress}
-                    .prefix=${"pc-wallet-"}
+                    .hidden=${loaded && !Store.getState().payoutInProgress}
+                    .prename=${"pc-wallet-"}
                     .message=${Store.getState().payoutInProgress ? 'Processing payments' : ''}
                 ></pc-loading>
 
@@ -126,7 +125,7 @@ StorePromise.then((Store) => {
                             html`<div>Creating wallet...</div>` :
                             Store.getState().walletCreationState === 'SHOW_MNEMONIC_PHRASE' ?
                                 until(mnemonicPhraseUI(), 'Loading...') :
-                                warningsUI(update, props)
+                                warningsUI(update)
                 }
             </div>
         `;
@@ -278,7 +277,7 @@ StorePromise.then((Store) => {
         `;
     }
 
-    function warningsUI(update: any, props: any) {
+    function warningsUI(update: any) {
         return html`
             <div>
                 <div class="pc-wallet-secondary-text">I understand the following:</div>
@@ -340,7 +339,7 @@ StorePromise.then((Store) => {
 
                 <pc-button
                     .text=${'Create Wallet'}
-                    @click=${() => createWalletClick(update, props)}
+                    @click=${() => createWalletClick(update)}
                 ></pc-button>
 
             </div>
@@ -396,7 +395,7 @@ StorePromise.then((Store) => {
         navigate(Store, '/restore-with-phrase');
     }
 
-    async function createWalletClick(update: any, props: any) {
+    async function createWalletClick(update: any) {
         const warningsAccepted = 
             Store.getState().warningCheckbox1Checked &&
             Store.getState().warningCheckbox2Checked &&
@@ -409,14 +408,12 @@ StorePromise.then((Store) => {
         }
         else {
             update({
-                ...props,
                 loaded: false
             });
 
             await createWallet(Store);
 
             update({
-                ...props,
                 loaded: true
             });
         }

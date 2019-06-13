@@ -9,7 +9,14 @@ import {
 } from '../services/css';
 
 StorePromise.then((Store) => {
-    customElement('pc-not-verified-help', ({ constructing, connecting, props, update }) => {
+    customElement('pc-not-verified-help', ({ 
+        constructing, 
+        connecting, 
+        update,
+        podcastEmail,
+        feedUrl,
+        loaded
+    }) => {
 
         if (constructing) {
             return {
@@ -22,7 +29,6 @@ StorePromise.then((Store) => {
         if (connecting) {
             setTimeout(() => {
                 update({
-                    ...props,
                     loaded: true
                 });
             });
@@ -33,7 +39,7 @@ StorePromise.then((Store) => {
 
 I've been listening to your podcast on podcrypt.app.
             
-Unfortunately, I can't send you ETH donations because your podcast isn't verified: https://podcrypt.app/podcast-overview?feedUrl=${props.feedUrl}
+Unfortunately, I can't send you ETH donations because your podcast isn't verified: https://podcrypt.app/podcast-overview?feedUrl=${feedUrl}
 
 To get verified all you have to do is put your Ethereum address or ENS name into your podcast's main description.
         
@@ -63,8 +69,8 @@ Thanks!
     
             <div class="pc-not-verified-help-container">
                 <pc-loading
-                    .hidden=${props.loaded}
-                    .prefix=${"pc-not-verified-help-"}
+                    .hidden=${loaded}
+                    .prename=${"pc-not-verified-help-"}
                 ></pc-loading>
 
                 <div class="pc-not-verified-title-text-x-large">Podcast not verified</div>
@@ -80,10 +86,10 @@ Thanks!
                 <br>
 
                 ${
-                    props.podcastEmail !== 'NOT_SET' ? 
+                    podcastEmail !== 'NOT_SET' ? 
                         html`
                             <div class="pc-not-verified-secondary-text">
-                                <a href="mailto:${props.podcastEmail}?subject=${encodeURIComponent(subjectText)}&body=${encodeURIComponent(bodyText)}">Click here to send this email from your email app</a>
+                                <a href="mailto:${podcastEmail}?subject=${encodeURIComponent(subjectText)}&body=${encodeURIComponent(bodyText)}">Click here to send this email from your email app</a>
                             </div>
 
                             <br>
@@ -92,11 +98,11 @@ Thanks!
                 }
 
                 ${
-                    props.podcastEmail !== 'NOT_SET' ? 
+                    podcastEmail !== 'NOT_SET' ? 
                         html`
                             <div class="pc-not-verified-title-text-large">To</div> 
                             <br> 
-                            <div class="pc-not-verified-secondary-text">${props.podcastEmail}</div>
+                            <div class="pc-not-verified-secondary-text">${podcastEmail}</div>
                             <br>
                         ` : 
                         html``

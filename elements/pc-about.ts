@@ -7,7 +7,7 @@ import {
     standardTextContainer
 } from '../services/css';
 
-customElement('pc-about', ({ constructing, connecting, update, props }) => {
+customElement('pc-about', ({ constructing, connecting, update, loaded }) => {
 
     if (constructing) {
         return {
@@ -18,7 +18,6 @@ customElement('pc-about', ({ constructing, connecting, update, props }) => {
     if (connecting) {
         setTimeout(() => {
             update({
-                ...props,
                 loaded: true
             });
         });
@@ -45,8 +44,8 @@ customElement('pc-about', ({ constructing, connecting, update, props }) => {
 
         <div class="pc-about-container">
             <pc-loading
-                .hidden=${props.loaded}
-                .prefix=${"pc-about-"}
+                .hidden=${loaded}
+                .prename=${"pc-about-"}
             ></pc-loading>
 
             <div class="pc-about-title-text-x-large">About Podcrypt</div>

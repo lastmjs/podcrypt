@@ -25,7 +25,15 @@ import './pc-podcast-row';
 import './pc-episode-row';
 
 StorePromise.then((Store) => {
-    customElement('pc-podcast-overview', ({ constructing, update, props }) => {
+    customElement('pc-podcast-overview', ({ 
+        constructing,
+        update,
+        feedUrl,
+        previousFeedUrl,
+        loaded,
+        podcast,
+        feed
+    }) => {
     
         if (constructing) {
             Store.subscribe(update);
@@ -39,13 +47,12 @@ StorePromise.then((Store) => {
             };
         }
 
-        if (props.feedUrl !== props.previousFeedUrl) {
+        if (feedUrl !== previousFeedUrl) {
             update({
-                ...props,
-                previousFeedUrl: props.feedUrl,
+                previousFeedUrl: feedUrl,
                 loaded: false
             });
-            getFeed(props.feedUrl, props, update);
+            getFeed(feedUrl, update);
         }
     
         return html`
@@ -107,16 +114,16 @@ StorePromise.then((Store) => {
 
             <div class="pc-podcast-overview-container">
                 <pc-loading
-                    .hidden=${props.loaded}
-                    .prefix=${"pc-podcast-overview-"}
+                    .hidden=${loaded}
+                    .prename=${"pc-podcast-overview-"}
                 ></pc-loading>
 
                 ${
-                    props.podcast === null || props.feed === null ? 
+                    podcast === null || feed === null ? 
                         html`<div>Failed to load</div>` : 
                         html`
                             <pc-podcast-row
-                                .podcast=${props.podcast}
+                                .podcast=${podcast}
                                 .controls=${true}
                                 .verification=${true}
                                 .options=${true}
@@ -124,7 +131,7 @@ StorePromise.then((Store) => {
 
                             <br>
                         
-                            <div class="pc-podcast-overview-podcast-description">${props.feed.description}</div>
+                            <div class="pc-podcast-overview-podcast-description">${feed.description}</div>
 
                             <br>
 
@@ -132,12 +139,12 @@ StorePromise.then((Store) => {
 
                             <br>
 
-                            ${props.feed.items.map((item: any) => {
+                            ${feed.items.map((item: any) => {
                                 const episode: Readonly<Episode> | undefined = Store.getState().episodes[item.guid];
 
                                 return html`
                                     <pc-episode-row
-                                        .podcast=${props.podcast}
+                                        .podcast=${podcast}
                                         .episode=${episode || item}
                                         .play=${true}
                                         .playlist=${true}
@@ -151,7 +158,7 @@ StorePromise.then((Store) => {
         `;
     });
     
-    async function getFeed(feedUrl: string, props: any, update: any): Promise<any> {    
+    async function getFeed(feedUrl: string, update: any): Promise<any> {    
         
         if (
             feedUrl === null ||
@@ -164,7 +171,6 @@ StorePromise.then((Store) => {
         const podcast: Readonly<Podcast | null> = await createPodcast(feedUrl, feed);
 
         update({
-            ...props,
             loaded: true,
             previousFeedUrl: feedUrl,
             feed,
