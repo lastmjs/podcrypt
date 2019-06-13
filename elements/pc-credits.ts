@@ -7,7 +7,7 @@ import {
     standardTextContainer
 } from '../services/css';
 
-customElement('pc-credits', ({ constructing, update, loaded, attribution }) => {
+customElement('pc-credits', async ({ constructing, connecting, update, loaded, attribution }) => {
 
     if (constructing) {
         return {
@@ -16,7 +16,13 @@ customElement('pc-credits', ({ constructing, update, loaded, attribution }) => {
         };
     }
 
-    loadOSSAttribution(update);
+    if (connecting) {
+        update();
+        return {
+            attribution: await loadOSSAttribution(),
+            loaded: true
+        };
+    }
 
     return html`
         <style>
@@ -80,12 +86,9 @@ customElement('pc-credits', ({ constructing, update, loaded, attribution }) => {
     `;
 });
 
-async function loadOSSAttribution(update: any) {
+async function loadOSSAttribution() {
     const attributionResponse = await window.fetch('oss-attribution/attribution.txt');
     const attribution = await attributionResponse.text();
 
-    update({
-        loaded: true,
-        attribution
-    });
+    return attribution;
 }
