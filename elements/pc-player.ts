@@ -26,6 +26,11 @@ StorePromise.then((Store) => {
         const episodeChanged: boolean = previousEpisode === 'NOT_SET' || (audioElement && !audioElement.src) || (currentEpisode && previousEpisode && currentEpisode.guid !== previousEpisode.guid);
 
         if (episodeChanged) {
+
+            if (audioElement) {
+                audioElement.pause();
+            }
+
             const currentSrc: string = await getSrc(currentEpisode, previousSrc);
             
             if (audioElement) {
