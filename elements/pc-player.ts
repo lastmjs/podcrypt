@@ -40,11 +40,14 @@ StorePromise.then((Store) => {
             }
 
             update({
+                previousSrc: currentSrc,
                 previousEpisode: currentEpisode
             });
         }
+        else {
+            await playOrPause(audioElement, currentEpisode);
+        }
 
-        await playOrPause(audioElement, currentEpisode);
 
         return html`
             <style>
@@ -154,12 +157,17 @@ StorePromise.then((Store) => {
 
             <audio
                 preload="metadata"
+                @loadeddata=${() => loadedData(audioElement, currentEpisode)}
                 @ended=${audioEnded}
                 @timeupdate=${timeUpdated}
                 .playbackRate=${parseInt(Store.getState().playbackRate)}
             ></audio>
         `;
     });
+
+    function loadedData(audioElement: Readonly<HTMLAudioElement> | null, currentEpisode: Readonly<Episode>) {
+        playOrPause(audioElement, currentEpisode);
+    }
 
     async function playOrPause(audioElement: Readonly<HTMLAudioElement> | null, currentEpisode: Readonly<Episode>) {
         try {
