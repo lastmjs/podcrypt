@@ -23,7 +23,7 @@ StorePromise.then((Store) => {
         const state: Readonly<State> = Store.getState();
         const currentEpisode: Readonly<Episode> = state.episodes[state.currentEpisodeGuid];
         const audioElement: HTMLAudioElement | null = element.querySelector('audio');
-        const episodeChanged: boolean = previousEpisode === 'NOT_SET' || (audioElement && !audioElement.src) || (currentEpisode && previousEpisode && currentEpisode.guid !== previousEpisode.guid);
+        const episodeChanged: boolean = currentEpisode && currentEpisode.guid !== previousEpisode.guid;
 
         if (episodeChanged) {
 
@@ -31,23 +31,27 @@ StorePromise.then((Store) => {
                 audioElement.pause();
             }
 
+            update({
+                previousEpisode: currentEpisode
+            });
+
             const currentSrc: string = await getSrc(currentEpisode, previousSrc);
             
-            if (audioElement) {
+            // TODO figure out a better way of retrieving the audio element when needed
+            // TODO I do not know about this async functional element thing...it's kind of hard to wrap your head around everything that's happening
+            if (element.querySelector('audio')) {
                 // TODO this is imperative but works well for now
-                audioElement.src = currentSrc;
-                audioElement.currentTime = parseInt(currentEpisode.progress);
+                element.querySelector('audio').src = currentSrc;
+                element.querySelector('audio').currentTime = parseInt(currentEpisode.progress);
             }
 
             update({
-                previousSrc: currentSrc,
-                previousEpisode: currentEpisode
+                previousSrc: currentSrc
             });
         }
         else {
             await playOrPause(audioElement, currentEpisode);
         }
-
 
         return html`
             <style>
@@ -173,8 +177,6 @@ StorePromise.then((Store) => {
         try {
             if (
                 audioElement &&
-                audioElement.src &&
-                audioElement.paused === true &&
                 currentEpisode.playing === true
             ) {
                 await audioElement.play();
@@ -183,8 +185,6 @@ StorePromise.then((Store) => {
     
             if (
                 audioElement &&
-                audioElement.src &&
-                audioElement.paused === false &&
                 currentEpisode.playing === false
             ) {
                 audioElement.pause();
