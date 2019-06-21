@@ -50,7 +50,7 @@ StorePromise.then((Store) => {
             });
         }
         else {
-            await playOrPause(audioElement, currentEpisode);
+            await playOrPause(audioElement, currentEpisode, previousSrc);
         }
 
         return html`
@@ -173,8 +173,16 @@ StorePromise.then((Store) => {
         playOrPause(audioElement, currentEpisode);
     }
 
-    async function playOrPause(audioElement: Readonly<HTMLAudioElement> | null, currentEpisode: Readonly<Episode>) {
+    async function playOrPause(audioElement: Readonly<HTMLAudioElement> | null, currentEpisode: Readonly<Episode>, previousSrc: string) {
         try {
+
+            if (
+                audioElement &&
+                audioElement.src !== previousSrc
+            ) {
+                return;
+            }
+
             if (
                 audioElement &&
                 currentEpisode.playing === true
