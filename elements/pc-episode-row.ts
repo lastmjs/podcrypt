@@ -242,6 +242,8 @@ StorePromise.then((Store) => {
                                         <option>Download</option>
                                         <option>Delete</option>
                                         <option>Remove from playlist</option>
+                                        <option>Mark listened</option>
+                                        <option>Mark unlistened</option>
                                     </select>
                                 ` :
                                 html``
@@ -379,6 +381,20 @@ StorePromise.then((Store) => {
             catch(error) {
                 alert(error);
             }
+        }
+
+        if (value === 'Mark listened') {
+            Store.dispatch({
+                type: 'MARK_EPISODE_LISTENED',
+                episodeGuid: episode.guid
+            })
+        }
+
+        if (value === 'Mark unlistened') {
+            Store.dispatch({
+                type: 'MARK_EPISODE_UNLISTENED',
+                episodeGuid: episode.guid
+            })
         }
     }
 

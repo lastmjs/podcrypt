@@ -370,6 +370,16 @@ type SetPreviousEpisodeGuidAction = {
     readonly previousEpisodeGuid: EpisodeGuid;
 }
 
+type MarkEpisodeListenedAction = {
+    readonly type: 'MARK_EPISODE_LISTENED';
+    readonly episodeGuid: EpisodeGuid;
+}
+
+type MarkEpisodeUnlistenedAction = {
+    readonly type: 'MARK_EPISODE_UNLISTENED';
+    readonly episodeGuid: EpisodeGuid;
+}
+
 type PodcryptAction = 
     SetStateAction |
     SetPodcastEthereumAddressAction |
@@ -417,4 +427,6 @@ type PodcryptAction =
     MoveEpisodeUpAction |
     MoveEpisodeDownAction |
     SetCurrentEpisodeAction |
-    SetPreviousEpisodeGuidAction;
+    SetPreviousEpisodeGuidAction |
+    MarkEpisodeListenedAction |
+    MarkEpisodeUnlistenedAction;
