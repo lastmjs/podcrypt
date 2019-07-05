@@ -97,43 +97,67 @@ export function PlaylistReducer(
     }
 
     if (action.type === 'PLAY_PREVIOUS_EPISODE') {
-        const nextPlaylistIndex: number = state.currentPlaylistIndex - 1 >= 0 ? state.currentPlaylistIndex - 1 : 0;
-        const nextCurrentEpisodeGuid: EpisodeGuid = state.playlist[nextPlaylistIndex];
-        const nextCurrentEpisode: Readonly<Episode> = state.episodes[nextCurrentEpisodeGuid];
-        const nextCurrentPodcast = state.podcasts[nextCurrentEpisode.feedUrl];
-        const newNextCurrentPodcast: Readonly<Podcast> = {
-            ...nextCurrentPodcast,
+        const newCurrentPlaylistIndex: number = state.currentPlaylistIndex - 1 >= 0 ? state.currentPlaylistIndex - 1 : 0;
+        const newCurrentEpisodeGuid: EpisodeGuid = state.playlist[newCurrentPlaylistIndex];
+        const newCurrentEpisode: Readonly<Episode> = {
+            ...state.episodes[newCurrentEpisodeGuid],
+            playing: true
+        };
+        const newCurrentPodcast = {
+            ...state.podcasts[newCurrentEpisode.feedUrl],
             lastStartDate: new Date().getTime()
+
+        };
+        const oldCurrentEpisode: Readonly<Episode> = {
+            ...state.episodes[state.currentEpisodeGuid],
+            playing: false
         };
 
         return {
             ...state,
-            currentPlaylistIndex: nextPlaylistIndex,
-            currentEpisodeGuid: nextCurrentEpisodeGuid,
+            currentPlaylistIndex: newCurrentPlaylistIndex,
+            currentEpisodeGuid: newCurrentEpisodeGuid,
             podcasts: {
                 ...state.podcasts,
-                [newNextCurrentPodcast.feedUrl]: newNextCurrentPodcast
+                [newCurrentPodcast.feedUrl]: newCurrentPodcast
+            },
+            episodes: {
+                ...state.episodes,
+                [newCurrentEpisode.guid]: newCurrentEpisode,
+                [oldCurrentEpisode.guid]: oldCurrentEpisode
             }
         };
     }
 
     if (action.type === 'PLAY_NEXT_EPISODE') {
-        const nextPlaylistIndex: number = state.currentPlaylistIndex + 1 < state.playlist.length - 1 ? state.currentPlaylistIndex + 1 : state.playlist.length - 1;
-        const nextCurrentEpisodeGuid: EpisodeGuid = state.playlist[nextPlaylistIndex];
-        const nextCurrentEpisode: Readonly<Episode> = state.episodes[nextCurrentEpisodeGuid];
-        const nextCurrentPodcast = state.podcasts[nextCurrentEpisode.feedUrl];
-        const newNextCurrentPodcast: Readonly<Podcast> = {
-            ...nextCurrentPodcast,
+        const newCurrentPlaylistIndex: number = state.currentPlaylistIndex + 1 < state.playlist.length - 1 ? state.currentPlaylistIndex + 1 : state.playlist.length - 1;
+        const newCurrentEpisodeGuid: EpisodeGuid = state.playlist[newCurrentPlaylistIndex];
+        const newCurrentEpisode: Readonly<Episode> = {
+            ...state.episodes[newCurrentEpisodeGuid],
+            playing: true
+        };
+        const newCurrentPodcast = {
+            ...state.podcasts[newCurrentEpisode.feedUrl],
             lastStartDate: new Date().getTime()
+
+        };
+        const oldCurrentEpisode: Readonly<Episode> = {
+            ...state.episodes[state.currentEpisodeGuid],
+            playing: false
         };
 
         return {
             ...state,
-            currentPlaylistIndex: nextPlaylistIndex,
-            currentEpisodeGuid: nextCurrentEpisodeGuid,
+            currentPlaylistIndex: newCurrentPlaylistIndex,
+            currentEpisodeGuid: newCurrentEpisodeGuid,
             podcasts: {
                 ...state.podcasts,
-                [newNextCurrentPodcast.feedUrl]: newNextCurrentPodcast
+                [newCurrentPodcast.feedUrl]: newCurrentPodcast
+            },
+            episodes: {
+                ...state.episodes,
+                [newCurrentEpisode.guid]: newCurrentEpisode,
+                [oldCurrentEpisode.guid]: oldCurrentEpisode
             }
         };
     }
