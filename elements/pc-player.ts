@@ -18,8 +18,9 @@ StorePromise.then((Store) => {
         const state: Readonly<State> = Store.getState();
         const audioElement: HTMLAudioElement | null = element.querySelector('audio');
         const currentEpisode: Readonly<Episode> = state.episodes[state.currentEpisodeGuid];
+        const currentPodcast: Readonly<Podcast> = state.podcasts[currentEpisode.feedUrl];
 
-        setupMediaNotification(currentEpisode);
+        setupMediaNotification(currentPodcast, currentEpisode);
         await handleEpisodeSwitching(state, audioElement, currentEpisode);
         await playOrPause(audioElement, currentEpisode);
 
@@ -139,7 +140,7 @@ StorePromise.then((Store) => {
         `;
     });
 
-    function setupMediaNotification(currentEpisode: Readonly<Episode>): void {
+    function setupMediaNotification(currentPodcast: Readonly<Podcast>, currentEpisode: Readonly<Episode>): void {
 
         const navigator = window.navigator as any;
 
@@ -148,7 +149,9 @@ StorePromise.then((Store) => {
             navigator.mediaSession !== undefined
         ) {
             navigator.mediaSession.metadata = new MediaMetadata({
-                title: currentEpisode.title
+                title: currentEpisode.title,
+                artist: currentPodcast.artistName,
+                album: currentPodcast.title
             });
 
             navigator.mediaSession.setActionHandler('play', () => {
