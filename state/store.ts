@@ -13,14 +13,15 @@ import {
     calculateTotalTimeForPodcastDuringIntervalInMilliseconds, 
     Version32State,
     Version32Podcast,
-    Version32Episode
+    Version32Episode,
+    Version33State
  } from './version-32-migration-helpers';
 
 export const StorePromise: Promise<Readonly<Store<Readonly<State>, Readonly<PodcryptAction>>>> = prepareStore();
 
 async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<PodcryptAction>>>> {
     const persistedState: Readonly<State> = await get('state');
-    const version: number = 33;
+    const version: number = 34;
 
     const InitialState: Readonly<State> = getInitialState(persistedState, version);
     
@@ -63,7 +64,12 @@ export function getInitialState(persistedState: Readonly<State> | null | undefin
         return getOriginalState(version);
     }
 
-    return runMigrations(persistedState, version);
+    const migratedState: Readonly<State> = runMigrations(persistedState, version);
+
+    return {
+        ...migratedState,
+        previousEpisodeGuid: 'NOT_SET'
+    };
 }
 
 function runMigrations(persistedState: Readonly<State>, version: number): Readonly<State> {
@@ -189,7 +195,7 @@ function runMigrations(persistedState: Readonly<State>, version: number): Readon
             ...version32StateWithoutFields
         } = version32State;
 
-        const newPersistedState: Readonly<State> = {
+        const newPersistedState: Readonly<Version33State> = {
             ...version32StateWithoutFields,
             version: 33,
             previousPayoutDate: version32State.previousPayoutDateInMilliseconds === 'NEVER' ? 'NEVER' : parseInt(version32State.previousPayoutDateInMilliseconds),
@@ -235,7 +241,22 @@ function runMigrations(persistedState: Readonly<State>, version: number): Readon
             }, {})
         };
 
-        return runMigrations(newPersistedState, version);
+        // TODO I put in the type coercion to Readonly<State> because the Version33State does not have the previousEpisodeGuid
+        // TODO but the runMigrations command takes a Readonly<State>...this is not good, because each version might have a different version of the State...we should address this eventually
+        return runMigrations(newPersistedState as Readonly<State>, version);
+    }
+
+    if (persistedState.version === 33) {
+        console.log(`running migration to upgrade version 33 to 34`);
+
+        // TODO this type reall is not correct...it should be Version34State...think about making the state an interface so that it can inherit previous properties, that will save space
+        const newPersistedState: Readonly<State> = {
+            ...persistedState,
+            version: 34,
+            previousEpisodeGuid: 'NOT_SET'
+        }; 
+        
+        return runMigrations(newPersistedState, version);    
     }
 
     return persistedState;
@@ -251,6 +272,7 @@ function getOriginalState(version: number): Readonly<State> {
         },
         showMainMenu: false,
         currentEpisodeGuid: 'NOT_SET',
+        previousEpisodeGuid: 'NOT_SET',
         playlist: [],
         currentPlaylistIndex: 0,
         podcasts: {},
