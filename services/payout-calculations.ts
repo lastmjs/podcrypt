@@ -85,6 +85,7 @@ export async function payout(Store: Readonly<Store<Readonly<State>, Readonly<Pod
         });
 
         if (
+            // TODO I think we should distinguish ALREADY_PAID_FOR_INTERVAL and nothing to pay for interval. Right now these two return types are indistinguishable
             podcastTransactionResult === 'ALREADY_PAID_FOR_INTERVAL' ||
             podcastTransactionResult === 'FEED_NOT_FOUND' ||
             podcastTransactionResult === 'PODCAST_ETHEREUM_ADDRESS_MALFORMED' ||
@@ -180,7 +181,7 @@ async function payPodcast(Store: Readonly<Store>, podcast: Readonly<Podcast>, re
         } = await getPayoutInfoForPodcast(Store.getState(), podcast);
     
         const dataHex: HexString = hexlifyData('podcrypt.app');
-        const gasLimit: number = getGasLimit(dataHex);
+        const gasLimit: number = await getGasLimit(dataHex, to, payoutInfoForPodcast.value);
     
         if (new BigNumber(payoutInfoForPodcast.value).lte(0)) {
             return 'ALREADY_PAID_FOR_INTERVAL';
@@ -221,7 +222,7 @@ async function payPodcrypt(Store: Readonly<Store>, state: Readonly<State>, retry
         } = await getPayoutInfoForPodcrypt(state);
     
         const dataHex: HexString = hexlifyData('podcrypt.app');
-        const gasLimit: number = getGasLimit(dataHex);
+        const gasLimit: number = await getGasLimit(dataHex, to, payoutInfoForPodcrypt.value);
     
         if (new BigNumber(payoutInfoForPodcrypt.value).lte(0)) {
             return 'ALREADY_PAID_FOR_INTERVAL';
@@ -258,11 +259,12 @@ function hexlifyData(dataUTF8: UTF8String): HexString {
     return dataHex;
 }
 
-function getGasLimit(dataHex: HexString): number {
-    const dataLengthInBytes: number = ethers.utils.hexDataLength(dataHex);
-    const gasLimit: number = 21000 + (68 * dataLengthInBytes);
-    
-    return gasLimit;
+async function getGasLimit(dataHex: HexString, to: EthereumAddress, value: WEI): Promise<number> {
+    return await ethersProvider.estimateGas({
+        to,
+        value,
+        data: dataHex
+    });
 }
 
 async function sendTransaction(Store: Readonly<Store>, to: EthereumAddress, value: WEI, gasLimit: number, gasPrice: WEI, data: HexString) {
