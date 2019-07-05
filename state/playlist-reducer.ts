@@ -19,8 +19,42 @@ export function PlaylistReducer(
         MoveEpisodeUpAction |
         MoveEpisodeDownAction |
         SetCurrentEpisodeAction |
-        SetPreviousEpisodeGuidAction
+        SetPreviousEpisodeGuidAction |
+        MarkEpisodeListenedAction |
+        MarkEpisodeUnlistenedAction
 ): Readonly<State> {
+
+    if (action.type === 'MARK_EPISODE_LISTENED') {
+
+        const newEpisode: Readonly<Episode> = {
+            ...state.episodes[action.episodeGuid],
+            finishedListening: true
+        };
+
+        return {
+            ...state,
+            episodes: {
+                ...state.episodes,
+                [newEpisode.guid]: newEpisode
+            }
+        };
+    }
+
+    if (action.type === 'MARK_EPISODE_UNLISTENED') {
+
+        const newEpisode: Readonly<Episode> = {
+            ...state.episodes[action.episodeGuid],
+            finishedListening: false
+        };
+
+        return {
+            ...state,
+            episodes: {
+                ...state.episodes,
+                [newEpisode.guid]: newEpisode
+            }
+        };
+    }
 
     if (action.type === 'SET_PREVIOUS_EPISODE_GUID') {
         return {
