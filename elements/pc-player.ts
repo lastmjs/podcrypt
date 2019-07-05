@@ -151,7 +151,12 @@ StorePromise.then((Store) => {
             navigator.mediaSession.metadata = new MediaMetadata({
                 title: currentEpisode.title,
                 artist: currentPodcast.artistName,
-                album: currentPodcast.title
+                album: currentPodcast.title,
+                artwork: [
+                    {
+                        src: currentPodcast.imageUrl
+                    }
+                ]
             });
 
             navigator.mediaSession.setActionHandler('play', () => {
