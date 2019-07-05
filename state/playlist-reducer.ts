@@ -98,6 +98,11 @@ export function PlaylistReducer(
 
     if (action.type === 'PLAY_PREVIOUS_EPISODE') {
         const newCurrentPlaylistIndex: number = state.currentPlaylistIndex - 1 >= 0 ? state.currentPlaylistIndex - 1 : 0;
+        
+        if (newCurrentPlaylistIndex === state.currentPlaylistIndex) {
+            return state;
+        }
+        
         const newCurrentEpisodeGuid: EpisodeGuid = state.playlist[newCurrentPlaylistIndex];
         const newCurrentEpisode: Readonly<Episode> = {
             ...state.episodes[newCurrentEpisodeGuid],
@@ -131,6 +136,11 @@ export function PlaylistReducer(
 
     if (action.type === 'PLAY_NEXT_EPISODE') {
         const newCurrentPlaylistIndex: number = state.currentPlaylistIndex + 1 < state.playlist.length - 1 ? state.currentPlaylistIndex + 1 : state.playlist.length - 1;
+        
+        if (newCurrentPlaylistIndex === state.currentPlaylistIndex) {
+            return state;
+        }
+        
         const newCurrentEpisodeGuid: EpisodeGuid = state.playlist[newCurrentPlaylistIndex];
         const newCurrentEpisode: Readonly<Episode> = {
             ...state.episodes[newCurrentEpisodeGuid],
