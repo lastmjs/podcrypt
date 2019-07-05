@@ -19,7 +19,7 @@ StorePromise.then((Store) => {
         const audioElement: HTMLAudioElement | null = element.querySelector('audio');
         const currentEpisode: Readonly<Episode> = state.episodes[state.currentEpisodeGuid];
 
-
+        setupMediaNotification(currentEpisode);
         await handleEpisodeSwitching(state, audioElement, currentEpisode);
         await playOrPause(audioElement, currentEpisode);
 
@@ -215,7 +215,6 @@ StorePromise.then((Store) => {
     }
 
     async function getAudioSrc(episode: Readonly<Episode>): Promise<string> {
-        console.log('hello')
 
         // TODO I do not know if the types are correct here
         const arrayBuffer: Uint8Array = await get(`${episode.guid}-audio-file-array-buffer`);
