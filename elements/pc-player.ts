@@ -20,7 +20,7 @@ StorePromise.then((Store) => {
         const currentEpisode: Readonly<Episode> = state.episodes[state.currentEpisodeGuid];
         const currentPodcast: Readonly<Podcast> = state.podcasts[currentEpisode.feedUrl];
 
-        setupMediaNotification(currentPodcast, currentEpisode);
+        setupMediaNotification(currentPodcast, currentEpisode, audioElement);
         await handleEpisodeSwitching(state, audioElement, currentEpisode);
         await playOrPause(audioElement, currentEpisode);
 
@@ -74,7 +74,7 @@ StorePromise.then((Store) => {
                     <div style="flex: 2; display: flex; align-items: center; justify-content: center">
                         <i 
                             class="material-icons pc-player-backward-icon"
-                            @click=${() => skipBack(element)}
+                            @click=${() => skipBack(audioElement)}
                         >
                             replay_10
                         </i>
@@ -101,7 +101,7 @@ StorePromise.then((Store) => {
 
                         <i 
                             class="material-icons pc-player-forward-icon"
-                            @click=${() => skipForward(element)}
+                            @click=${() => skipForward(audioElement)}
                         >
                             forward_10
                         </i>
@@ -140,7 +140,7 @@ StorePromise.then((Store) => {
         `;
     });
 
-    function setupMediaNotification(currentPodcast: Readonly<Podcast>, currentEpisode: Readonly<Episode>): void {
+    function setupMediaNotification(currentPodcast: Readonly<Podcast>, currentEpisode: Readonly<Episode>, audioElement: HTMLAudioElement | null): void {
 
         const navigator = window.navigator as any;
 
@@ -169,6 +169,14 @@ StorePromise.then((Store) => {
                 Store.dispatch({
                     type: 'CURRENT_EPISODE_PAUSED'
                 });
+            });
+
+            navigator.mediaSession.setActionHandler('seekbackward', () => {
+                skipBack(audioElement);
+            });
+
+            navigator.mediaSession.setActionHandler('seekforward', () => {
+                skipForward(audioElement);                
             });
         }
     }
@@ -291,15 +299,13 @@ StorePromise.then((Store) => {
         });
     }
 
-    function skipBack(element: any) {
-        const audioElement = element.querySelector('audio');
+    function skipBack(audioElement: HTMLAudioElement | null): void {
         if (audioElement) {
             audioElement.currentTime = audioElement.currentTime - 10;
         }
     }
 
-    function skipForward(element: any) {
-        const audioElement = element.querySelector('audio');
+    function skipForward(audioElement: HTMLAudioElement | null): void {
         if (audioElement) {
             audioElement.currentTime = audioElement.currentTime + 10;
         }
@@ -362,45 +368,7 @@ StorePromise.then((Store) => {
         //     'mediaSession' in window.navigator &&
         //     theCurrentEpisode
         // ) {
-        //     (window.navigator as any).mediaSession.metadata = new MediaMetadata({
-        //         title: theCurrentEpisode.title,
-        //         // artwork: [
-        //         //     {
-        //         //         src: currentPodcast.imageUrl,
-        //         //         sizes: '60x60',
-        //         //         type: 'image/jpg'
-        //         //     }
-        //         // ] // TODO I can't get the artwork to work, not sure why
-        //     });
-    
-        //     (window.navigator as any).mediaSession.setActionHandler('play', () => {
-        //         // const audioElement = element.querySelector('audio');
-        //         // if (audioElement && theCurrentEpisode) {
-        //         //     audioElement.play();
-        //         // }
-        //         // TODO perhaps we want to make a new action type that plays the currenty episode?
-        //         // Store.dispatch({
-        //         //     type: 'PLAY_EPISODE_FROM_PLAYLIST',
-        //         //     playlistIndex: (Store.getState() as any).currentPlaylistIndex
-        //         // });
-        //         Store.dispatch({
-        //             type: 'CURRENT_EPISODE_PLAYED'
-        //         });
-        //     });
-            
-        //     (window.navigator as any).mediaSession.setActionHandler('pause', () => {
-        //         // const audioElement = element.querySelector('audio');
-        //         // if (audioElement) {
-        //         //     audioElement.pause();
-        //         // }
-        //         // Store.dispatch({
-        //         //     type: 'PAUSE_EPISODE_FROM_PLAYLIST'
-        //         // });
-        //         Store.dispatch({
-        //             type: 'CURRENT_EPISODE_PAUSED'
-        //         });
-        //     });
-            
+
         //     (window.navigator as any).mediaSession.setActionHandler('seekbackward', () => {
         //         const audioElement = element.querySelector('audio');
         //         if (audioElement) {
