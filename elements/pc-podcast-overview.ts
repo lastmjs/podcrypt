@@ -149,6 +149,7 @@ StorePromise.then((Store) => {
                                         .play=${true}
                                         .playlist=${true}
                                         .date=${true}
+                                        .options=${true}
                                     ></pc-episode-row>
                                 `;
                             })}
