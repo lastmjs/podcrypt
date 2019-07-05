@@ -13,71 +13,15 @@ StorePromise.then((Store) => {
     
         if (constructing) {
             Store.subscribe(update);
-
-            // return {
-                // previousSrc: 'NOT_SET',
-                // previousEpisode: 'NOT_SET'
-            // };
         }
 
         const state: Readonly<State> = Store.getState();
-        const currentEpisodeGuid: EpisodeGuid = state.currentEpisodeGuid;
-        const previousEpisodeGuid: EpisodeGuid = state.previousEpisodeGuid;
-        const episodeChanged: boolean = currentEpisodeGuid !== previousEpisodeGuid;
         const audioElement: HTMLAudioElement | null = element.querySelector('audio');
         const currentEpisode: Readonly<Episode> = state.episodes[state.currentEpisodeGuid];
 
-        if (episodeChanged) {
-            if (audioElement) {
-                audioElement.pause();
-                audioElement.src = '';
 
-                Store.dispatch({
-                    type: 'SET_PREVIOUS_EPISODE_GUID',
-                    previousEpisodeGuid: currentEpisodeGuid
-                });
-
-                const audioSrc: string = await getAudioSrc(currentEpisode);
-
-                audioElement.src = audioSrc;
-                audioElement.currentTime = parseInt(currentEpisode.progress);
-            }
-        }
-
+        await handleEpisodeSwitching(state, audioElement, currentEpisode);
         await playOrPause(audioElement, currentEpisode);
-
-        // const state: Readonly<State> = Store.getState();
-        // const currentEpisode: Readonly<Episode> = state.episodes[state.currentEpisodeGuid];
-        // const audioElement: HTMLAudioElement | null = element.querySelector('audio');
-        // const episodeChanged: boolean = currentEpisode && currentEpisode.guid !== previousEpisode.guid;
-
-        // if (episodeChanged) {
-
-        //     if (audioElement) {
-        //         audioElement.pause();
-        //     }
-
-        //     update({
-        //         previousEpisode: currentEpisode
-        //     });
-
-        //     const currentSrc: string = await getSrc(currentEpisode, previousSrc);
-            
-        //     // TODO figure out a better way of retrieving the audio element when needed
-        //     // TODO I do not know about this async functional element thing...it's kind of hard to wrap your head around everything that's happening
-        //     if (element.querySelector('audio')) {
-        //         // TODO this is imperative but works well for now
-        //         element.querySelector('audio').src = currentSrc;
-        //         element.querySelector('audio').currentTime = parseInt(currentEpisode.progress);
-        //     }
-
-        //     update({
-        //         previousSrc: currentSrc
-        //     });
-        // }
-        // else {
-        //     await playOrPause(audioElement, currentEpisode, previousSrc);
-        // }
 
         return html`
             <style>
@@ -195,20 +139,61 @@ StorePromise.then((Store) => {
         `;
     });
 
+    function setupMediaNotification(currentEpisode: Readonly<Episode>): void {
+
+        const navigator = window.navigator as any;
+
+        if (
+            navigator.mediaSession !== null &&
+            navigator.mediaSession !== undefined
+        ) {
+            navigator.mediaSession.metadata = new MediaMetadata({
+                title: currentEpisode.title
+            });
+
+            navigator.mediaSession.setActionHandler('play', () => {
+                Store.dispatch({
+                    type: 'CURRENT_EPISODE_PLAYED'
+                });
+            });
+
+            navigator.mediaSession.setActionHandler('pause', () => {
+                Store.dispatch({
+                    type: 'CURRENT_EPISODE_PAUSED'
+                });
+            });
+        }
+    }
+
+    async function handleEpisodeSwitching(state: Readonly<State>, audioElement: HTMLAudioElement | null, currentEpisode: Readonly<Episode>): Promise<void> {
+        const currentEpisodeGuid: EpisodeGuid = state.currentEpisodeGuid;
+        const previousEpisodeGuid: EpisodeGuid = state.previousEpisodeGuid;
+        const episodeChanged: boolean = currentEpisodeGuid !== previousEpisodeGuid;
+        
+        if (episodeChanged) {
+            if (audioElement) {
+                audioElement.pause();
+                audioElement.src = ''; // TODO not sure if this is necessary, but it works for now. Try getting rid of it and see if the previous episode plays while switching episodes
+
+                Store.dispatch({
+                    type: 'SET_PREVIOUS_EPISODE_GUID',
+                    previousEpisodeGuid: currentEpisodeGuid
+                });
+
+                const audioSrc: string = await getAudioSrc(currentEpisode);
+
+                audioElement.src = audioSrc;
+                audioElement.currentTime = parseInt(currentEpisode.progress);
+            }
+        }
+    }
+
     function loadedData(audioElement: Readonly<HTMLAudioElement> | null, currentEpisode: Readonly<Episode>) {
         playOrPause(audioElement, currentEpisode);
     }
 
     async function playOrPause(audioElement: Readonly<HTMLAudioElement> | null, currentEpisode: Readonly<Episode>) {
         try {
-
-            // if (
-            //     audioElement &&
-            //     audioElement.src !== previousSrc
-            // ) {
-            //     return;
-            // }
-
             if (
                 audioElement &&
                 currentEpisode.playing === true
@@ -225,9 +210,7 @@ StorePromise.then((Store) => {
             }
         }
         catch(error) {
-            // I believe the main reason this error is being thrown is because the user has not yet interacted with the app
-            // So, just pause it for them. The next time they click play it should work
-            // paused();
+            console.log(error);
         }
     }
 
@@ -238,6 +221,7 @@ StorePromise.then((Store) => {
         const arrayBuffer: Uint8Array = await get(`${episode.guid}-audio-file-array-buffer`);
 
         if (arrayBuffer) {
+            // TODO I think we are going to want to release these blobs eventaully...it doesn't seem to be making a difference currently though
             // window.URL.revokeObjectURL(previousSrc);
 
             const blob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
@@ -366,20 +350,6 @@ StorePromise.then((Store) => {
         });
     }
 });
-
-
-        // if (constructing) {
-        //     Store.subscribe(update);
-
-        //     return {
-        //         src: '',
-        //         currentEpisode: null
-        //     };
-        // }
-        
-        // const state: Readonly<State> = Store.getState();
-        // const theCurrentEpisode: Readonly<Episode> = state.episodes[state.currentEpisodeGuid];
-        // const currentPodcast: Readonly<Podcast> | null = currentEpisode ? state.podcasts[currentEpisode.feedUrl] : null;
     
         // if (
         //     'mediaSession' in window.navigator &&
@@ -450,94 +420,3 @@ StorePromise.then((Store) => {
         //     //     });
         //     // });
         // }
-
-        // // TODO this whole setTimeout and setSrc gettup is crazy...we really need to get the custom element definition
-        // // TODO function to be asynchronous, then we could simplify the whole control flow and make it much more declarative
-        // // TODO this might be necessary so that the src gets set first when switching episodes
-        // // TODO the src gets set, then we click play on a new episode
-        // setTimeout(async () => {
-        //     // const state: Readonly<State> = Store.getState();
-        //     // const currentEpisode: Readonly<Episode> = state.episodes[state.currentEpisodeGuid];
-
-        //     // if (
-        //     //     audioElement &&
-        //     //     audioElement.src !== src
-        //     // ) {
-        //     //     audioElement.pause();
-        //     // }
-
-        //     const audioElement: HTMLAudioElement | null = element.querySelector('audio');
-
-        //     if (
-        //         audioElement &&
-        //         theCurrentEpisode
-        //     ) {
-        //         // if (audioElement.src !== src) {
-        //         //     audioElement.pause();
-        //         // }
-        //         // else {
-        //             if (theCurrentEpisode.playing === true) {
-
-        //                 if (audioElement.paused === true) {
-        //                     audioElement.currentTime = parseInt(theCurrentEpisode.progress);                
-        //                 }
-
-        //                 audioElement.play();    
-        //             }
-        
-        //             if (theCurrentEpisode.playing === false) {
-        //                 audioElement.pause();
-        //             }
-        //         // }
-        //     }
-
-        //     if (
-        //         currentEpisode &&
-        //         (
-        //             currentEpisode === null ||
-        //             (
-        //                 currentEpisode &&
-        //                 currentEpisode.guid !== currentEpisode.guid
-        //             )
-        //         )
-        //     ) {
-
-        //         // if (audioElement) {
-        //         //     audioElement.pause();
-        //         // }
-                
-
-        //         // TODO it would be good if update returned the props, then I could pass them into the next function
-        //         // TODO we need to pause until the new src object is created...the problem is that it blocks the main thread...
-        //         update({
-        //             currentEpisode: theCurrentEpisode
-        //         });
-        //         setSrc(theCurrentEpisode, update, src);
-        //     }
-
-        //     // TODO remember, this entire element is a disgrace right now.
-        //     // const audioElement: HTMLAudioElement | null = element.querySelector('audio');
-            
-        //     if (
-        //         audioElement &&
-        //         theCurrentEpisode
-        //     ) {
-        //         if (audioElement.src !== src) {
-        //             audioElement.pause();
-        //         }
-        //         else {
-        //             if (theCurrentEpisode.playing === true) {
-
-        //                 if (audioElement.paused === true) {
-        //                     audioElement.currentTime = parseInt(theCurrentEpisode.progress);
-        //                 }
-
-        //                 audioElement.play();  
-        //             }
-        
-        //             if (theCurrentEpisode.playing === false) {
-        //                 audioElement.pause();
-        //             }
-        //         }
-        //     }
-        // });
