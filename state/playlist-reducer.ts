@@ -96,27 +96,45 @@ export function PlaylistReducer(
         };
     }
 
-    // TODO we need timestamps potentially
     if (action.type === 'PLAY_PREVIOUS_EPISODE') {
         const nextPlaylistIndex: number = state.currentPlaylistIndex - 1 >= 0 ? state.currentPlaylistIndex - 1 : 0;
         const nextCurrentEpisodeGuid: EpisodeGuid = state.playlist[nextPlaylistIndex];
+        const nextCurrentEpisode: Readonly<Episode> = state.episodes[nextCurrentEpisodeGuid];
+        const nextCurrentPodcast = state.podcasts[nextCurrentEpisode.feedUrl];
+        const newNextCurrentPodcast: Readonly<Podcast> = {
+            ...nextCurrentPodcast,
+            lastStartDate: new Date().getTime()
+        };
 
         return {
             ...state,
             currentPlaylistIndex: nextPlaylistIndex,
-            currentEpisodeGuid: nextCurrentEpisodeGuid
+            currentEpisodeGuid: nextCurrentEpisodeGuid,
+            podcasts: {
+                ...state.podcasts,
+                [newNextCurrentPodcast.feedUrl]: newNextCurrentPodcast
+            }
         };
     }
 
-    // TODO we need timestamps potentially
     if (action.type === 'PLAY_NEXT_EPISODE') {
         const nextPlaylistIndex: number = state.currentPlaylistIndex + 1 < state.playlist.length - 1 ? state.currentPlaylistIndex + 1 : state.playlist.length - 1;
         const nextCurrentEpisodeGuid: EpisodeGuid = state.playlist[nextPlaylistIndex];
+        const nextCurrentEpisode: Readonly<Episode> = state.episodes[nextCurrentEpisodeGuid];
+        const nextCurrentPodcast = state.podcasts[nextCurrentEpisode.feedUrl];
+        const newNextCurrentPodcast: Readonly<Podcast> = {
+            ...nextCurrentPodcast,
+            lastStartDate: new Date().getTime()
+        };
 
         return {
             ...state,
             currentPlaylistIndex: nextPlaylistIndex,
-            currentEpisodeGuid: nextCurrentEpisodeGuid
+            currentEpisodeGuid: nextCurrentEpisodeGuid,
+            podcasts: {
+                ...state.podcasts,
+                [newNextCurrentPodcast.feedUrl]: newNextCurrentPodcast
+            }
         };
     }
 
