@@ -87,6 +87,7 @@ StorePromise.then((Store) => {
                                 .playlist=${true}
                                 .podcastTitle=${true}
                                 .date=${true}
+                                .options=${true}
                             ></pc-episode-row>
                             <br>
                             <div class="pc-episode-overview-description">${episode.contentSnippet}</div>
