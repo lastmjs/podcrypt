@@ -83,6 +83,7 @@ type State = {
     readonly currentRoute: Readonly<Route>;
     readonly showMainMenu: boolean;
     readonly currentEpisodeGuid: EpisodeGuid | 'NOT_SET';
+    readonly previousEpisodeGuid: EpisodeGuid | 'NOT_SET';
     readonly playlist: ReadonlyArray<EpisodeGuid>;
     readonly currentPlaylistIndex: number;
     readonly podcasts: {
@@ -364,6 +365,11 @@ type SetCurrentEpisodeAction = {
     readonly episode: Readonly<Episode>;
 }
 
+type SetPreviousEpisodeGuidAction = {
+    readonly type: 'SET_PREVIOUS_EPISODE_GUID';
+    readonly previousEpisodeGuid: EpisodeGuid;
+}
+
 type PodcryptAction = 
     SetStateAction |
     SetPodcastEthereumAddressAction |
@@ -410,4 +416,5 @@ type PodcryptAction =
     RemoveEpisodeFromPlaylistAction |
     MoveEpisodeUpAction |
     MoveEpisodeDownAction |
-    SetCurrentEpisodeAction;
+    SetCurrentEpisodeAction |
+    SetPreviousEpisodeGuidAction;

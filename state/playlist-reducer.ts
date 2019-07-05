@@ -18,8 +18,16 @@ export function PlaylistReducer(
         RemoveEpisodeFromPlaylistAction |
         MoveEpisodeUpAction |
         MoveEpisodeDownAction |
-        SetCurrentEpisodeAction
+        SetCurrentEpisodeAction |
+        SetPreviousEpisodeGuidAction
 ): Readonly<State> {
+
+    if (action.type === 'SET_PREVIOUS_EPISODE_GUID') {
+        return {
+            ...state,
+            previousEpisodeGuid: action.previousEpisodeGuid
+        };
+    }
 
     if (action.type === 'SET_PLAYBACK_RATE') {
         return {

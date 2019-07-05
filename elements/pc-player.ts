@@ -9,49 +9,75 @@ import {
 import { get } from 'idb-keyval';
 
 StorePromise.then((Store) => {
-    customElement('pc-player', async ({ constructing, update, element, previousEpisode, previousSrc }) => {
+    customElement('pc-player', async ({ constructing, update, element }) => {
     
         if (constructing) {
             Store.subscribe(update);
 
-            return {
-                previousSrc: 'NOT_SET',
-                previousEpisode: 'NOT_SET'
-            };
+            // return {
+                // previousSrc: 'NOT_SET',
+                // previousEpisode: 'NOT_SET'
+            // };
         }
 
         const state: Readonly<State> = Store.getState();
-        const currentEpisode: Readonly<Episode> = state.episodes[state.currentEpisodeGuid];
+        const currentEpisodeGuid: EpisodeGuid = state.currentEpisodeGuid;
+        const previousEpisodeGuid: EpisodeGuid = state.previousEpisodeGuid;
+        const episodeChanged: boolean = currentEpisodeGuid !== previousEpisodeGuid;
         const audioElement: HTMLAudioElement | null = element.querySelector('audio');
-        const episodeChanged: boolean = currentEpisode && currentEpisode.guid !== previousEpisode.guid;
+        const currentEpisode: Readonly<Episode> = state.episodes[state.currentEpisodeGuid];
 
         if (episodeChanged) {
-
             if (audioElement) {
                 audioElement.pause();
+                audioElement.src = '';
+
+                Store.dispatch({
+                    type: 'SET_PREVIOUS_EPISODE_GUID',
+                    previousEpisodeGuid: currentEpisodeGuid
+                });
+
+                const audioSrc: string = await getAudioSrc(currentEpisode);
+
+                audioElement.src = audioSrc;
+                audioElement.currentTime = parseInt(currentEpisode.progress);
             }
+        }
 
-            update({
-                previousEpisode: currentEpisode
-            });
+        await playOrPause(audioElement, currentEpisode);
 
-            const currentSrc: string = await getSrc(currentEpisode, previousSrc);
+        // const state: Readonly<State> = Store.getState();
+        // const currentEpisode: Readonly<Episode> = state.episodes[state.currentEpisodeGuid];
+        // const audioElement: HTMLAudioElement | null = element.querySelector('audio');
+        // const episodeChanged: boolean = currentEpisode && currentEpisode.guid !== previousEpisode.guid;
+
+        // if (episodeChanged) {
+
+        //     if (audioElement) {
+        //         audioElement.pause();
+        //     }
+
+        //     update({
+        //         previousEpisode: currentEpisode
+        //     });
+
+        //     const currentSrc: string = await getSrc(currentEpisode, previousSrc);
             
-            // TODO figure out a better way of retrieving the audio element when needed
-            // TODO I do not know about this async functional element thing...it's kind of hard to wrap your head around everything that's happening
-            if (element.querySelector('audio')) {
-                // TODO this is imperative but works well for now
-                element.querySelector('audio').src = currentSrc;
-                element.querySelector('audio').currentTime = parseInt(currentEpisode.progress);
-            }
+        //     // TODO figure out a better way of retrieving the audio element when needed
+        //     // TODO I do not know about this async functional element thing...it's kind of hard to wrap your head around everything that's happening
+        //     if (element.querySelector('audio')) {
+        //         // TODO this is imperative but works well for now
+        //         element.querySelector('audio').src = currentSrc;
+        //         element.querySelector('audio').currentTime = parseInt(currentEpisode.progress);
+        //     }
 
-            update({
-                previousSrc: currentSrc
-            });
-        }
-        else {
-            await playOrPause(audioElement, currentEpisode, previousSrc);
-        }
+        //     update({
+        //         previousSrc: currentSrc
+        //     });
+        // }
+        // else {
+        //     await playOrPause(audioElement, currentEpisode, previousSrc);
+        // }
 
         return html`
             <style>
@@ -173,15 +199,15 @@ StorePromise.then((Store) => {
         playOrPause(audioElement, currentEpisode);
     }
 
-    async function playOrPause(audioElement: Readonly<HTMLAudioElement> | null, currentEpisode: Readonly<Episode>, previousSrc: string) {
+    async function playOrPause(audioElement: Readonly<HTMLAudioElement> | null, currentEpisode: Readonly<Episode>) {
         try {
 
-            if (
-                audioElement &&
-                audioElement.src !== previousSrc
-            ) {
-                return;
-            }
+            // if (
+            //     audioElement &&
+            //     audioElement.src !== previousSrc
+            // ) {
+            //     return;
+            // }
 
             if (
                 audioElement &&
@@ -201,16 +227,18 @@ StorePromise.then((Store) => {
         catch(error) {
             // I believe the main reason this error is being thrown is because the user has not yet interacted with the app
             // So, just pause it for them. The next time they click play it should work
-            paused();
+            // paused();
         }
     }
 
-    async function getSrc(episode: Readonly<Episode>, previousSrc: any) {
+    async function getAudioSrc(episode: Readonly<Episode>): Promise<string> {
+        console.log('hello')
+
         // TODO I do not know if the types are correct here
         const arrayBuffer: Uint8Array = await get(`${episode.guid}-audio-file-array-buffer`);
 
         if (arrayBuffer) {
-            window.URL.revokeObjectURL(previousSrc);
+            // window.URL.revokeObjectURL(previousSrc);
 
             const blob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
 
