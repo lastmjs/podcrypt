@@ -140,7 +140,11 @@ StorePromise.then((Store) => {
         `;
     });
 
-    function setupMediaNotification(currentPodcast: Readonly<Podcast>, currentEpisode: Readonly<Episode>, audioElement: HTMLAudioElement | null): void {
+    function setupMediaNotification(
+        currentPodcast: Readonly<Podcast>,
+        currentEpisode: Readonly<Episode>,
+        audioElement: HTMLAudioElement | null
+    ): void {
 
         const navigator = window.navigator as any;
 
@@ -177,6 +181,18 @@ StorePromise.then((Store) => {
 
             navigator.mediaSession.setActionHandler('seekforward', () => {
                 skipForward(audioElement);                
+            });
+
+            navigator.mediaSession.setActionHandler('previoustrack', () => {
+                Store.dispatch({
+                    type: 'PLAY_PREVIOUS_EPISODE'
+                });
+            });
+
+            navigator.mediaSession.setActionHandler('nexttrack', () => {
+                Store.dispatch({
+                    type: 'PLAY_NEXT_EPISODE'
+                });
             });
         }
     }

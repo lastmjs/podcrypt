@@ -96,27 +96,69 @@ export function PlaylistReducer(
         };
     }
 
-    // TODO we need timestamps potentially
     if (action.type === 'PLAY_PREVIOUS_EPISODE') {
-        const nextPlaylistIndex: number = state.currentPlaylistIndex - 1 >= 0 ? state.currentPlaylistIndex - 1 : 0;
-        const nextCurrentEpisodeGuid: EpisodeGuid = state.playlist[nextPlaylistIndex];
+        const newCurrentPlaylistIndex: number = state.currentPlaylistIndex - 1 >= 0 ? state.currentPlaylistIndex - 1 : 0;
+        const newCurrentEpisodeGuid: EpisodeGuid = state.playlist[newCurrentPlaylistIndex];
+        const newCurrentEpisode: Readonly<Episode> = {
+            ...state.episodes[newCurrentEpisodeGuid],
+            playing: true
+        };
+        const newCurrentPodcast = {
+            ...state.podcasts[newCurrentEpisode.feedUrl],
+            lastStartDate: new Date().getTime()
+
+        };
+        const oldCurrentEpisode: Readonly<Episode> = {
+            ...state.episodes[state.currentEpisodeGuid],
+            playing: false
+        };
 
         return {
             ...state,
-            currentPlaylistIndex: nextPlaylistIndex,
-            currentEpisodeGuid: nextCurrentEpisodeGuid
+            currentPlaylistIndex: newCurrentPlaylistIndex,
+            currentEpisodeGuid: newCurrentEpisodeGuid,
+            podcasts: {
+                ...state.podcasts,
+                [newCurrentPodcast.feedUrl]: newCurrentPodcast
+            },
+            episodes: {
+                ...state.episodes,
+                [newCurrentEpisode.guid]: newCurrentEpisode,
+                [oldCurrentEpisode.guid]: oldCurrentEpisode
+            }
         };
     }
 
-    // TODO we need timestamps potentially
     if (action.type === 'PLAY_NEXT_EPISODE') {
-        const nextPlaylistIndex: number = state.currentPlaylistIndex + 1 < state.playlist.length - 1 ? state.currentPlaylistIndex + 1 : state.playlist.length - 1;
-        const nextCurrentEpisodeGuid: EpisodeGuid = state.playlist[nextPlaylistIndex];
+        const newCurrentPlaylistIndex: number = state.currentPlaylistIndex + 1 < state.playlist.length - 1 ? state.currentPlaylistIndex + 1 : state.playlist.length - 1;
+        const newCurrentEpisodeGuid: EpisodeGuid = state.playlist[newCurrentPlaylistIndex];
+        const newCurrentEpisode: Readonly<Episode> = {
+            ...state.episodes[newCurrentEpisodeGuid],
+            playing: true
+        };
+        const newCurrentPodcast = {
+            ...state.podcasts[newCurrentEpisode.feedUrl],
+            lastStartDate: new Date().getTime()
+
+        };
+        const oldCurrentEpisode: Readonly<Episode> = {
+            ...state.episodes[state.currentEpisodeGuid],
+            playing: false
+        };
 
         return {
             ...state,
-            currentPlaylistIndex: nextPlaylistIndex,
-            currentEpisodeGuid: nextCurrentEpisodeGuid
+            currentPlaylistIndex: newCurrentPlaylistIndex,
+            currentEpisodeGuid: newCurrentEpisodeGuid,
+            podcasts: {
+                ...state.podcasts,
+                [newCurrentPodcast.feedUrl]: newCurrentPodcast
+            },
+            episodes: {
+                ...state.episodes,
+                [newCurrentEpisode.guid]: newCurrentEpisode,
+                [oldCurrentEpisode.guid]: oldCurrentEpisode
+            }
         };
     }
 
