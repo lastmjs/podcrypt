@@ -79,6 +79,11 @@ export async function payout(Store: Readonly<Store<Readonly<State>, Readonly<Pod
 
         const podcastTransactionResult = await payPodcast(Store, podcast, retryDelayInMilliseconds);
 
+        Store.dispatch({
+            type: 'RESET_PODCAST_TIME_LISTENED_SINCE_PREVIOUS_PAYOUT',
+            feedUrl: podcast.feedUrl
+        });
+
         if (
             podcastTransactionResult === 'ALREADY_PAID_FOR_INTERVAL' ||
             podcastTransactionResult === 'FEED_NOT_FOUND' ||
@@ -99,11 +104,6 @@ export async function payout(Store: Readonly<Store<Readonly<State>, Readonly<Pod
             feedUrl: podcast.feedUrl,
             previousPayoutDate: new Date().getTime()
         });
-
-        Store.dispatch({
-            type: 'RESET_PODCAST_TIME_LISTENED_SINCE_PREVIOUS_PAYOUT',
-            feedUrl: podcast.feedUrl
-        })
     }
 
     const podcryptTransactionResult = await payPodcrypt(Store, Store.getState(), retryDelayInMilliseconds);
