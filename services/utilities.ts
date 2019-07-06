@@ -274,3 +274,19 @@ export async function getSafeLowGasPriceInWEI(): Promise<WEI> {
 
     return safeLowGasPriceInWEI;
 }
+
+export function copyTextToClipboard(text: string): void {
+    const textarea = document.createElement('textarea');
+            
+    textarea.value = text;
+    textarea.style.width = '0px';
+    textarea.style.height = '0px';
+
+    window.document.body.appendChild(textarea);
+
+    textarea.select();
+    
+    window.document.execCommand('copy');
+
+    window.document.body.removeChild(textarea);
+}

@@ -14,7 +14,8 @@ import {
     navigate,
     createPodcast,
     getFeed,
-    addEpisodeToPlaylist
+    addEpisodeToPlaylist,
+    copyTextToClipboard
 } from '../services/utilities';
 import BigNumber from "../node_modules/bignumber.js/bignumber";
 
@@ -213,9 +214,10 @@ StorePromise.then((Store) => {
                             class="pc-podcast-row-options-select"
                         >
                             <option>...</option>
-                            <option>Delete</option>
+                            <option>Copy podcast URL</option>
                             <option>Add all episodes to playlist: oldest -> newest</option>
                             <option>Add all episodes to playlist: newest -> oldest</option>
+                            <option>Delete</option>
                         </select>
                     ` :
                     html``
@@ -282,6 +284,10 @@ StorePromise.then((Store) => {
             feed.items.forEach((item: any) => {
                 addEpisodeToPlaylist(Store, podcast, item);
             });
+        }
+
+        if (e.target.value === 'Copy podcast URL') {
+            copyTextToClipboard(`${window.location.origin}/podcast-overview?feedUrl=${podcast.feedUrl}`);
         }
 
         e.target.value = '...';

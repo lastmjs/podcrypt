@@ -16,7 +16,8 @@ import {
 import { 
     navigate,
     addEpisodeToPlaylist,
-    getAudioFileResponse
+    getAudioFileResponse,
+    copyTextToClipboard
 } from '../services/utilities';
 import { set, del } from 'idb-keyval';
 import './pc-loading';
@@ -239,11 +240,12 @@ StorePromise.then((Store) => {
                                         class="pc-episode-row-options-select"
                                     >
                                         <option>...</option>
+                                        <option>Copy episode URL</option>
                                         <option>Download</option>
-                                        <option>Delete</option>
-                                        <option>Remove from playlist</option>
                                         <option>Mark listened</option>
                                         <option>Mark unlistened</option>
+                                        <option>Remove from playlist</option>
+                                        <option>Delete</option>
                                     </select>
                                 ` :
                                 html``
@@ -418,6 +420,10 @@ StorePromise.then((Store) => {
                 type: 'MARK_EPISODE_UNLISTENED',
                 episodeGuid: episode.guid
             })
+        }
+
+        if (value === 'Copy episode URL') {
+            copyTextToClipboard(`${window.location.origin}/episode-overview?feedUrl=${podcast.feedUrl}&episodeGuid=${episode.guid}`);
         }
     }
 
