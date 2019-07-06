@@ -380,6 +380,12 @@ type MarkEpisodeUnlistenedAction = {
     readonly episodeGuid: EpisodeGuid;
 }
 
+type AddOrUpdateEpisodeAction = {
+    readonly type: 'ADD_OR_UPDATE_EPISODE';
+    readonly podcast: Readonly<Podcast>;
+    readonly episode: Readonly<Episode>;
+}
+
 type PodcryptAction = 
     SetStateAction |
     SetPodcastEthereumAddressAction |
@@ -429,4 +435,5 @@ type PodcryptAction =
     SetCurrentEpisodeAction |
     SetPreviousEpisodeGuidAction |
     MarkEpisodeListenedAction |
-    MarkEpisodeUnlistenedAction;
+    MarkEpisodeUnlistenedAction |
+    AddOrUpdateEpisodeAction;

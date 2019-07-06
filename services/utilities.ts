@@ -130,6 +130,28 @@ export async function createPodcast(feedUrl: string, feed?: any): Promise<Readon
     return podcast;
 }
 
+// export async function createEpisode(feedUrl: string, item: any, feed?: any): Promise<Readonly<Episode> | 'PODCAST_COULD_NOT_BE_CREATED'> {
+//     const podcast: Readonly<Podcast> | null = await createPodcast(feedUrl, feed);
+    
+//     if (podcast === null) {
+//         return 'PODCAST_COULD_NOT_BE_CREATED';
+//     }
+    
+//     const episode: Readonly<Episode> = {
+//         feedUrl: podcast.feedUrl,
+//         guid: item.guid,
+//         title: item.title,
+//         src: item.enclosure ? item.enclosure.url : item.src,
+//         finishedListening: false,
+//         playing: false,
+//         progress: '0',
+//         isoDate: item.isoDate,
+//         downloadState: 'NOT_DOWNLOADED'
+//     };
+
+//     return episode;
+// }
+
 function getImageUrl(feed: any): string | 'NOT_FOUND' {
     if (feed.image) {
         return feed.image.url;
