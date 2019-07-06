@@ -235,7 +235,7 @@ StorePromise.then((Store) => {
                                 options ?
                                 html`
                                     <select
-                                        @change=${(e: any) => optionsChange(e, episode)}
+                                        @change=${(e: any) => optionsChange(e, podcast, episode)}
                                         class="pc-episode-row-options-select"
                                     >
                                         <option>...</option>
@@ -303,7 +303,7 @@ StorePromise.then((Store) => {
         });
     }
 
-    async function optionsChange(e: any, episode: Readonly<Episode>) {
+    async function optionsChange(e: any, podcast: Readonly<Podcast>, episode: Readonly<Episode>) {
 
         // TODO constantize each of the options in the dropdown
 
@@ -320,6 +320,12 @@ StorePromise.then((Store) => {
                 const confirmed = confirm('Downloads are experimental. Do you want to go for it anyway?');
     
                 if (confirmed) {
+                    Store.dispatch({
+                        type: 'ADD_OR_UPDATE_EPISODE',
+                        podcast,
+                        episode
+                    });
+
                     Store.dispatch({
                         type: 'SET_EPISODE_DOWNLOAD_STATE',
                         episodeGuid: episode.guid,
@@ -385,12 +391,24 @@ StorePromise.then((Store) => {
 
         if (value === 'Mark listened') {
             Store.dispatch({
+                type: 'ADD_OR_UPDATE_EPISODE',
+                podcast,
+                episode
+            });
+
+            Store.dispatch({
                 type: 'MARK_EPISODE_LISTENED',
                 episodeGuid: episode.guid
             })
         }
 
         if (value === 'Mark unlistened') {
+            Store.dispatch({
+                type: 'ADD_OR_UPDATE_EPISODE',
+                podcast,
+                episode
+            });
+
             Store.dispatch({
                 type: 'MARK_EPISODE_UNLISTENED',
                 episodeGuid: episode.guid

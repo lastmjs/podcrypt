@@ -21,7 +21,8 @@ export function PlaylistReducer(
         SetCurrentEpisodeAction |
         SetPreviousEpisodeGuidAction |
         MarkEpisodeListenedAction |
-        MarkEpisodeUnlistenedAction
+        MarkEpisodeUnlistenedAction |
+        AddOrUpdateEpisodeAction
 ): Readonly<State> {
 
     if (action.type === 'MARK_EPISODE_LISTENED') {
@@ -77,19 +78,78 @@ export function PlaylistReducer(
         };
     }
 
-    // if (action.type === 'PLAY_EPISODE') {
-    //     return {
-    //         ...state,
-    //         currentEpisodeGuid: action.episode.guid,
-    //         episodes: {
-    //             ...state.episodes,
-    //             [action.episode.guid]: {
-    //                 ...state.episodes[action.episode.guid],
-    //                 ...action.episode
-    //             }
-    //         }
-    //     };
-    // }
+    // TODO this is messy and is somewhat repeated in the ADD_EPISODE_TO_PLAYLIST action...we should abstract the episode updating and podcast updating into functions
+    if (action.type === 'ADD_OR_UPDATE_EPISODE') {
+        const episodeInState: Readonly<Episode> = state.episodes[action.episode.guid];
+        const episodeAlreadyExists: boolean = episodeInState !== null && episodeInState !== undefined;
+
+        if (episodeAlreadyExists) {
+            return {
+                ...state,
+                episodes: {
+                    ...state.episodes,
+                    [action.episode.guid]: {
+                        ...state.episodes[action.episode.guid],
+                        title: action.episode.title,
+                        src: action.episode.src
+                    }
+                },
+                podcasts: {
+                    ...state.podcasts,
+                    [action.podcast.feedUrl]: {
+                        ...state.podcasts[action.podcast.feedUrl],
+                        title: action.podcast.title,
+                        description: action.podcast.description,
+                        imageUrl: action.podcast.imageUrl,
+                        ethereumAddress: action.podcast.ethereumAddress,
+                        email: action.podcast.email
+                    }
+                }
+            };
+        }
+        else {
+            const podcastInState: Readonly<Podcast> = state.podcasts[action.podcast.feedUrl];
+            const podcastAlreadyExists: boolean = podcastInState !== null && podcastInState !== undefined;
+
+            if (podcastAlreadyExists) {
+                return {
+                    ...state,
+                    episodes: {
+                        ...state.episodes,
+                        [action.episode.guid]: action.episode
+                    },
+                    podcasts: {
+                        ...state.podcasts,
+                        [action.podcast.feedUrl]: {
+                            ...state.podcasts[action.podcast.feedUrl],
+                            title: action.podcast.title,
+                            description: action.podcast.description,
+                            imageUrl: action.podcast.imageUrl,
+                            ethereumAddress: action.podcast.ethereumAddress,
+                            email: action.podcast.email,
+                            episodeGuids: [...podcastInState.episodeGuids, action.episode.guid]
+                        }
+                    }
+                };
+            }
+            else {
+                return {
+                    ...state,
+                    episodes: {
+                        ...state.episodes,
+                        [action.episode.guid]: action.episode
+                    },
+                    podcasts: {
+                        ...state.podcasts,
+                        [action.podcast.feedUrl]: {
+                            ...action.podcast,
+                            episodeGuids: [action.episode.guid]
+                        }
+                    }
+                };
+            }
+        }
+    }
 
     if (action.type === 'SUBSCRIBE_TO_PODCAST') {
         const podcastInState: Readonly<Podcast> = state.podcasts[action.podcast.feedUrl];
