@@ -10,6 +10,8 @@ import {
 } from '../services/utilities';
 import './pc-loading';
 import './pc-episode-row';
+import dompurify from 'dompurify';
+import { unsafeHTML } from 'lit-html/directives/unsafe-html';
 
 StorePromise.then((Store) => {
     customElement('pc-episode-overview', ({ 
@@ -90,7 +92,10 @@ StorePromise.then((Store) => {
                                 .options=${true}
                             ></pc-episode-row>
                             <br>
-                            <div class="pc-episode-overview-description">${episode.contentSnippet}</div>
+                            <div class="pc-episode-overview-description">${unsafeHTML(dompurify.sanitize(episode.contentSnippet, {
+                                ALLOWED_TAGS: ['br', 'a'],
+                                ALLOWED_ATTR: ['href']                                
+                            }))}</div>
                         `
                 }
             </div>

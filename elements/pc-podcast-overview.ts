@@ -2,6 +2,7 @@ import {
     customElement, 
     html 
 } from 'functional-element';
+import { unsafeHTML } from 'lit-html/directives/unsafe-html';
 import { StorePromise } from '../state/store';
 import { 
     pcContainerStyles,
@@ -16,13 +17,13 @@ import {
  } from '../services/css';
 import {
     getRSSFeed,
-    navigate,
     createPodcast,
     addEpisodeToPlaylist
 } from '../services/utilities';
 import './pc-loading';
 import './pc-podcast-row';
 import './pc-episode-row';
+import dompurify from 'dompurify';
 
 StorePromise.then((Store) => {
     customElement('pc-podcast-overview', ({ 
@@ -131,7 +132,10 @@ StorePromise.then((Store) => {
 
                             <br>
                         
-                            <div class="pc-podcast-overview-podcast-description">${feed.description}</div>
+                            <div class="pc-podcast-overview-podcast-description">${unsafeHTML(dompurify.sanitize(feed.description, {
+                                ALLOWED_TAGS: ['br', 'a'],
+                                ALLOWED_ATTR: ['href']
+                            }))}</div>
 
                             <br>
 

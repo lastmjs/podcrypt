@@ -1,6 +1,7 @@
 declare var RSSParser: any;
 declare var MediaMetadata: any;
 declare var ethers: any;
+declare module 'dompurify';
 
 type Feed = {
     
