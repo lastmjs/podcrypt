@@ -367,6 +367,11 @@ StorePromise.then((Store) => {
                         episodeGuid: episode.guid,
                         downloadState: 'DOWNLOADED'
                     });
+
+                    Store.dispatch({
+                        type: 'SET_PREVIOUS_EPISODE_GUID',
+                        previousEpisodeGuid: 'NOT_SET'
+                    });
                 }
             }
             catch(error) {
