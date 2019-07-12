@@ -1,6 +1,7 @@
 export function DefaultReducer(
     state: Readonly<State>, 
     action: 
+        RenderAction |
         SetStateAction |
         SetPodcastEthereumAddressAction |
         SetCurrentEthPriceStateAction |
@@ -18,6 +19,11 @@ export function DefaultReducer(
         DeletePodcastAction |
         SetNonceAction
 ): Readonly<State> {
+
+    if (action.type === 'RENDER') {
+        return state;
+    }
+
     if (action.type === 'SET_STATE') {
         return action.state;
     }

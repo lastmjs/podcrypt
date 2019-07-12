@@ -168,6 +168,10 @@ type TransactionResult = Transaction | 'ALREADY_PAID_FOR_INTERVAL' | 'FEED_NOT_F
 
 // Uncategorized actions
 
+type RenderAction = {
+    readonly type: 'RENDER';
+}
+
 type SetStateAction = {
     readonly type: 'SET_STATE';
     readonly state: Readonly<State>;
@@ -423,6 +427,7 @@ type AddOrUpdateEpisodeAction = {
 }
 
 type PodcryptAction = 
+    RenderAction |
     SetStateAction |
     SetPodcastEthereumAddressAction |
     SetCurrentEthPriceStateAction |

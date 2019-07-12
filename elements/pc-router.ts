@@ -14,6 +14,7 @@ import './pc-about';
 import './pc-not-verified-help';
 import './pc-receive-eth';
 import './pc-restore-with-phrase';
+import './pc-backup-and-restore';
 
 // TODO we can use URLSearchParams instead of parseQueryString...native and seems to handle nested query parameters
 // TODO I would love to use the route /credits instead of /credit, but there is a strange issues with /credits: https://github.com/lastmjs/podcrypt/issues/169
@@ -156,6 +157,10 @@ StorePromise.then((Store) => {
             <pc-restore-with-phrase
                 ?hidden=${currentRoute.pathname !== '/restore-with-phrase'}
             ></pc-restore-with-phrase>
+            <pc-backup-and-restore
+                ?hidden=${currentRoute.pathname !== '/backup-and-restore'}
+            >
+            </pc-backup-and-restore>
         `;
     });
     
