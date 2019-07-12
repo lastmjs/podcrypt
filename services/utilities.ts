@@ -124,7 +124,8 @@ export async function createPodcast(feedUrl: string, feed?: any): Promise<Readon
         email,
         timeListenedTotal: 0,
         timeListenedSincePreviousPayoutDate: 0,
-        lastStartDate: 'NEVER'
+        lastStartDate: 'NEVER',
+        paymentsEnabled: (ethereumAddressInfo.ethereumAddress !== 'NOT_FOUND' && ethereumAddressInfo.ethereumAddress !== 'MALFORMED') || ethereumAddressInfo.ensName !== 'NOT_FOUND'
     };
 
     return podcast;

@@ -17,8 +17,34 @@ export function PayoutReducer(
         SetPreviousPayoutDateAction |
         SetPodcastPreviousPayoutDate |
         SetEthereumBalanceInWEIAction |
-        ResetPodcastTimeListenedSincePreviousPayoutAction
+        ResetPodcastTimeListenedSincePreviousPayoutAction |
+        SetPodcastPaymentsEnabledAction
 ): Readonly<State> {
+
+    if (action.type === 'SET_PODCAST_PAYMENTS_ENABLED') {
+
+        const currentPodcast: Readonly<Podcast> | undefined = state.podcasts[action.feedUrl];
+
+        if (
+            currentPodcast === null ||
+            currentPodcast === undefined
+        ) {
+            return state;
+        }
+
+        const newPodcast: Readonly<Podcast> = {
+            ...currentPodcast,
+            paymentsEnabled: action.paymentsEnabled
+        };
+
+        return {
+            ...state,
+            podcasts: {
+                ...state.podcasts,
+                [newPodcast.feedUrl]: newPodcast
+            }
+        };
+    }
 
     if (action.type === 'SET_PODCRYPT_LATEST_TRANSACTION_HASH') {
         return {

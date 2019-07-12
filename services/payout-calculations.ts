@@ -77,6 +77,15 @@ export async function payout(Store: Readonly<Store<Readonly<State>, Readonly<Pod
     for (let i=0; i < podcasts.length; i++) {
         const podcast: Readonly<Podcast> = podcasts[i];
 
+        if (podcast.paymentsEnabled === false) {
+            Store.dispatch({
+                type: 'RESET_PODCAST_TIME_LISTENED_SINCE_PREVIOUS_PAYOUT',
+                feedUrl: podcast.feedUrl
+            });
+
+            continue;
+        }
+
         const podcastTransactionResult = await payPodcast(Store, podcast, retryDelayInMilliseconds);
 
         Store.dispatch({

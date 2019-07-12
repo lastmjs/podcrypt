@@ -44,6 +44,11 @@ function calculatePayoutAmountForPodcastDuringIntervalInUSDCents(state: Readonly
 
 // TODO this is not truly the proportion of total time, more the proportion of the donation, since Podcrypt may take a piece of the proportion, and by default will
 export function calculateProportionOfTotalTimeForPodcastDuringInterval(state: Readonly<State>, podcast: Readonly<Podcast>, previousPayoutDate: Milliseconds | 'NEVER'): Proportion {
+    
+    if (podcast.paymentsEnabled === false) {
+        return '0';
+    }
+    
     const grossTotalTimeDuringIntervalInMilliseconds: Milliseconds = calculateTotalTimeDuringIntervalInMilliseconds(state);
     
     if (new BigNumber(grossTotalTimeDuringIntervalInMilliseconds).eq(0)) {
@@ -59,6 +64,11 @@ export function calculateProportionOfTotalTimeForPodcastDuringInterval(state: Re
 
 function calculateTotalTimeDuringIntervalInMilliseconds(state: Readonly<State>): Milliseconds {
     return Object.values(state.podcasts).reduce((result: Milliseconds, podcast: Readonly<Podcast>) => {
-        return result + podcast.timeListenedSincePreviousPayoutDate;
+        if (podcast.paymentsEnabled === true) {
+            return result + podcast.timeListenedSincePreviousPayoutDate;
+        }
+        else {
+            return result;
+        }
     }, 0);
 }

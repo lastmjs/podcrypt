@@ -215,6 +215,7 @@ StorePromise.then((Store) => {
                         >
                             <option>...</option>
                             <option>Copy podcast URL</option>
+                            <option>${podcast.paymentsEnabled === true ? 'Disable' : 'Enable'} payments</option>
                             <option>Add all episodes to playlist: oldest -> newest</option>
                             <option>Add all episodes to playlist: newest -> oldest</option>
                             <option>Delete</option>
@@ -264,6 +265,23 @@ StorePromise.then((Store) => {
                 });
             }
         }
+
+        if (e.target.value === 'Enable payments') {
+            Store.dispatch({
+                type: 'SET_PODCAST_PAYMENTS_ENABLED',
+                feedUrl: podcast.feedUrl,
+                paymentsEnabled: true
+            });
+        }
+
+        if (e.target.value === 'Disable payments') {
+            Store.dispatch({
+                type: 'SET_PODCAST_PAYMENTS_ENABLED',
+                feedUrl: podcast.feedUrl,
+                paymentsEnabled: false
+            });
+        }
+
 
         if (e.target.value === 'Add all episodes to playlist: oldest -> newest') {
             const feed: Readonly<Feed> | null = await getFeed(podcast.feedUrl);
