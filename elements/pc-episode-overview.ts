@@ -93,7 +93,7 @@ StorePromise.then((Store) => {
                                 .options=${true}
                             ></pc-episode-row>
                             <br>
-                            <div class="pc-episode-overview-description">${unsafeHTML(dompurify.sanitize(episode.contentSnippet, {
+                            <div class="pc-episode-overview-description">${unsafeHTML(dompurify.sanitize(episode.description, {
                                 ALLOWED_TAGS: ['br', 'a'],
                                 ALLOWED_ATTR: ['href']                                
                             }))}</div>
