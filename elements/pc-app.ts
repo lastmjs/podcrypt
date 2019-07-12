@@ -41,8 +41,8 @@ StorePromise.then((Store) => {
         
     const newState = {
         ...state,
-        episodes: Object.entries(state.episodes).filter((entry) => {
-            return entry[1].feedUrl;
+        podcasts: Object.entries(state.podcasts).filter((entry) => {
+            return entry[1].title;
         }).reduce((result, entry) => {
             return {
                 ...result,
