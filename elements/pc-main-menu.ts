@@ -147,6 +147,18 @@ StorePromise.then((Store) => {
                     <span class="pc-main-menu-item-text">Wallet</span>
                 </div>
 
+                <div 
+                    class="pc-main-menu-item${Store.getState().currentRoute.pathname === '/backup-and-restore' ? ' pc-main-menu-item-selected' : ''}"
+                    @click=${() => menuItemClick(Store, '/backup-and-restore')}
+                >
+                    <i 
+                        class="material-icons pc-main-menu-item-icon"
+                    >
+                        backup
+                    </i>
+                    <span class="pc-main-menu-item-text">Backup & Restore</span>
+                </div>
+
                 <div
                     class="pc-main-menu-item${Store.getState().currentRoute.pathname === '/privacy' ? ' pc-main-menu-item-selected' : ''}"
                     @click=${() => menuItemClick(Store, '/privacy')}
