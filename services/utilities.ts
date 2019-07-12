@@ -66,7 +66,7 @@ export async function getAudioFileResponse(url: string, attemptNumber: number = 
     }
 }
 
-export async function getRSSFeed(feedUrl: string, attemptNumber: number = 0): Promise<any | null> {
+export async function getRSSFeed(feedUrl: string, attemptNumber: number = 0): Promise<Feed | null> {
     try {
         if (attemptNumber === 0) {
             const feedResponse = await window.fetch(`${feedUrl}`);
@@ -166,13 +166,13 @@ function getImageUrl(feed: any): string | 'NOT_FOUND' {
     return 'NOT_FOUND';
 }
 
-export async function getFeed(feedUrl: string, feed?: any): Promise<any | null> {
+export async function getFeed(feedUrl: string, feed?: any): Promise<Feed | null> {
     try {
         if (feed) {
             return feed;
         }
         else {
-            const feed = await getRSSFeed(feedUrl);                    
+            const feed = await getRSSFeed(feedUrl);   
             return feed;
         }        
     }
@@ -241,7 +241,8 @@ function parseEthereumAddressFromPodcastDescription(podcastDescription: string):
     return ethereumAddress;
 }
 
-export function addEpisodeToPlaylist(Store: any, podcast: any, item: any) {
+// TODO unify podcast and episode creation...I think it is still a bit of a mess
+export function createEpisodeFromPodcastAndItem(podcast: Readonly<Podcast>, item: Readonly<FeedItem>): Readonly<Episode> {
     const episode: Readonly<Episode> = {
         feedUrl: podcast.feedUrl,
         guid: item.guid,
@@ -251,8 +252,15 @@ export function addEpisodeToPlaylist(Store: any, podcast: any, item: any) {
         playing: false,
         progress: '0',
         isoDate: item.isoDate,
-        downloadState: 'NOT_DOWNLOADED'
+        downloadState: 'NOT_DOWNLOADED',
+        description: item.content
     };
+
+    return episode;
+}
+
+export function addEpisodeToPlaylist(Store: any, podcast: Readonly<Podcast>, item: Readonly<FeedItem>) {
+    const episode: Readonly<Episode> = createEpisodeFromPodcastAndItem(podcast, item);
     
     Store.dispatch({
         type: 'ADD_EPISODE_TO_PLAYLIST',

@@ -271,7 +271,7 @@ StorePromise.then((Store) => {
         `;
     });
 
-    function playEpisode(podcast: Readonly<Podcast>, item: any) {
+    function playEpisode(podcast: Readonly<Podcast>, item: Readonly<FeedItem>) {
         addEpisodeToPlaylist(Store, podcast, item);
        
         const episodeGuid: EpisodeGuid = item.guid;

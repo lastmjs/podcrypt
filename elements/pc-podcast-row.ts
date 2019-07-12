@@ -266,10 +266,14 @@ StorePromise.then((Store) => {
         }
 
         if (e.target.value === 'Add all episodes to playlist: oldest -> newest') {
-            const feed = await getFeed(podcast.feedUrl);
+            const feed: Readonly<Feed> | null = await getFeed(podcast.feedUrl);
 
-            // TODO beware, this is an evil mutation
-            const sortedItems = feed.items.sort((a: any, b: any) => {
+            if (feed === null) {
+                alert('The feed could not be loaded');
+                return;
+            }
+
+            const sortedItems = [...feed.items].sort((a: any, b: any) => {
                 return new Date(a.isoDate).getTime() - new Date(b.isoDate).getTime();
             });
 
@@ -279,7 +283,12 @@ StorePromise.then((Store) => {
         }
 
         if (e.target.value === 'Add all episodes to playlist: newest -> oldest') {
-            const feed = await getFeed(podcast.feedUrl);
+            const feed: Readonly<Feed> | null = await getFeed(podcast.feedUrl);
+
+            if (feed === null) {
+                alert('The feed could not be loaded');
+                return;
+            }
 
             feed.items.forEach((item: any) => {
                 addEpisodeToPlaylist(Store, podcast, item);

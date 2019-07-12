@@ -3,8 +3,42 @@ declare var MediaMetadata: any;
 declare var ethers: any;
 declare module 'dompurify';
 
+type ItunesSearchResult = {
+    artistName: string;
+    feedUrl: string;
+    trackName: string;
+    artworkUrl60: string;
+}
+
 type Feed = {
-    
+    feedUrl: string;
+    title: string;
+    description: string;
+    itunes?: {
+        author: string;
+        owner: {
+            name: string;
+            email: string;
+        };
+    };
+    image?: {
+        url: string;
+        title: string;
+        link: string;
+    };
+    copyright: string;
+    items: ReadonlyArray<FeedItem>;
+}
+
+type FeedItem = {
+    title: string;
+    isoDate: string;
+    guid: string;
+    content: string;
+    enclosure?: {
+        url: string;
+    };
+    src: string;
 }
 
 type Podcast = {
@@ -34,6 +68,7 @@ type Episode = {
     readonly progress: string;
     readonly isoDate: string;
     readonly downloadState: EpisodeDownloadState;
+    readonly description: string;
 }
 
 type EpisodeDownloadState = 'NOT_DOWNLOADED' | 'DOWNLOADING' | 'DOWNLOADED';

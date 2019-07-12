@@ -80,7 +80,7 @@ StorePromise.then((Store) => {
             });
         }
         else {
-            const podcastFeedResultsPromises = responseJSON.results.map(async (searchResult: any) => {   
+            const podcastFeedResultsPromises = responseJSON.results.map(async (searchResult: ItunesSearchResult) => {   
 
                 const podcast: Readonly<Podcast> = {
                     feedUrl: searchResult.feedUrl,

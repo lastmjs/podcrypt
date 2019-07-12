@@ -18,7 +18,8 @@ import {
 import {
     getRSSFeed,
     createPodcast,
-    addEpisodeToPlaylist
+    addEpisodeToPlaylist,
+    createEpisodeFromPodcastAndItem
 } from '../services/utilities';
 import './pc-loading';
 import './pc-podcast-row';
@@ -144,12 +145,12 @@ StorePromise.then((Store) => {
                             <br>
 
                             ${feed.items.map((item: any) => {
-                                const episode: Readonly<Episode> | undefined = Store.getState().episodes[item.guid];
+                                const episode: Readonly<Episode> = Store.getState().episodes[item.guid] || createEpisodeFromPodcastAndItem(podcast, item);
 
                                 return html`
                                     <pc-episode-row
                                         .podcast=${podcast}
-                                        .episode=${episode || item}
+                                        .episode=${episode}
                                         .play=${true}
                                         .playlist=${true}
                                         .date=${true}

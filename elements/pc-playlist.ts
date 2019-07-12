@@ -118,11 +118,20 @@ StorePromise.then((Store) => {
 
         // TODO check for null results indicating failures, display ui accordingly
         if (episodeDoesNotExist) {
-            const feed = await getRSSFeed(props.feedUrl);
+            const feed: Readonly<Feed> | null = await getRSSFeed(props.feedUrl);
+            
+            if (feed === null) {
+                return;
+            }
+            
             const episodeItem = feed.items.filter((item: any) => {
                 return item.guid === props.episodeGuid;
             })[0];
             const podcast: Readonly<Podcast> | null = await createPodcast(props.feedUrl, feed);
+
+            if (podcast === null) {
+                return;
+            }
 
             addEpisodeToPlaylist(Store, podcast, episodeItem);
 
