@@ -96,7 +96,8 @@ StorePromise.then((Store) => {
                     email: 'NOT_SET',
                     timeListenedTotal: 0,
                     timeListenedSincePreviousPayoutDate: 0,
-                    lastStartDate: 'NEVER'
+                    lastStartDate: 'NEVER',
+                    paymentsEnabled: false
                 };
 
                 return html`

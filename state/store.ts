@@ -21,7 +21,7 @@ export const StorePromise: Promise<Readonly<Store<Readonly<State>, Readonly<Podc
 
 async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<PodcryptAction>>>> {
     const persistedState: Readonly<State> = await get('state');
-    const version: number = 34;
+    const version: number = 35;
 
     const InitialState: Readonly<State> = getInitialState(persistedState, version);
     
@@ -257,6 +257,28 @@ function runMigrations(persistedState: Readonly<State>, version: number): Readon
         }; 
         
         return runMigrations(newPersistedState, version);    
+    }
+
+    if (persistedState.version === 34) {
+        const newPersistedState: Readonly<State> = {
+            ...persistedState,
+            version: 35,
+            podcasts: Object.entries(persistedState.podcasts).reduce((result, entry) => {
+                const podcastKey: FeedUrl = entry[0];
+                const podcastValue: Readonly<Podcast> = entry[1];
+                const paymentsEnabled: boolean = (podcastValue.ethereumAddress !== 'NOT_FOUND' && podcastValue.ethereumAddress !== 'MALFORMED') || podcastValue.ensName !== 'NOT_FOUND';
+
+                return {
+                    ...result,
+                    [podcastKey]: {
+                        ...podcastValue,
+                        paymentsEnabled
+                    }
+                };
+            }, {})
+        };
+
+        return runMigrations(newPersistedState, version);
     }
 
     return persistedState;

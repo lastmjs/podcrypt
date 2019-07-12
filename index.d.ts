@@ -56,6 +56,7 @@ type Podcast = {
     readonly timeListenedTotal: Milliseconds;
     readonly timeListenedSincePreviousPayoutDate: Milliseconds;
     readonly lastStartDate: Milliseconds | 'NEVER';
+    readonly paymentsEnabled: boolean;
 }
 
 type Episode = {
@@ -148,7 +149,7 @@ type State = {
     readonly showPlaybackRateMenu: boolean;
     readonly playbackRate: string;
     readonly currentETHPriceState: CurrentETHPriceState;
-    readonly payoutInProgress: boolean; //TODO this is not used for anything currently
+    readonly payoutInProgress: boolean;
     readonly preparingPlaylist: boolean;
     readonly podcryptPayoutPercentage: Percent;
     readonly podcryptPreviousPayoutDate: Milliseconds | 'NEVER';
@@ -317,6 +318,12 @@ type ResetPodcastTimeListenedSincePreviousPayoutAction = {
     readonly feedUrl: FeedUrl;
 }
 
+type SetPodcastPaymentsEnabledAction = {
+    readonly type: 'SET_PODCAST_PAYMENTS_ENABLED';
+    readonly feedUrl: FeedUrl;
+    readonly paymentsEnabled: boolean;
+}
+
 // Player / playlist / playback actions
 
 type SetPlaybackRateAction = {
@@ -477,4 +484,5 @@ type PodcryptAction =
     SetPreviousEpisodeGuidAction |
     MarkEpisodeListenedAction |
     MarkEpisodeUnlistenedAction |
-    AddOrUpdateEpisodeAction;
+    AddOrUpdateEpisodeAction | 
+    SetPodcastPaymentsEnabledAction;
