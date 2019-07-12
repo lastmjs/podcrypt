@@ -17,12 +17,14 @@ StorePromise.then((Store) => {
 
         const state: Readonly<State> = Store.getState();
         const audioElement: HTMLAudioElement | null = element.querySelector('audio');
-        const currentEpisode: Readonly<Episode> = state.episodes[state.currentEpisodeGuid];
-        const currentPodcast: Readonly<Podcast> = state.podcasts[currentEpisode.feedUrl];
+        const currentEpisode: Readonly<Episode> | undefined = state.episodes[state.currentEpisodeGuid];
+        const currentPodcast: Readonly<Podcast> | undefined = currentEpisode ? state.podcasts[currentEpisode.feedUrl] : undefined;
 
-        setupMediaNotification(currentPodcast, currentEpisode, audioElement);
-        await handleEpisodeSwitching(state, audioElement, currentEpisode);
-        await playOrPause(audioElement, currentEpisode);
+        if (currentEpisode && currentPodcast) {
+            setupMediaNotification(currentPodcast, currentEpisode, audioElement);
+            await handleEpisodeSwitching(state, audioElement, currentEpisode);
+            await playOrPause(audioElement, currentEpisode);
+        }
 
         return html`
             <style>

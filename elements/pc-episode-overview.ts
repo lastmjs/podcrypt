@@ -6,7 +6,8 @@ import {
 import { StorePromise } from '../state/store';
 import {
     getRSSFeed,
-    createPodcast
+    createPodcast,
+    createEpisodeFromPodcastAndItem
 } from '../services/utilities';
 import './pc-loading';
 import './pc-episode-row';
@@ -128,9 +129,11 @@ StorePromise.then((Store) => {
             return;
         }
 
-        const episode = feed.items.filter((item: any) => {
+        const item = feed.items.filter((item: Readonly<FeedItem>) => {
             return item.guid === episodeGuid;
         })[0];
+
+        const episode = createEpisodeFromPodcastAndItem(podcast, item);
 
         if (episode === undefined) {
             update({

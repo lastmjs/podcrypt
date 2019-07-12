@@ -37,25 +37,6 @@ import {
 // TODO I do not like how we have to do this to get the store...top level await would be really nice
 StorePromise.then((Store) => {
     
-    const state = Store.getState();
-        
-    const newState = {
-        ...state,
-        podcasts: Object.entries(state.podcasts).filter((entry) => {
-            return entry[1].title;
-        }).reduce((result, entry) => {
-            return {
-                ...result,
-                [entry[0]]: entry[1]
-            };
-        }, {})
-    };
-
-    Store.dispatch({
-        type: 'SET_STATE',
-        state: newState
-    });
-
     customElement('pc-app', ({ constructing, update }) => {
 
         if (constructing) {
