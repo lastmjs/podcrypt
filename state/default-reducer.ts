@@ -17,8 +17,16 @@ export function DefaultReducer(
         SetWalletCreationStateAction |
         SetEthereumAddressAction |
         DeletePodcastAction |
-        SetNonceAction
+        SetNonceAction |
+        WindowResizeEventAction
 ): Readonly<State> {
+
+    if (action.type === 'WINDOW_RESIZE_EVENT') {
+        return {
+            ...state,
+            screenType: action.screenType
+        };
+    }
 
     if (action.type === 'RENDER') {
         return state;

@@ -26,6 +26,7 @@ customElement('pc-button', ({ constructing, text }) => {
                 color: white;
                 font-weight: bold;
                 font-family: Ubuntu;
+                cursor: pointer;
             }
 
             .pc-button:active {

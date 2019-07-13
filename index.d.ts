@@ -3,6 +3,8 @@ declare var MediaMetadata: any;
 declare var ethers: any;
 declare module 'dompurify';
 
+type ScreenType = 'DESKTOP' | 'MOBILE';
+
 type ItunesSearchResult = {
     artistName: string;
     feedUrl: string;
@@ -156,6 +158,7 @@ type State = {
     readonly podcryptLatestTransactionHash: string | null;
     readonly payoutProblem: PayoutProblem;
     readonly nonce: number;
+    readonly screenType: ScreenType;
 }
 
 type HexString = string;
@@ -252,6 +255,11 @@ type DeletePodcastAction = {
 type SetNonceAction = {
     readonly type: 'SET_NONCE';
     readonly nonce: number;
+}
+
+type WindowResizeEventAction = {
+    readonly type: 'WINDOW_RESIZE_EVENT';
+    readonly screenType: ScreenType;
 }
 
 // Payout actions
@@ -485,4 +493,5 @@ type PodcryptAction =
     MarkEpisodeListenedAction |
     MarkEpisodeUnlistenedAction |
     AddOrUpdateEpisodeAction | 
-    SetPodcastPaymentsEnabledAction;
+    SetPodcastPaymentsEnabledAction | 
+    WindowResizeEventAction;
