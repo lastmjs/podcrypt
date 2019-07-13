@@ -216,7 +216,13 @@ StorePromise.then((Store) => {
                                                     html`
                                                         <i 
                                                             class="material-icons pc-episode-row-control"
-                                                             @click=${() => addEpisodeToPlaylist(Store, podcast, episode)}
+                                                             @click=${() => {
+                                                                 Store.dispatch({
+                                                                    type: 'ADD_EPISODE_TO_PLAYLIST',
+                                                                    episode,
+                                                                    podcast
+                                                                });
+                                                             }}
                                                         >
                                                             playlist_add
                                                         </i>
