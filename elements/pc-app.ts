@@ -25,6 +25,7 @@ import './pc-main-menu';
 import './pc-player';
 import {
     bottomShadow,
+    normalShadow,
     one,
     two,
     pxSmall,
@@ -33,6 +34,7 @@ import {
     color1Full,
     color2Full
 } from '../services/css';
+import '../services/listeners';
 
 // TODO I do not like how we have to do this to get the store...top level await would be really nice
 StorePromise.then((Store) => {
@@ -42,18 +44,42 @@ StorePromise.then((Store) => {
         if (constructing) {
             Store.subscribe(update);
         }
+
+        const state: Readonly<State> = Store.getState();
     
         return html`
             <style>
+                html {
+                    height: 100%;
+                    font-family: sans-serif;
+                }
+
+                body {
+                    height: 100%;
+                    margin: 0;
+                    background-color: white;
+                }
+
+                .pc-app-container {
+                    width: ${state.screenType === 'DESKTOP' ? '50vw' : '100vw'};
+                    margin-left: ${state.screenType === 'DESKTOP' ? 'auto' : '0px'};
+                    margin-right: ${state.screenType === 'DESKTOP' ? 'auto' : '0px'};
+                    box-shadow: ${state.screenType === 'DESKTOP' ? normalShadow : 'none'};
+                    height: 100%;
+                    box-sizing: border-box;
+                }
+
                 .pc-app-top-bar {
                     position: fixed;
+                    box-sizing: border-box;
                     display: flex;
                     align-items: center;
                     padding-top: ${pxSmall};
                     padding-left: ${pxSmall};
+                    padding-right: ${pxSmall};
                     padding-bottom: ${pxSmall};
-                    width: 100%;
-                    box-shadow: ${bottomShadow};
+                    width: ${state.screenType === 'DESKTOP' ? '50vw' : '100vw'};
+                    box-shadow: ${normalShadow};
                     z-index: ${two};
                     background-color: white;
                 }
@@ -65,12 +91,12 @@ StorePromise.then((Store) => {
 
                 .pc-app-payout-problem-icon-container {
                     margin-left: auto;
-                    margin-right: ${pxLarge};
                 }
 
                 .pc-app-payout-problem-icon {
                     color: red;
                     font-size: ${pxXLarge};
+                    cursor: pointer;
                 }
 
                 a:link {
@@ -83,7 +109,7 @@ StorePromise.then((Store) => {
 
             </style>
 
-            <div>
+            <div class="pc-app-container">
                 <div class="pc-app-top-bar">
 
                     <i 

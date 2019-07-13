@@ -325,6 +325,7 @@ function getOriginalState(version: number): Readonly<State> {
         podcryptPreviousPayoutDate: 'NEVER',
         podcryptLatestTransactionHash: null,
         payoutProblem: 'NO_PROBLEM',
-        nonce: 0
+        nonce: 0,
+        screenType: 'MOBILE'
     };
 }

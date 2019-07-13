@@ -31,27 +31,28 @@ StorePromise.then((Store) => {
                 .pc-player-container {
                     position: fixed;
                     bottom: 0;
-                    left: 0;
-                    right: 0;
-                    width: 100%;
+                    width: ${state.screenType === 'DESKTOP' ? '50vw' : '100vw'};
                     background-color: white;
                     box-shadow: inset 0px 5px 5px -5px grey;
                 }
     
                 .pc-player-play-icon {
                     font-size: calc(50px + 1vmin);
+                    cursor: pointer;
                 }
 
                 .pc-player-backward-icon {
                     font-size: ${pxXLarge};
                     margin-right: ${pxXXLarge};
                     margin-left: ${pxXXLarge};
+                    cursor: pointer;
                 }
 
                 .pc-player-forward-icon {
                     font-size: ${pxXLarge};
                     margin-left: ${pxXLarge};
                     margin-right: ${pxXLarge};
+                    cursor: pointer;
                 }
             </style>
     
@@ -116,7 +117,7 @@ StorePromise.then((Store) => {
                         </i> -->
                     </div>
 
-                    <div style="flex: 1; display: flex; justify-content: center; align-items: center">
+                    <div style="flex: 1; display: flex; justify-content: center; align-items: center;">
                         <select @change=${playbackRateChanged} style="border: none; background-color: transparent">
                             <option value=".25" ?selected=${Store.getState().playbackRate === '.25'}>.25x</option>
                             <option value=".5" ?selected=${Store.getState().playbackRate === '.5'}>.5x</option>

@@ -16,6 +16,8 @@ StorePromise.then((Store) => {
             Store.subscribe(update);
         }
 
+        const state: Readonly<State> = Store.getState();
+
         return html`
             <style>
                 .pc-main-menu-container {
@@ -27,8 +29,8 @@ StorePromise.then((Store) => {
                     box-shadow: 0px 0px 1px black;
                     z-index: ${three};
                     transition: .25s;
-                    width: 80%;
-                    left: ${Store.getState().showMainMenu ? '0' : '-90%'};
+                    width: ${state.screenType === 'DESKTOP' ? '25vw' : '80vw'};
+                    left: ${state.showMainMenu ? 'unset' : '-90%'};
                     overflow-y: scroll;
                 }
     
@@ -42,11 +44,11 @@ StorePromise.then((Store) => {
 
                 .pc-main-menu-overlay {
                     height: 100%;
-                    width: 100%;
+                    width: ${state.screenType === 'DESKTOP' ? '50%' : '100%'};
                     background-color: rgba(0, 0, 0, .5);
                     position: fixed;
-                    z-index: ${Store.getState().showMainMenu ? '1' : '-1'};
-                    opacity: ${Store.getState().showMainMenu ? '100%' : '0'};
+                    z-index: ${state.showMainMenu ? '1' : '-1'};
+                    opacity: ${state.showMainMenu ? '100%' : '0'};
                     transition: .25s;
                 }
 
@@ -112,7 +114,7 @@ StorePromise.then((Store) => {
                 <hr class="pc-main-menu-divider">
 
                 <div 
-                    class="pc-main-menu-item${Store.getState().currentRoute.pathname === '/' || Store.getState().currentRoute.pathname === '/index.html' ? ' pc-main-menu-item-selected' : ''}"
+                    class="pc-main-menu-item${state.currentRoute.pathname === '/' || state.currentRoute.pathname === '/index.html' ? ' pc-main-menu-item-selected' : ''}"
                     @click=${() => menuItemClick(Store, '/')}
                 >
                     <i 
@@ -124,7 +126,7 @@ StorePromise.then((Store) => {
                 </div>
     
                 <div
-                    class="pc-main-menu-item${Store.getState().currentRoute.pathname === '/playlist' ? ' pc-main-menu-item-selected' : ''}"
+                    class="pc-main-menu-item${state.currentRoute.pathname === '/playlist' ? ' pc-main-menu-item-selected' : ''}"
                     @click=${() => menuItemClick(Store, '/playlist')}
                 >
                     <i 
@@ -136,7 +138,7 @@ StorePromise.then((Store) => {
                 </div>
         
                 <div 
-                    class="pc-main-menu-item${Store.getState().currentRoute.pathname === '/wallet' ? ' pc-main-menu-item-selected' : ''}"
+                    class="pc-main-menu-item${state.currentRoute.pathname === '/wallet' ? ' pc-main-menu-item-selected' : ''}"
                     @click=${() => menuItemClick(Store, '/wallet')}
                 >
                     <i 
@@ -148,7 +150,7 @@ StorePromise.then((Store) => {
                 </div>
 
                 <div 
-                    class="pc-main-menu-item${Store.getState().currentRoute.pathname === '/backup-and-restore' ? ' pc-main-menu-item-selected' : ''}"
+                    class="pc-main-menu-item${state.currentRoute.pathname === '/backup-and-restore' ? ' pc-main-menu-item-selected' : ''}"
                     @click=${() => menuItemClick(Store, '/backup-and-restore')}
                 >
                     <i 
@@ -160,7 +162,7 @@ StorePromise.then((Store) => {
                 </div>
 
                 <div
-                    class="pc-main-menu-item${Store.getState().currentRoute.pathname === '/privacy' ? ' pc-main-menu-item-selected' : ''}"
+                    class="pc-main-menu-item${state.currentRoute.pathname === '/privacy' ? ' pc-main-menu-item-selected' : ''}"
                     @click=${() => menuItemClick(Store, '/privacy')}
                 >
                     <i 
@@ -172,7 +174,7 @@ StorePromise.then((Store) => {
                 </div>
 
                 <div
-                    class="pc-main-menu-item${Store.getState().currentRoute.pathname === '/contact' ? ' pc-main-menu-item-selected' : ''}"
+                    class="pc-main-menu-item${state.currentRoute.pathname === '/contact' ? ' pc-main-menu-item-selected' : ''}"
                     @click=${() => menuItemClick(Store, '/contact')}
                 >
                     <i 
@@ -184,7 +186,7 @@ StorePromise.then((Store) => {
                 </div>
 
                 <div
-                    class="pc-main-menu-item${Store.getState().currentRoute.pathname === '/about' ? ' pc-main-menu-item-selected' : ''}"
+                    class="pc-main-menu-item${state.currentRoute.pathname === '/about' ? ' pc-main-menu-item-selected' : ''}"
                     @click=${() => menuItemClick(Store, '/about')}
                 >
                     <i 
@@ -196,7 +198,7 @@ StorePromise.then((Store) => {
                 </div>
 
                 <div
-                    class="pc-main-menu-item${Store.getState().currentRoute.pathname === '/credit' ? ' pc-main-menu-item-selected' : ''}"
+                    class="pc-main-menu-item${state.currentRoute.pathname === '/credit' ? ' pc-main-menu-item-selected' : ''}"
                     @click=${() => menuItemClick(Store, '/credit')}
                 >
                     <i 

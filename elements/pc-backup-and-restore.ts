@@ -87,6 +87,10 @@ StorePromise.then((Store) => {
                     .pc-backup-and-restore-title-text-large {
                         ${titleTextLarge}
                     }
+
+                    .pc-backup-and-restore-button {
+                        cursor: pointer;
+                    }
                 </style>
 
                 <div class="pc-backup-and-restore-container">
@@ -96,7 +100,7 @@ StorePromise.then((Store) => {
 
                     <div class="pc-backup-and-restore-title-text-large">Backup</div>
                     <br>
-                    <button @click=${() => this.backup()}>Download backup file</button>    
+                    <button class="pc-backup-and-restore-button" @click=${() => this.backup()}>Download backup file</button>    
 
                     <br>
                     <br>
