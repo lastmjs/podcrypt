@@ -144,7 +144,7 @@ StorePromise.then((Store) => {
 
                             <br>
 
-                            ${feed.items.map((item: any) => {
+                            ${feed.items.map((item: Readonly<FeedItem>) => {
                                 const episode: Readonly<Episode> = Store.getState().episodes[item.guid] || createEpisodeFromPodcastAndItem(podcast, item);
 
                                 return html`
