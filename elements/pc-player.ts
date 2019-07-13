@@ -321,12 +321,22 @@ StorePromise.then((Store) => {
     function skipBack(audioElement: HTMLAudioElement | null): void {
         if (audioElement) {
             audioElement.currentTime = audioElement.currentTime - 10;
+
+            Store.dispatch({
+                type: 'UPDATE_CURRENT_EPISODE_PROGRESS',
+                progress: new BigNumber(audioElement.currentTime).toString()
+            });
         }
     }
 
     function skipForward(audioElement: HTMLAudioElement | null): void {
         if (audioElement) {
             audioElement.currentTime = audioElement.currentTime + 10;
+
+            Store.dispatch({
+                type: 'UPDATE_CURRENT_EPISODE_PROGRESS',
+                progress: new BigNumber(audioElement.currentTime).toString()
+            });
         }
     }
     
