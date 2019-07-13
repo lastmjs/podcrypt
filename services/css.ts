@@ -39,6 +39,7 @@ export const pcContainerStyles = `
     padding-bottom: calc(150px + 1vmin);
     overflow-y: auto;
     background-color: rgba(0, 0, 0, .025);
+    box-sizing: border-box;
 `;
 
 export const titleTextLarge = `
