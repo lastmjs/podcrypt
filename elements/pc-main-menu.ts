@@ -18,8 +18,19 @@ StorePromise.then((Store) => {
 
         const state: Readonly<State> = Store.getState();
 
+        const desktopAndMenuClosed: boolean = !state.showMainMenu && state.screenType === 'DESKTOP';
+
         return html`
             <style>
+                /*TODO I know this is a vendor prefix and is non-standard.
+                * The scrollbars on FireFox look good, but on Chrome look really bad
+                * I think it's worth it for now so that we don't have to use some huge library
+                * or implement something ourselves
+                */
+               .pc-main-menu-container::-webkit-scrollbar {
+                    display: none;
+                }
+
                 .pc-main-menu-container {
                     position: fixed;
                     background-color: white;
@@ -29,8 +40,8 @@ StorePromise.then((Store) => {
                     box-shadow: 0px 0px 1px black;
                     z-index: ${three};
                     transition: .25s;
-                    width: ${state.screenType === 'DESKTOP' ? '25vw' : '80vw'};
-                    left: ${state.showMainMenu ? 'unset' : '-90%'};
+                    width: ${state.screenType === 'DESKTOP' ? desktopAndMenuClosed ? 'auto' : '15vw' : '80vw'};
+                    left: ${state.screenType === 'DESKTOP' ? '0' : state.showMainMenu ? 'unset' : '-90%'};
                     overflow-y: scroll;
                 }
     
@@ -44,7 +55,7 @@ StorePromise.then((Store) => {
 
                 .pc-main-menu-overlay {
                     height: 100%;
-                    width: ${state.screenType === 'DESKTOP' ? '50%' : '100%'};
+                    width: ${state.screenType === 'DESKTOP' ? '0px' : '100%'};
                     background-color: rgba(0, 0, 0, .5);
                     position: fixed;
                     z-index: ${state.showMainMenu ? '1' : '-1'};
@@ -108,7 +119,7 @@ StorePromise.then((Store) => {
             <div class="pc-main-menu-container">
                 <div class="pc-main-menu-item">
                     <span class="pc-main-menu-logo">卩</span>
-                    <span class="pc-main-menu-item-text">Podcrypt Alpha</span>
+                    <span class="pc-main-menu-item-text">${desktopAndMenuClosed ? '' : 'Podcrypt Alpha'}</span>
                 </div>
                 
                 <hr class="pc-main-menu-divider">
@@ -122,7 +133,7 @@ StorePromise.then((Store) => {
                     >
                         mic
                     </i>
-                    <span class="pc-main-menu-item-text">Podcasts</span>
+                    <span class="pc-main-menu-item-text">${desktopAndMenuClosed ? '' : 'Podcasts'}</span>
                 </div>
     
                 <div
@@ -134,7 +145,7 @@ StorePromise.then((Store) => {
                     >
                         format_list_numbered
                     </i>
-                    <span class="pc-main-menu-item-text">Playlist</span>
+                    <span class="pc-main-menu-item-text">${desktopAndMenuClosed ? '' : 'Playlist'}</span>
                 </div>
         
                 <div 
@@ -146,7 +157,7 @@ StorePromise.then((Store) => {
                     >
                         payment
                     </i>
-                    <span class="pc-main-menu-item-text">Wallet</span>
+                    <span class="pc-main-menu-item-text">${desktopAndMenuClosed ? '' : 'Wallet'}</span>
                 </div>
 
                 <div 
@@ -158,7 +169,7 @@ StorePromise.then((Store) => {
                     >
                         backup
                     </i>
-                    <span class="pc-main-menu-item-text">Backup & Restore</span>
+                    <span class="pc-main-menu-item-text">${desktopAndMenuClosed ? '' : 'Backup & Restore'}</span>
                 </div>
 
                 <div
@@ -170,7 +181,7 @@ StorePromise.then((Store) => {
                     >
                         security
                     </i>
-                    <span class="pc-main-menu-item-text">Privacy</span>
+                    <span class="pc-main-menu-item-text">${desktopAndMenuClosed ? '' : 'Privacy'}</span>
                 </div>
 
                 <div
@@ -182,7 +193,7 @@ StorePromise.then((Store) => {
                     >
                         call
                     </i>
-                    <span class="pc-main-menu-item-text">Contact</span>
+                    <span class="pc-main-menu-item-text">${desktopAndMenuClosed ? '' : 'Contact'}</span>
                 </div>
 
                 <div
@@ -194,7 +205,7 @@ StorePromise.then((Store) => {
                     >
                         help
                     </i>
-                    <span class="pc-main-menu-item-text">About</span>
+                    <span class="pc-main-menu-item-text">${desktopAndMenuClosed ? '' : 'About'}</span>
                 </div>
 
                 <div
@@ -206,7 +217,7 @@ StorePromise.then((Store) => {
                     >
                         copyright
                     </i>
-                    <span class="pc-main-menu-item-text">Credits</span>
+                    <span class="pc-main-menu-item-text">${desktopAndMenuClosed ? '' : 'Credits'}</span>
                 </div>
 
                 <hr class="pc-main-menu-divider">
@@ -223,8 +234,11 @@ StorePromise.then((Store) => {
 
     function menuItemClick(Store: any, path: string) {
         navigate(Store, path);
-        Store.dispatch({
-            type: 'TOGGLE_SHOW_MAIN_MENU'
-        });
+
+        if (Store.getState().screenType === 'MOBILE') {
+            Store.dispatch({
+                type: 'TOGGLE_SHOW_MAIN_MENU'
+            });
+        }
     }
 });
