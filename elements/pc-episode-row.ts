@@ -68,15 +68,15 @@ StorePromise.then((Store) => {
                     font-size: ${pxXSmall};
                     color: ${color1Full};
                     text-overflow: ellipsis;
-                    white-space: nowrap;
+                    white-space: wrap;
                     overflow: hidden;
-                    width: 60vw; /*TODO I want this width to be based on its container*/
                     margin-bottom: ${pxXXSmall};
                     font-weight: bold;
                 }
 
                 .pc-episode-row-text-container {
                     flex: 1;
+                    cursor: pointer;
                 }
 
                 .pc-episode-row-episode-title {
@@ -95,6 +95,7 @@ StorePromise.then((Store) => {
                     align-items: center;
                     margin-right: ${pxXXSmall};
                     justify-content: center;
+                    cursor: pointer;
                 }
 
                 .pc-episode-row-controls-container {
@@ -106,6 +107,7 @@ StorePromise.then((Store) => {
 
                 .pc-episode-row-control {
                     font-size: ${pxXXLarge};
+                    cursor: pointer;
                 }
 
                 .pc-episode-row-date {
