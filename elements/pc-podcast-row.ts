@@ -82,7 +82,7 @@ StorePromise.then((Store) => {
                     font-size: ${pxXSmall};
                     color: ${color1Full};
                     text-overflow: ellipsis;
-                    white-space: nowrap;
+                    white-space: wrap;
                     overflow: hidden;
                     margin-bottom: ${pxXXSmall};
                     font-weight: bold;
