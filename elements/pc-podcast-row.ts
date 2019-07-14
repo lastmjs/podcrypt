@@ -84,7 +84,6 @@ StorePromise.then((Store) => {
                     text-overflow: ellipsis;
                     white-space: nowrap;
                     overflow: hidden;
-                    width: 60vw; /*TODO I want this width to be based on its container*/
                     margin-bottom: ${pxXXSmall};
                     font-weight: bold;
                 }
@@ -159,10 +158,10 @@ StorePromise.then((Store) => {
                                             <div class="pc-podcast-row-verification-container">
                                                 ${
                                                     podcast.ethereumAddress === 'NOT_FOUND' ? 
-                                                        html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${(e: any) => notVerifiedHelpClick(e, podcast)}>Not verified - click to help</button>` :
+                                                        html`<button style="color: red; border: none; padding: 5px; margin: 5px; cursor: pointer;" @click=${(e: any) => notVerifiedHelpClick(e, podcast)}>Not verified - click to help</button>` :
                                                         podcast.ethereumAddress === 'MALFORMED' ?
                                                 html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${(e: any) => notVerifiedHelpClick(e, podcast)}>Not verified - click to help</button>` :
-                                                            html`<button style="color: green; border: none; padding: 5px; margin: 5px" @click=${(e: any) => { e.stopPropagation(); alert(`This podcast's Ethereum address: ${podcast.ethereumAddress}`)} }>Verified</button>` }
+                                                            html`<button style="color: green; border: none; padding: 5px; margin: 5px; cursor: pointer;" @click=${(e: any) => { e.stopPropagation(); alert(`This podcast's Ethereum address: ${podcast.ethereumAddress}`)} }>Verified</button>` }
                                             </div>
                                         ` : html``
                                 }
