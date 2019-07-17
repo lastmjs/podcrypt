@@ -78,20 +78,10 @@ export async function payout(Store: Readonly<Store<Readonly<State>, Readonly<Pod
         const podcast: Readonly<Podcast> = podcasts[i];
 
         if (podcast.paymentsEnabled === false) {
-            Store.dispatch({
-                type: 'RESET_PODCAST_TIME_LISTENED_SINCE_PREVIOUS_PAYOUT',
-                feedUrl: podcast.feedUrl
-            });
-
             continue;
         }
 
         const podcastTransactionResult = await payPodcast(Store, podcast, retryDelayInMilliseconds);
-
-        Store.dispatch({
-            type: 'RESET_PODCAST_TIME_LISTENED_SINCE_PREVIOUS_PAYOUT',
-            feedUrl: podcast.feedUrl
-        });
 
         if (
             // TODO I think we should distinguish ALREADY_PAID_FOR_INTERVAL and nothing to pay for interval. Right now these two return types are indistinguishable
@@ -134,6 +124,13 @@ export async function payout(Store: Readonly<Store<Readonly<State>, Readonly<Pod
             podcryptPreviousPayoutDate: new Date().getTime()
         });
     }
+
+    podcasts.forEach((podcast: Readonly<Podcast>) => {
+        Store.dispatch({
+            type: 'RESET_PODCAST_TIME_LISTENED_SINCE_PREVIOUS_PAYOUT',
+            feedUrl: podcast.feedUrl
+        });
+    });
 
     Store.dispatch({
         type: 'SET_PREVIOUS_PAYOUT_DATE',
