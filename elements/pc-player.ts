@@ -8,6 +8,12 @@ import {
 } from '../services/css';
 import { get } from 'idb-keyval';
 
+let audio1Playing = true;
+let audio2Playing = false;
+
+let audio1Src = '';
+let audio2Src = '';
+
 StorePromise.then((Store) => {
     customElement('pc-player', async ({ constructing, update, element }) => {
     
@@ -16,14 +22,15 @@ StorePromise.then((Store) => {
         }
 
         const state: Readonly<State> = Store.getState();
-        const audioElement: HTMLAudioElement | null = element.querySelector('audio');
+        const audio1Element: HTMLAudioElement | null = element.querySelector('#audio-1');
+        const audio2Element: HTMLAudioElement | null = element.querySelector('#audio-2');
         const currentEpisode: Readonly<Episode> | undefined = state.episodes[state.currentEpisodeGuid];
         const currentPodcast: Readonly<Podcast> | undefined = currentEpisode ? state.podcasts[currentEpisode.feedUrl] : undefined;
 
         if (currentEpisode && currentPodcast) {
-            setupMediaNotification(currentPodcast, currentEpisode, audioElement);
-            await handleEpisodeSwitching(state, audioElement, currentEpisode);
-            await playOrPause(audioElement, currentEpisode);
+            setupMediaNotification(currentPodcast, currentEpisode, audio1Element, audio2Element);
+            await handleEpisodeSwitching(state, currentEpisode, audio1Element, audio2Element);
+            await playOrPause(currentEpisode, audio1Element, audio2Element);
         }
 
         return html`
@@ -78,7 +85,7 @@ StorePromise.then((Store) => {
                     <div style="flex: 2; display: flex; align-items: center; justify-content: center">
                         <i 
                             class="material-icons pc-player-backward-icon"
-                            @click=${() => skipBack(audioElement)}
+                            @click=${() => skipBack(audio1Element, audio2Element)}
                         >
                             replay_10
                         </i>
@@ -105,7 +112,7 @@ StorePromise.then((Store) => {
 
                         <i 
                             class="material-icons pc-player-forward-icon"
-                            @click=${() => skipForward(audioElement)}
+                            @click=${() => skipForward(audio1Element, audio2Element)}
                         >
                             forward_10
                         </i>
@@ -135,9 +142,21 @@ StorePromise.then((Store) => {
             </div>
 
             <audio
+                id="audio-1"
+                src=${audio1Src}
                 preload="metadata"
-                @loadeddata=${() => loadedData(audioElement, currentEpisode)}
-                @ended=${audioEnded}
+                @loadeddata=${() => loadedData(currentEpisode, audio1Element, audio2Element)}
+                @ended=${audio1Ended}
+                @timeupdate=${timeUpdated}
+                .playbackRate=${parseInt(Store.getState().playbackRate)}
+            ></audio>
+
+            <audio
+                id="audio-2"
+                src=${audio2Src}
+                preload="metadata"
+                @loadeddata=${() => loadedData(currentEpisode, audio1Element, audio2Element)}
+                @ended=${audio2Ended}
                 @timeupdate=${timeUpdated}
                 .playbackRate=${parseInt(Store.getState().playbackRate)}
             ></audio>
@@ -147,7 +166,8 @@ StorePromise.then((Store) => {
     function setupMediaNotification(
         currentPodcast: Readonly<Podcast>,
         currentEpisode: Readonly<Episode>,
-        audioElement: HTMLAudioElement | null
+        audio1Element: HTMLAudioElement | null,
+        audio2Element: HTMLAudioElement | null
     ): void {
 
         const navigator = window.navigator as any;
@@ -180,11 +200,11 @@ StorePromise.then((Store) => {
             });
 
             navigator.mediaSession.setActionHandler('seekbackward', () => {
-                skipBack(audioElement);
+                skipBack(audio1Element, audio2Element);
             });
 
             navigator.mediaSession.setActionHandler('seekforward', () => {
-                skipForward(audioElement);                
+                skipForward(audio1Element, audio2Element);                
             });
 
             navigator.mediaSession.setActionHandler('previoustrack', () => {
@@ -201,13 +221,23 @@ StorePromise.then((Store) => {
         }
     }
 
-    async function handleEpisodeSwitching(state: Readonly<State>, audioElement: HTMLAudioElement | null, currentEpisode: Readonly<Episode>): Promise<void> {
+    async function handleEpisodeSwitching(
+        state: Readonly<State>,
+        currentEpisode: Readonly<Episode>,
+        audio1Element: HTMLAudioElement | null,
+        audio2Element: HTMLAudioElement | null
+    ): Promise<void> {
         const currentEpisodeGuid: EpisodeGuid = state.currentEpisodeGuid;
         const previousEpisodeGuid: EpisodeGuid = state.previousEpisodeGuid;
         const episodeChanged: boolean = currentEpisodeGuid !== previousEpisodeGuid;
         
         if (episodeChanged) {
-            if (audioElement) {
+            if (
+                audio1Element &&
+                audio2Element
+            ) {
+                const audioElement = audio1Playing ? audio1Element : audio2Element;
+
                 audioElement.pause();
                 audioElement.src = ''; // TODO not sure if this is necessary, but it works for now. Try getting rid of it and see if the previous episode plays while switching episodes
 
@@ -216,26 +246,44 @@ StorePromise.then((Store) => {
                     previousEpisodeGuid: currentEpisodeGuid
                 });
 
-                const audioSrc: string = await getAudioSrc(currentEpisode);
+                const audioSources: {
+                    audio1Src: string,
+                    audio2Src: string | 'NOT_SET'
+                } = await getAudioSources(currentEpisode);
 
-                audioElement.src = audioSrc;
-                audioElement.currentTime = parseInt(currentEpisode.progress);
+                // audioElement.src = audioSrc;
+                // audioElement.currentTime = parseInt(currentEpisode.progress);
+            
+                audio1Src = audioSources.audio1Src;
+                audio2Src = audioSources.audio2Src;
+            
+                audio1Playing = true;
+                audio2Playing = false;
             }
         }
     }
 
-    function loadedData(audioElement: Readonly<HTMLAudioElement> | null, currentEpisode: Readonly<Episode>) {
-        playOrPause(audioElement, currentEpisode);
+    function loadedData(
+        currentEpisode: Readonly<Episode>,
+        audio1Element: Readonly<HTMLAudioElement> | null,
+        audio2Element: Readonly<HTMLAudioElement> | null
+    ) {
+        playOrPause(currentEpisode, audio1Element, audio2Element);
     }
 
-    async function playOrPause(audioElement: Readonly<HTMLAudioElement> | null, currentEpisode: Readonly<Episode>) {
+    async function playOrPause(
+        currentEpisode: Readonly<Episode>,
+        audio1Element: Readonly<HTMLAudioElement> | null,
+        audio2Element: Readonly<HTMLAudioElement> | null
+    ) {
         try {
+            const audioElement = audio1Playing ? audio1Element : audio2Element;
+
             if (
                 audioElement &&
                 currentEpisode.playing === true
             ) {
                 await audioElement.play();
-                
             }
     
             if (
@@ -250,21 +298,36 @@ StorePromise.then((Store) => {
         }
     }
 
-    async function getAudioSrc(episode: Readonly<Episode>): Promise<string> {
+    async function getAudioSources(episode: Readonly<Episode>): Promise<{
+        audio1Src: string,
+        audio2Src: string | 'NOT_SET'
+    }> {
 
         // TODO I do not know if the types are correct here
-        const arrayBuffer: Uint8Array = await get(`${episode.guid}-audio-file-array-buffer`);
+        const arrayBuffer: ArrayBuffer = await get(`${episode.guid}-audio-file-array-buffer`);
 
         if (arrayBuffer) {
             // TODO I think we are going to want to release these blobs eventaully...it doesn't seem to be making a difference currently though
             // window.URL.revokeObjectURL(previousSrc);
 
-            const blob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
+            let middleIndex: number = Math.floor(arrayBuffer.byteLength / 2);
 
-            return window.URL.createObjectURL(blob);
+            const arrayBuffer1: ArrayBuffer = arrayBuffer.slice(0, middleIndex);
+            const arrayBuffer2: ArrayBuffer = arrayBuffer.slice(middleIndex, arrayBuffer.byteLength);
+
+            const blob1: Blob = new Blob([arrayBuffer1], { type: 'audio/mpeg' });
+            const blob2: Blob = new Blob([arrayBuffer2], { type: 'audio/mpeg' });
+
+            return {
+                audio1Src: window.URL.createObjectURL(blob1),
+                audio2Src: window.URL.createObjectURL(blob2)
+            };
         }
         else {
-            return episode.src;
+            return {
+                audio1Src: episode.src,
+                audio2Src: 'NOT_SET'
+            };
         }
     }
 
@@ -284,9 +347,18 @@ StorePromise.then((Store) => {
     }
 
     function getProgressPercentage(element: any) {
-        const audioElement = element.querySelector('audio');
-        if (audioElement && !isNaN(audioElement.duration) && !isNaN(audioElement.currentTime)) {
-            return (audioElement.currentTime / audioElement.duration) * 100;
+        const audio1Element = element.querySelector('#audio-1');
+        const audio2Element = element.querySelector('#audio-2');
+
+        const audioElement = audio1Playing ? audio1Element : audio2Element;
+        const duration = getDuration(element);
+
+        if (
+            audioElement &&
+            !isNaN(duration) &&
+            !isNaN(audioElement.currentTime)
+        ) {
+            return (audioElement.currentTime / duration) * 100;
         }
         else {
             return 0;
@@ -294,12 +366,16 @@ StorePromise.then((Store) => {
     }
 
     function getDuration(element: any) {
-        const audioElement = element.querySelector('audio');
+        const audio1Element = element.querySelector('#audio-1');
+        const audio2Element = element.querySelector('#audio-2');
+
         if (
-            audioElement &&
-            !isNaN(audioElement.duration)
+            audio1Element &&
+            audio2Element &&
+            !isNaN(audio1Element.duration) &&
+            !isNaN(audio2Element.duration)
         ) {
-            return audioElement.duration;
+            return audio1Element.duration + audio2Element.duration;
         }
     }
 
@@ -319,8 +395,13 @@ StorePromise.then((Store) => {
         });
     }
 
-    function skipBack(audioElement: HTMLAudioElement | null): void {
-        if (audioElement) {
+    function skipBack(audio1Element: HTMLAudioElement | null, audio2Element: HTMLAudioElement | null): void {
+        if (
+            audio1Element &&
+            audio2Element
+        ) {
+            const audioElement = audio1Playing ? audio1Element : audio2Element;
+
             audioElement.currentTime = audioElement.currentTime - 10;
 
             Store.dispatch({
@@ -330,8 +411,13 @@ StorePromise.then((Store) => {
         }
     }
 
-    function skipForward(audioElement: HTMLAudioElement | null): void {
-        if (audioElement) {
+    function skipForward(audio1Element: HTMLAudioElement | null, audio2Element: HTMLAudioElement | null): void {
+        if (
+            audio1Element &&
+            audio2Element
+        ) {
+            const audioElement = audio1Playing ? audio1Element : audio2Element;
+
             audioElement.currentTime = audioElement.currentTime + 10;
 
             Store.dispatch({
@@ -341,15 +427,35 @@ StorePromise.then((Store) => {
         }
     }
     
-    function audioEnded() {
+    function audio1Ended() {
+        if (audio2Src === 'NOT_SET') {            
+            Store.dispatch({
+                type: 'CURRENT_EPISODE_COMPLETED'
+            });
+        }
+        else {
+            audio1Playing = false;
+            audio2Playing = true;
+
+            Store.dispatch({
+                type: 'RENDER'
+            });
+        }
+    }
+
+    function audio2Ended() {
+        // if (audio1Src === 'NOT_SET') {            
+        //     Store.dispatch({
+        //         type: 'CURRENT_EPISODE_COMPLETED'
+        //     });
+        // }
+        // else {
+        //     audio1Playing = false;
+        //     audio2Playing = true;
+        // }
         Store.dispatch({
             type: 'CURRENT_EPISODE_COMPLETED'
         });
-
-        if (Store.getState().currentRoute.pathname === '/playlist') {
-            const episode: Readonly<Episode> = Store.getState().episodes[Store.getState().currentEpisodeGuid];
-            navigate(Store, `/playlist?feedUrl=${episode.feedUrl}&episodeGuid=${episode.guid}`);
-        }
     }
     
     // TODO the counter is a hacky way of doing this bit it helps for now
