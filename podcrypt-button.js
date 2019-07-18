@@ -22,10 +22,12 @@ class PodcryptButton extends HTMLElement {
 
                 .podcrypt-button-top-text {
                     font-size: 10px;
+                    font-weight: bold;
                 }
 
                 .podcrypt-button-bottom-text {
                     font-size: 15px;
+                    font-weight: bold;
                 }
             </style>
 
