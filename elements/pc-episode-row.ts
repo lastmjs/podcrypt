@@ -17,9 +17,14 @@ import {
     navigate,
     addEpisodeToPlaylist,
     getAudioFileResponse,
-    copyTextToClipboard
+    copyTextToClipboard,
+    podcryptProxy
 } from '../services/utilities';
-import { set, del } from 'idb-keyval';
+import { 
+    set,
+    del,
+    keys
+} from 'idb-keyval';
 import './pc-loading';
 
 StorePromise.then((Store) => {
@@ -354,23 +359,25 @@ StorePromise.then((Store) => {
                     // const resourceURL: string = `${podcryptProxy}${episode.src}`;
                     // const response = await window.fetch(resourceURL);
 
-                    const response = await getAudioFileResponse(episode.src);
+                    // const response = await getAudioFileResponse(episode.src);
                     
-                    if (
-                        response.ok === false
-                        // TODO I am not sure if checking the ok property or the status code will be best here
-                        // response.status.toString().startsWith('4') ||
-                        // response.status.toString().startsWith('5')
-                    ) {
-                        // TODO perhaps make a very easy way for people to get in contact with the Podcrypt team
-                        throw new Error(`The file could not be downloaded. The response status was ${response.status}`);
-                    }
+                    // if (
+                    //     response.ok === false
+                    //     // TODO I am not sure if checking the ok property or the status code will be best here
+                    //     // response.status.toString().startsWith('4') ||
+                    //     // response.status.toString().startsWith('5')
+                    // ) {
+                    //     // TODO perhaps make a very easy way for people to get in contact with the Podcrypt team
+                    //     throw new Error(`The file could not be downloaded. The response status was ${response.status}`);
+                    // }
 
-                    const audioFileArrayBuffer = await response.arrayBuffer();
+                    // const audioFileArrayBuffer = await response.arrayBuffer();
+
+                    await fetchAndSaveAudioFileArrayBuffer(episode);
 
                     // TODO somewhere in this process iOS Safari fails with a null exception, and I believe it is while saving to indexedDB
                     // TODO I believe iOS indexeddb does not support storing blobs. try an arraybuffer instead
-                    await set(`${episode.guid}-audio-file-array-buffer`, audioFileArrayBuffer);
+                    // await set(`${episode.guid}-audio-file-array-buffer`, audioFileArrayBuffer);
 
                     Store.dispatch({
                         type: 'SET_EPISODE_DOWNLOAD_STATE',
@@ -391,7 +398,13 @@ StorePromise.then((Store) => {
 
         if (value === 'Delete') {
             try {
-                await del(`${episode.guid}-audio-file-array-buffer`);
+                const indexedDBKeys = await keys();
+                const episodeKeys = indexedDBKeys.filter((key) => key.startsWith(`${episode.guid}-audio-file-array-buffer`));
+                
+                for (let i=0; i < episodeKeys.length; i++) {
+                    const episodeKey = episodeKeys[i];
+                    await del(episodeKey);
+                }
 
                 Store.dispatch({
                     type: 'SET_EPISODE_DOWNLOAD_STATE',
@@ -450,20 +463,53 @@ StorePromise.then((Store) => {
     //     return audioFileHeadResponse.headers.get('Content-Length');
     // }
 
-    // async function fetchFileBlob(url: string, resourceLengthInBytes: number, rangeStart: number=0, rangeEnd: number=1048576, blob: Blob=new Blob()): Promise<Blob> {
-        
-    //     if (rangeStart >= resourceLengthInBytes - 1) {
-    //         return blob;
-    //     }
-        
-    //     const audioFileResponse = await fetch(url, {
-    //         headers: {
-    //             'Range': `bytes=${rangeStart}-${rangeEnd}`
-    //         }
-    //     });
+    // TODO add in not going straight to the podcrypt proxy
+    async function fetchAndSaveAudioFileArrayBuffer(
+        episode: Readonly<Episode>,
+        index: number=0,
+        rangeStart: number=0,
+        rangeEnd: number=10485759,
+        arrayBuffer: ArrayBuffer=new ArrayBuffer(0)
+    ): Promise<ArrayBuffer> {
+                
+        const audioFileResponse = await fetch(`${podcryptProxy}${episode.src}`, {
+            headers: {
+                'Range': `bytes=${rangeStart}-${rangeEnd}`
+            }
+        });
 
-    //     // const audioFileBlob = await audioFileResponse.blob();
-    //     // return audioFileBlob;
-    //     return await fetchFileBlob(url, resourceLengthInBytes, rangeStart + 1048576, rangeEnd + 1048576, new Blob([blob, audioFileBlob]));
-    // }
+        if (
+            audioFileResponse.ok === false
+            // TODO I am not sure if checking the ok property or the status code will be best here
+            // response.status.toString().startsWith('4') ||
+            // response.status.toString().startsWith('5')
+        ) {
+            // TODO perhaps make a very easy way for people to get in contact with the Podcrypt team
+            throw new Error(`The file could not be downloaded. The response status was ${audioFileResponse.status}`);
+        }
+
+        const audioFileArrayBuffer = await audioFileResponse.arrayBuffer();
+
+        await set(`${episode.guid}-audio-file-array-buffer-${index}`, audioFileArrayBuffer);
+
+        const responseContentLength: string | null = audioFileResponse.headers.get('Content-Length');
+
+        if (
+            responseContentLength === null
+        ) {
+            throw new Error('The Content-Length header was not set');
+        }
+
+        console.log('audioFileResponse', audioFileResponse.headers.get('Content-Length'));
+
+        if (
+            parseInt(responseContentLength) < 10485760
+        ) {
+            return arrayBuffer;
+        }
+
+        // const audioFileBlob = await audioFileResponse.blob();
+        // return audioFileBlob;
+        return await fetchAndSaveAudioFileArrayBuffer(episode, index + 1, rangeStart + 10485759, rangeEnd + 10485759, arrayBuffer);
+    }
 });

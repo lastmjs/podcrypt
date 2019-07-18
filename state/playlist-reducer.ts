@@ -26,7 +26,8 @@ export function PlaylistReducer(
         SetAudio1PlayingAction |
         SetAudio2PlayingAction |
         SetAudio1SrcAction |
-        SetAudio2SrcAction
+        SetAudio2SrcAction |
+        SetCurrentEpisodeDownloadIndexAction
 ): Readonly<State> {
 
     if (action.type === 'MARK_EPISODE_LISTENED') {
@@ -735,6 +736,13 @@ export function PlaylistReducer(
         return {
             ...state,
             audio2Src: action.audio2Src
+        };
+    }
+
+    if (action.type === 'SET_CURRENT_EPISODE_DOWNLOAD_INDEX') {
+        return {
+            ...state,
+            currentEpisodeDownloadIndex: action.currentEpisodeDownloadIndex
         };
     }
 

@@ -288,7 +288,8 @@ function runMigrations(persistedState: Readonly<State>, version: number): Readon
             audio1Playing: false,
             audio2Playing: false,
             audio1Src: 'NOT_SET',
-            audio2Src: 'NOT_SET'
+            audio2Src: 'NOT_SET',
+            currentEpisodeDownloadIndex: 0
         };
 
         return runMigrations(newPersistedState, version);
@@ -343,6 +344,7 @@ function getOriginalState(version: number): Readonly<State> {
         audio1Playing: false,
         audio2Playing: false,
         audio1Src: 'NOT_SET',
-        audio2Src: 'NOT_SET'
+        audio2Src: 'NOT_SET',
+        currentEpisodeDownloadIndex: 0
     };
 }
