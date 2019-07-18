@@ -9,7 +9,7 @@ class PodcryptButton extends HTMLElement {
                 href="https://podcrypt.app/podcast-overview?feedUrl=${this.getAttribute('feedUrl')}"
             >
                 <img
-                    src="https://podcrypt.app/podcrypt-block-transparent.png"
+                    src="https://podcrypt.app/podcrypt-black-transparent.png"
                     height="50px"
                 >
             </a>
