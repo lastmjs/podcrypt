@@ -202,7 +202,6 @@ StorePromise.then((Store) => {
         // TODO actually, we might be able to get rid of the current episode switching nonsense entirely
         async handlePlayback(
             currentEpisode: Readonly<Episode>,
-            currentEpisodeDownloadIndex: number,
             previousEpisodeGuid: EpisodeGuid,
             currentEpisodeGuid: EpisodeGuid,
             audio1Element: HTMLAudioElement,
@@ -218,7 +217,10 @@ StorePromise.then((Store) => {
                     previousEpisodeGuid: currentEpisodeGuid
                 });
 
-                const audioSources: Readonly<AudioSources> = await getInitialAudioSources(currentEpisode, currentEpisodeDownloadIndex);
+                // TODO we'll have to change the indeces when trying to get a downloaded episode to play at a given position
+                // TODO we really need a way to make current time/progress to an index...I think we'll need to load up all of the episode info into an index
+                // TODO on first load unfortunately
+                const audioSources: Readonly<AudioSources> = await getInitialAudioSources(currentEpisode, 0);
 
                 // TODO these probably need to be atomic
                 Store.dispatch({
@@ -243,10 +245,10 @@ StorePromise.then((Store) => {
 
                 Store.dispatch({
                     type: 'SET_CURRENT_EPISODE_DOWNLOAD_INDEX',
-                    currentEpisodeDownloadIndex: currentEpisodeDownloadIndex + 2
+                    currentEpisodeDownloadIndex: 2
                 });
 
-                audio1Element.currentTime = currentEpisode.progress;
+                audio1Element.currentTime = parseFloat(currentEpisode.progress);
             }
 
             await this.playOrPause(currentEpisode, audio1Element, audio2Element, audio1Playing, audio2Playing);
@@ -282,10 +284,70 @@ StorePromise.then((Store) => {
             }
         }
 
+        setupMediaNotification(
+            currentPodcast: Readonly<Podcast>,
+            currentEpisode: Readonly<Episode>,
+            audio1Element: Readonly<HTMLAudioElement>,
+            audio2Element: Readonly<HTMLAudioElement>
+        ): void {
+    
+            const navigator = window.navigator as any;
+    
+            if (
+                navigator.mediaSession !== null &&
+                navigator.mediaSession !== undefined
+            ) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: currentEpisode.title,
+                    artist: currentPodcast.artistName,
+                    album: currentPodcast.title,
+                    artwork: [
+                        {
+                            src: currentPodcast.imageUrl
+                        }
+                    ]
+                });
+    
+                navigator.mediaSession.setActionHandler('play', () => {
+                    Store.dispatch({
+                        type: 'CURRENT_EPISODE_PLAYED'
+                    });
+                });
+    
+                navigator.mediaSession.setActionHandler('pause', () => {
+                    Store.dispatch({
+                        type: 'CURRENT_EPISODE_PAUSED'
+                    });
+                });
+    
+                navigator.mediaSession.setActionHandler('seekbackward', () => {
+                    this.skipBack(currentEpisode, audio1Element, audio2Element);
+                });
+    
+                navigator.mediaSession.setActionHandler('seekforward', () => {
+                    this.skipForward(currentEpisode, audio1Element, audio2Element);                
+                });
+    
+                navigator.mediaSession.setActionHandler('previoustrack', () => {
+                    Store.dispatch({
+                        type: 'PLAY_PREVIOUS_EPISODE'
+                    });
+                });
+    
+                navigator.mediaSession.setActionHandler('nexttrack', () => {
+                    Store.dispatch({
+                        type: 'PLAY_NEXT_EPISODE'
+                    });
+                });
+            }
+        }
+
         render(state: Readonly<State>): Readonly<TemplateResult> {
+                        
             const audio1Element: HTMLAudioElement | null = this.querySelector('#audio-1');
             const audio2Element: HTMLAudioElement | null = this.querySelector('#audio-2');
             const currentEpisode: Readonly<Episode> | undefined | null = state.episodes[state.currentEpisodeGuid];
+            const currentPodcast: Readonly<Podcast> | undefined | null = currentEpisode ? state.podcasts[currentEpisode.feedUrl] : null;
             const duration: number | 'UNKNOWN' = currentEpisode && audio1Element && audio2Element ? getDuration(currentEpisode, audio1Element, audio2Element) : 'UNKNOWN';            
             const progressPercentage: number | 'UNKNOWN' = currentEpisode && duration !== 'UNKNOWN' ? getProgressPercentage(currentEpisode, duration) : 'UNKNOWN';
             const progress: number | 'UNKNOWN' = currentEpisode && !isNaN(parseFloat(currentEpisode.progress)) ? parseFloat(currentEpisode.progress) : 'UNKNOWN';
@@ -296,16 +358,17 @@ StorePromise.then((Store) => {
             const handlePlaybackParamsDefined: boolean = (
                 currentEpisode !== null &&
                 currentEpisode !== undefined &&
+                currentPodcast !== null &&
+                currentPodcast !== undefined &&
                 audio1Element !== null &&
                 audio1Element !== undefined &&
                 audio2Element !== null &&
                 audio2Element !== undefined
             );
 
-            if (handlePlaybackParamsDefined && audio1Element !== null && audio2Element !== null) {
+            if (handlePlaybackParamsDefined && audio1Element !== null && audio2Element !== null && currentPodcast !== null) {
                 this.handlePlayback(
                     currentEpisode,
-                    currentEpisodeDownloadIndex,
                     state.previousEpisodeGuid,
                     state.currentEpisodeGuid,
                     audio1Element,
@@ -313,6 +376,7 @@ StorePromise.then((Store) => {
                     state.audio1Playing,
                     state.audio2Playing
                 );
+                this.setupMediaNotification(currentPodcast, currentEpisode, audio1Element, audio2Element);
             }
 
             return html`
@@ -469,7 +533,6 @@ StorePromise.then((Store) => {
                         if (handlePlaybackParamsDefined && audio1Element !== null && audio2Element !== null) {
                             this.handlePlayback(
                                 currentEpisode,
-                                currentEpisodeDownloadIndex,
                                 state.previousEpisodeGuid,
                                 state.currentEpisodeGuid,
                                 audio1Element,
@@ -496,7 +559,6 @@ StorePromise.then((Store) => {
                         if (handlePlaybackParamsDefined && audio1Element !== null && audio2Element !== null) {
                             this.handlePlayback(
                                 currentEpisode,
-                                currentEpisodeDownloadIndex,
                                 state.previousEpisodeGuid,
                                 state.currentEpisodeGuid,
                                 audio1Element,
@@ -572,6 +634,10 @@ StorePromise.then((Store) => {
             const audio1Src: string = await getAudioSourceFromIndexedDB(currentEpisode, audio1SrcDownloadIndex);
             const audio2Src: string = await getAudioSourceFromIndexedDB(currentEpisode, audio2SrcDownloadIndex);
 
+            console.log('currentEpisode', currentEpisode);
+            console.log('audio1Src', audio1Src);
+            console.log('audio2Src', audio2Src);
+
             return {
                 audio1Src,
                 audio2Src
@@ -586,7 +652,10 @@ StorePromise.then((Store) => {
     }
 
     async function getAudioSourceFromIndexedDB(episode: Readonly<Episode>, episodeDownloadIndex: number): Promise<string | 'NOT_SET'> {
+       
+        console.log(`${episode.guid}-audio-file-array-buffer-${episodeDownloadIndex}`)
         const audioArrayBuffer: ArrayBuffer | 'NOT_FOUND' = (await get(`${episode.guid}-audio-file-array-buffer-${episodeDownloadIndex}`)) || 'NOT_FOUND';
+        console.log('audioArrayBuffer', audioArrayBuffer);
         const audioBlob: Readonly<Blob> | 'NOT_CREATED' = audioArrayBuffer !== 'NOT_FOUND' ? new Blob([audioArrayBuffer], { type: 'audio/mpeg' }) : 'NOT_CREATED';        
         const audioObjectURL: string | 'NOT_SET' = audioBlob !== 'NOT_CREATED' ? window.URL.createObjectURL(audioBlob) : 'NOT_SET';
         return audioObjectURL;
