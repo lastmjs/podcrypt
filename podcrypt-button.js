@@ -16,7 +16,7 @@ class PodcryptButton extends HTMLElement {
                 }
 
                 .podcrypt-button-image {
-                    height: calc(${logoHeight} + 1vmin);
+                    height: calc(${logoHeight} + 2vmin);
                 }
 
                 .podcrypt-button-container {
@@ -25,12 +25,12 @@ class PodcryptButton extends HTMLElement {
                 }
 
                 .podcrypt-button-top-text {
-                    font-size: calc(10px + 1vmin);
+                    font-size: calc(10px + .5vmin);
                     font-weight: bold;
                 }
 
                 .podcrypt-button-bottom-text {
-                    font-size: calc(15px + 1vmin);
+                    font-size: calc(15px + .5vmin);
                     font-weight: bold;
                 }
             </style>
