@@ -159,6 +159,10 @@ type State = {
     readonly payoutProblem: PayoutProblem;
     readonly nonce: number;
     readonly screenType: ScreenType;
+    readonly audio1Playing: boolean;
+    readonly audio2Playing: boolean;
+    readonly audio1Src: string | 'NOT_SET';
+    readonly audio2Src: string | 'NOT_SET';
 }
 
 type HexString = string;
@@ -441,6 +445,26 @@ type AddOrUpdateEpisodeAction = {
     readonly episode: Readonly<Episode>;
 }
 
+type SetAudio1PlayingAction = {
+    readonly type: 'SET_AUDIO_1_PLAYING';
+    readonly audio1Playing: boolean;
+}
+
+type SetAudio2PlayingAction = {
+    readonly type: 'SET_AUDIO_2_PLAYING';
+    readonly audio2Playing: boolean;
+}
+
+type SetAudio1SrcAction = {
+    readonly type: 'SET_AUDIO_1_SRC';
+    readonly audio1Src: string | 'NOT_SET';
+}
+
+type SetAudio2SrcAction = {
+    readonly type: 'SET_AUDIO_2_SRC';
+    readonly audio2Src: string | 'NOT_SET';
+}
+
 type PodcryptAction = 
     RenderAction |
     SetStateAction |
@@ -494,4 +518,8 @@ type PodcryptAction =
     MarkEpisodeUnlistenedAction |
     AddOrUpdateEpisodeAction | 
     SetPodcastPaymentsEnabledAction | 
-    WindowResizeEventAction;
+    WindowResizeEventAction |
+    SetAudio1PlayingAction |
+    SetAudio2PlayingAction |
+    SetAudio1SrcAction |
+    SetAudio2SrcAction;
