@@ -1,17 +1,48 @@
 class PodcryptButton extends HTMLElement {
 
     connectedCallback() {
-        this.innerHTML = `
+
+        const href = this.getAttribute('href') || 'https://podcrypt.app';
+        const logoColor = this.getAttribute('logo-color') || 'black';
+        const logoHeight = this.getAttribute('logo-height') || '50px';
+
+        const shadowRoot = this.attachShadow({ mode: 'open' });
+
+        shadowRoot.innerHTML = `
             <style>
+                a {
+                    color: inherit;
+                    text-decoration: none;
+                }
+
+                .podcrypt-button-container {
+                    display: flex;
+                    align-items: center;
+                }
+
+                .podcrypt-button-top-text {
+                    font-size: 10px;
+                }
+
+                .podcrypt-button-bottom-text {
+                    font-size: 15px;
+                }
             </style>
 
             <a
-                href="https://podcrypt.app/podcast-overview?feedUrl=${this.getAttribute('feedUrl')}"
+                href="${href}"
+                target="_blank"
             >
-                <img
-                    src="https://podcrypt.app/podcrypt-black-transparent.png"
-                    height="50px"
-                >
+                <div class="podcrypt-button-container">
+                    <img
+                        src="https://podcrypt.app/podcrypt-${logoColor}-transparent.png"
+                        height="${logoHeight}"
+                    >
+                    <div>
+                        <div class="podcrypt-button-top-text">Donate with</div>
+                        <div class="podcrypt-button-bottom-text">Podcrypt</div>
+                    </div>
+                </div>
             </a>
         `;
     }
