@@ -42,6 +42,11 @@ export const pcContainerStyles = `
     box-sizing: border-box;
 `;
 
+export const titleTextMedium = `
+    font-family: Ubuntu;
+    font-size: ${pxMedium};
+`;
+
 export const titleTextLarge = `
     font-family: Ubuntu;
     font-size: ${pxLarge};

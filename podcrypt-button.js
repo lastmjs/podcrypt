@@ -20,7 +20,7 @@ class PodcryptButton extends HTMLElement {
                 }
 
                 .podcrypt-button-container {
-                    display: flex;
+                    display: inline-flex;
                     align-items: center;
                 }
 
