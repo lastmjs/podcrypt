@@ -119,7 +119,7 @@ customElement('pc-about', ({ constructing, connecting, update, loaded }) => {
             <br>
 
             <div class="pc-about-secondary-text">
-                Then place the button anywhere you like:
+                Then place the button anywhere you like, replacing the href value with the actual URL to your podcast or episode on Podcrypt:
             </div>
 
             <br>
