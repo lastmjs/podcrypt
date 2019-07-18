@@ -1,473 +1,527 @@
-import { customElement, html } from 'functional-element';
+// TODO everything needs to be chunked...downloading the files needs to be chunked,
+// TODO saving the files to IndexedDB needs to be chunked, retrieving the files from IndexedDB needs to be chunked
+// TODO Turning the retrieved files into object urls needs to be chunked
+// TODO We need a smooth transition from one audio element to the next, I think 10mb chunks might be best
+// TODO test releasing object urls, I think that might be ruining everything
+
+import { 
+    html,
+    render as litRender,
+    TemplateResult
+} from 'lit-html';
 import { StorePromise } from '../state/store';
-import { navigate } from '../services/utilities';
-import BigNumber from 'bignumber.js';
 import {
     pxXXLarge,
     pxXLarge
 } from '../services/css';
+import BigNumber from 'bignumber.js';
 import { get } from 'idb-keyval';
 
-let audio1Playing = true;
-let audio2Playing = false;
-
-let audio1Src = '';
-let audio2Src = '';
 
 StorePromise.then((Store) => {
-    customElement('pc-player', async ({ constructing, update, element }) => {
-    
-        if (constructing) {
-            Store.subscribe(update);
+
+    class PCPlayer extends HTMLElement {
+        constructor() {
+            super();
+            Store.subscribe(() => litRender(this.render(Store.getState()), this));
         }
 
-        const state: Readonly<State> = Store.getState();
-        const audio1Element: HTMLAudioElement | null = element.querySelector('#audio-1');
-        const audio2Element: HTMLAudioElement | null = element.querySelector('#audio-2');
-        const currentEpisode: Readonly<Episode> | undefined = state.episodes[state.currentEpisodeGuid];
-        const currentPodcast: Readonly<Podcast> | undefined = currentEpisode ? state.podcasts[currentEpisode.feedUrl] : undefined;
+        playbackRateChanged(e: Readonly<Event>) {
 
-        if (currentEpisode && currentPodcast) {
-            setupMediaNotification(currentPodcast, currentEpisode, audio1Element, audio2Element);
-            await handleEpisodeSwitching(state, currentEpisode, audio1Element, audio2Element);
-            await playOrPause(currentEpisode, audio1Element, audio2Element);
-        }
-
-        return html`
-            <style>
-                .pc-player-container {
-                    position: fixed;
-                    bottom: 0;
-                    width: ${state.screenType === 'DESKTOP' ? '50vw' : '100vw'};
-                    background-color: white;
-                    box-shadow: inset 0px 5px 5px -5px grey;
-                }
-    
-                .pc-player-play-icon {
-                    font-size: calc(50px + 1vmin);
-                    cursor: pointer;
-                }
-
-                .pc-player-backward-icon {
-                    font-size: ${pxXLarge};
-                    margin-right: ${pxXXLarge};
-                    margin-left: ${pxXXLarge};
-                    cursor: pointer;
-                }
-
-                .pc-player-forward-icon {
-                    font-size: ${pxXLarge};
-                    margin-left: ${pxXLarge};
-                    margin-right: ${pxXLarge};
-                    cursor: pointer;
-                }
-            </style>
-    
-            <div class="pc-player-container">
-
-                <div style="padding: calc(10px + 1vmin); display: flex">
-                    <div style="width: 100%; position: absolute; top: 0; right: 0; height: 100%; background-color: rgba(1, 1, 1, .05); z-index: -1;">
-                        <input @input=${(e: any) => timeSliderOnInput(e, element)} type="range" style="width: 100%; position: absolute; top: 0; height: 0" min="0" max="${getDuration(element)}" .value=${currentEpisode ? currentEpisode.progress : '0'}>
-                    </div>
-                    <div style="width: ${getProgressPercentage(element)}%; position: absolute; top: 0; left: 0; height: 100%; background-color: rgba(1, 1, 1, .1); z-index: -1"></div>
-                    <!-- <i 
-                        class="material-icons pc-player-play-icon"
-                    >
-                        skip_previous
-                    </i> -->
-
-                    <div style="display: flex; flex-direction: column; flex: 1; align-items: center; justify-content: center; flex: 1">
-                        <div style="font-size: calc(10px + 1vmin);">${currentEpisode ? secondsToHoursMinutesSeconds(currentEpisode.progress) : ''}</div>
-                        <div><hr style="width: 100%"></div>
-                        <div style="font-size: calc(10px + 1vmin);">${getDuration(element) ? secondsToHoursMinutesSeconds(getDuration(element)) : ''}</div>
-                    </div>
-
-                    <div style="flex: 2; display: flex; align-items: center; justify-content: center">
-                        <i 
-                            class="material-icons pc-player-backward-icon"
-                            @click=${() => skipBack(audio1Element, audio2Element)}
-                        >
-                            replay_10
-                        </i>
-
-                        ${
-                            Store.getState().playerPlaying ? 
-                            html`
-                                <i 
-                                    class="material-icons pc-player-play-icon"
-                                    @click=${paused}
-                                >
-                                    pause
-                                </i>
-                            ` :
-                            html`
-                                <i 
-                                    class="material-icons pc-player-play-icon"
-                                    @click=${played}
-                                >
-                                    play_arrow
-                                </i>
-                            `
-                        }
-
-                        <i 
-                            class="material-icons pc-player-forward-icon"
-                            @click=${() => skipForward(audio1Element, audio2Element)}
-                        >
-                            forward_10
-                        </i>
-
-                        <!-- <i 
-                            class="material-icons pc-player-play-icon"
-                        >
-                            skip_next
-                        </i> -->
-                    </div>
-
-                    <div style="flex: 1; display: flex; justify-content: center; align-items: center;">
-                        <select @change=${playbackRateChanged} style="border: none; background-color: transparent">
-                            <option value=".25" ?selected=${Store.getState().playbackRate === '.25'}>.25x</option>
-                            <option value=".5" ?selected=${Store.getState().playbackRate === '.5'}>.5x</option>
-                            <option value=".75" ?selected=${Store.getState().playbackRate === '.75'}>.75x</option>
-                            <option value="1" ?selected=${Store.getState().playbackRate === '1'}>1x</option>
-                            <option value="1.25" ?selected=${Store.getState().playbackRate === '1.25'}>1.25x</option>
-                            <option value="1.5" ?selected=${Store.getState().playbackRate === '1.5'}>1.5x</option>
-                            <option value="1.75" ?selected=${Store.getState().playbackRate === '1.75'}>1.75x</option>
-                            <option value="2" ?selected=${Store.getState().playbackRate === '2'}>2x</option>
-                        </select>
-                    </div>
-                </div>
-
-
-            </div>
-
-            <audio
-                id="audio-1"
-                src=${audio1Src}
-                preload="metadata"
-                @loadeddata=${() => loadedData(currentEpisode, audio1Element, audio2Element)}
-                @ended=${audio1Ended}
-                @timeupdate=${(e: any) => timeUpdated(e, audio2Element)}
-                .playbackRate=${parseInt(Store.getState().playbackRate)}
-            ></audio>
-
-            <audio
-                id="audio-2"
-                src=${audio2Src}
-                preload="metadata"
-                @loadeddata=${() => loadedData(currentEpisode, audio1Element, audio2Element)}
-                @ended=${audio2Ended}
-                @timeupdate=${(e: any) => timeUpdated(e, audio2Element)}
-                .playbackRate=${parseInt(Store.getState().playbackRate)}
-            ></audio>
-        `;
-    });
-
-    function setupMediaNotification(
-        currentPodcast: Readonly<Podcast>,
-        currentEpisode: Readonly<Episode>,
-        audio1Element: HTMLAudioElement | null,
-        audio2Element: HTMLAudioElement | null
-    ): void {
-
-        const navigator = window.navigator as any;
-
-        if (
-            navigator.mediaSession !== null &&
-            navigator.mediaSession !== undefined
-        ) {
-            navigator.mediaSession.metadata = new MediaMetadata({
-                title: currentEpisode.title,
-                artist: currentPodcast.artistName,
-                album: currentPodcast.title,
-                artwork: [
-                    {
-                        src: currentPodcast.imageUrl
-                    }
-                ]
-            });
-
-            navigator.mediaSession.setActionHandler('play', () => {
-                Store.dispatch({
-                    type: 'CURRENT_EPISODE_PLAYED'
-                });
-            });
-
-            navigator.mediaSession.setActionHandler('pause', () => {
-                Store.dispatch({
-                    type: 'CURRENT_EPISODE_PAUSED'
-                });
-            });
-
-            navigator.mediaSession.setActionHandler('seekbackward', () => {
-                skipBack(audio1Element, audio2Element);
-            });
-
-            navigator.mediaSession.setActionHandler('seekforward', () => {
-                skipForward(audio1Element, audio2Element);                
-            });
-
-            navigator.mediaSession.setActionHandler('previoustrack', () => {
-                Store.dispatch({
-                    type: 'PLAY_PREVIOUS_EPISODE'
-                });
-            });
-
-            navigator.mediaSession.setActionHandler('nexttrack', () => {
-                Store.dispatch({
-                    type: 'PLAY_NEXT_EPISODE'
-                });
-            });
-        }
-    }
-
-    async function handleEpisodeSwitching(
-        state: Readonly<State>,
-        currentEpisode: Readonly<Episode>,
-        audio1Element: HTMLAudioElement | null,
-        audio2Element: HTMLAudioElement | null
-    ): Promise<void> {
-        const currentEpisodeGuid: EpisodeGuid = state.currentEpisodeGuid;
-        const previousEpisodeGuid: EpisodeGuid = state.previousEpisodeGuid;
-        const episodeChanged: boolean = currentEpisodeGuid !== previousEpisodeGuid;
-        
-        if (episodeChanged) {
             if (
-                audio1Element &&
-                audio2Element
+                e.target === null ||
+                e.target === undefined
             ) {
-                // const audioElement = audio1Playing ? audio1Element : audio2Element;
+                const message: string = 'Could not set the playback rate';
+                alert(message);
+                throw new Error(message);
+            }
 
-                audio1Element.pause();
-                audio1Element.src = ''; // TODO not sure if this is necessary, but it works for now. Try getting rid of it and see if the previous episode plays while switching episodes
+            const playbackSelect: HTMLSelectElement = e.target as HTMLSelectElement;
 
-                audio2Element.pause();
-                audio2Element.src = ''; // TODO not sure if this is necessary, but it works for now. Try getting rid of it and see if the previous episode plays while switching episodes
+            Store.dispatch({
+                type: 'SET_PLAYBACK_RATE',
+                playbackRate: playbackSelect.value
+            });
+        }
 
+        timeSliderOnInput(
+            e: Readonly<Event>,
+            currentEpisode: Readonly<Episode>,
+            audio1Element: HTMLAudioElement,
+            audio2Element: HTMLAudioElement
+        ) {
+            const sliderInput: Readonly<HTMLInputElement> = e.target as HTMLInputElement;
+
+            if (
+                currentEpisode.downloadState === 'DOWNLOADING' ||
+                currentEpisode.downloadState === 'NOT_DOWNLOADED'
+            ) {
+                audio1Element.currentTime = parseFloat(sliderInput.value);
+
+                Store.dispatch({
+                    type: 'UPDATE_CURRENT_EPISODE_PROGRESS_FROM_SLIDER',
+                    progress: new BigNumber(audio1Element.currentTime).toString()
+                });
+            }
+        }
+
+        skipBack(
+            currentEpisode: Readonly<Episode>,
+            audio1Element: HTMLAudioElement,
+            audio2Element: Readonly<HTMLAudioElement>
+        ) {
+            if (
+                currentEpisode.downloadState === 'DOWNLOADING' ||
+                currentEpisode.downloadState === 'NOT_DOWNLOADED'
+            ) {
+                audio1Element.currentTime = audio1Element.currentTime - 10;
+
+                Store.dispatch({
+                    type: 'UPDATE_CURRENT_EPISODE_PROGRESS',
+                    progress: new BigNumber(audio1Element.currentTime).toString()
+                });
+            }
+        }
+
+        skipForward(
+            currentEpisode: Readonly<Episode>,
+            audio1Element: HTMLAudioElement,
+            audio2Element: Readonly<HTMLAudioElement>
+        ) {
+            if (
+                currentEpisode.downloadState === 'DOWNLOADING' ||
+                currentEpisode.downloadState === 'NOT_DOWNLOADED'
+            ) {
+                audio1Element.currentTime = audio1Element.currentTime + 10;
+
+                Store.dispatch({
+                    type: 'UPDATE_CURRENT_EPISODE_PROGRESS',
+                    progress: new BigNumber(audio1Element.currentTime).toString()
+                });
+            }
+        }
+
+        async audio1Ended(currentEpisode: Readonly<Episode>, currentEpisodeDownloadIndex: number, audio2Src: string | 'NOT_SET') {
+
+            if (audio2Src === 'NOT_SET') {
+                Store.dispatch({
+                    type: 'CURRENT_EPISODE_COMPLETED'
+                });
+            }
+
+            if (currentEpisode.downloadState === 'DOWNLOADED') {
+                Store.dispatch({
+                    type: 'SET_AUDIO_1_PLAYING',
+                    audio1Playing: false
+                });
+    
+                Store.dispatch({
+                    type: 'SET_AUDIO_2_PLAYING',
+                    audio2Playing: true
+                });
+    
+                const audio1Src: string | 'NOT_SET' = await getAudioSourceFromIndexedDB(currentEpisode, currentEpisodeDownloadIndex);
+    
+                Store.dispatch({
+                    type: 'SET_AUDIO_1_SRC',
+                    audio1Src
+                });
+    
+                Store.dispatch({
+                    type: 'SET_CURRENT_EPISODE_DOWNLOAD_INDEX',
+                    currentEpisodeDownloadIndex: currentEpisodeDownloadIndex + 1
+                });
+            }
+        }
+
+        async audio2Ended(currentEpisode: Readonly<Episode>, currentEpisodeDownloadIndex: number, audio1Src: string | 'NOT_SET') {
+            
+            if (audio1Src === 'NOT_SET') {
+                Store.dispatch({
+                    type: 'CURRENT_EPISODE_COMPLETED'
+                });
+            }
+
+            if (currentEpisode.downloadState === 'DOWNLOADED') {
+                Store.dispatch({
+                    type: 'SET_AUDIO_1_PLAYING',
+                    audio1Playing: true
+                });
+    
+                Store.dispatch({
+                    type: 'SET_AUDIO_2_PLAYING',
+                    audio2Playing: false
+                });
+    
+                const audio2Src: string | 'NOT_SET' = await getAudioSourceFromIndexedDB(currentEpisode, currentEpisodeDownloadIndex);
+    
+                Store.dispatch({
+                    type: 'SET_AUDIO_2_SRC',
+                    audio2Src
+                });
+    
+                Store.dispatch({
+                    type: 'SET_CURRENT_EPISODE_DOWNLOAD_INDEX',
+                    currentEpisodeDownloadIndex: currentEpisodeDownloadIndex + 1
+                });
+            }
+        }
+
+        timeUpdated(currentEpisode: Readonly<Episode>, audioElement: Readonly<HTMLAudioElement>) {
+            const progress = parseFloat(currentEpisode.progress) > audioElement.currentTime ? audioElement.currentTime + currentEpisode.progress : audioElement.currentTime;
+    
+            if (progress === 0) {
+                return;
+            }
+    
+            if (audioElement.paused) {
+                return;
+            }
+            
+            Store.dispatch({
+                type: 'UPDATE_CURRENT_EPISODE_PROGRESS',
+                progress: new BigNumber(progress).toString()
+            });
+        }
+
+        played() {
+            Store.dispatch({
+                type: 'CURRENT_EPISODE_PLAYED'
+            });
+        }
+        
+        paused() {
+            Store.dispatch({
+                type: 'CURRENT_EPISODE_PAUSED'
+            });
+        }
+
+        // TODO we might want to make the transition between episodes even smoother, instead of restarting the audio sources
+        // TODO for each episode, when an audio element ends it can just load the next episode into the next audio element
+        // TODO actually, we might be able to get rid of the current episode switching nonsense entirely
+        async handlePlayback(
+            currentEpisode: Readonly<Episode>,
+            currentEpisodeDownloadIndex: number,
+            previousEpisodeGuid: EpisodeGuid,
+            currentEpisodeGuid: EpisodeGuid,
+            audio1Element: HTMLAudioElement,
+            audio2Element: Readonly<HTMLAudioElement>,
+            audio1Playing: boolean,
+            audio2Playing: boolean
+        ) {
+            const episodeChanged: boolean = currentEpisodeGuid !== previousEpisodeGuid;
+
+            if (episodeChanged) {
                 Store.dispatch({
                     type: 'SET_PREVIOUS_EPISODE_GUID',
                     previousEpisodeGuid: currentEpisodeGuid
                 });
 
-                const audioSources: {
-                    audio1Src: string,
-                    audio2Src: string | 'NOT_SET'
-                } = await getAudioSources(currentEpisode);
-            
-                audio1Src = audioSources.audio1Src;
-                audio2Src = audioSources.audio2Src;
+                const audioSources: Readonly<AudioSources> = await getInitialAudioSources(currentEpisode, currentEpisodeDownloadIndex);
 
-                audio1Element.src = audio1Src;
-                audio2Element.src = audio2Src;
-            
-                
-                setTimeout(() => {
-                    if (
-                        parseInt(currentEpisode.progress) <= audio1Element.duration
-                    ) {
-                        audio1Playing = true;
-                        audio2Playing = false;
-                        
-                        audio1Element.currentTime = parseInt(currentEpisode.progress);
-                        audio2Element.currentTime = 0;
-                    }
-    
-                    if (
-                        parseInt(currentEpisode.progress) > audio1Element.duration
-                     ) {
-                        audio1Playing = false;
-                        audio2Playing = true;
-    
-                        audio1Element.currentTime = 0;
-                        audio2Element.currentTime = parseInt(currentEpisode.progress) - audio1Element.duration;
-                    }
+                // TODO these probably need to be atomic
+                Store.dispatch({
+                    type: 'SET_AUDIO_1_SRC',
+                    audio1Src: audioSources.audio1Src
+                });
 
-                    Store.dispatch({
-                        type: 'RENDER'
-                    });
-                }, 1000);
+                Store.dispatch({
+                    type: 'SET_AUDIO_2_SRC',
+                    audio2Src: audioSources.audio2Src
+                });
+
+                Store.dispatch({
+                    type: 'SET_AUDIO_1_PLAYING',
+                    audio1Playing: true
+                });
+
+                Store.dispatch({
+                    type: 'SET_AUDIO_2_PLAYING',
+                    audio2Playing: false
+                });
+
+                Store.dispatch({
+                    type: 'SET_CURRENT_EPISODE_DOWNLOAD_INDEX',
+                    currentEpisodeDownloadIndex: currentEpisodeDownloadIndex + 2
+                });
+
+                audio1Element.currentTime = currentEpisode.progress;
             }
+
+            await this.playOrPause(currentEpisode, audio1Element, audio2Element, audio1Playing, audio2Playing);
         }
-    }
 
-    function loadedData(
-        currentEpisode: Readonly<Episode>,
-        audio1Element: Readonly<HTMLAudioElement> | null,
-        audio2Element: Readonly<HTMLAudioElement> | null
-    ) {
-        playOrPause(currentEpisode, audio1Element, audio2Element);
-    }
+        async playOrPause(
+            currentEpisode: Readonly<Episode>,
+            audio1Element: Readonly<HTMLAudioElement>,
+            audio2Element: Readonly<HTMLAudioElement>,
+            audio1Playing: boolean,
+            audio2Playing: boolean
+        ) {
+            try {
+                if (currentEpisode.playing === true) {
+                    if (audio1Playing) {
+                        audio2Element.pause();
+                        await audio1Element.play();
+                    }
 
-    async function playOrPause(
-        currentEpisode: Readonly<Episode>,
-        audio1Element: Readonly<HTMLAudioElement> | null,
-        audio2Element: Readonly<HTMLAudioElement> | null
-    ) {
-        try {
-            // const audioElement = audio1Playing ? audio1Element : audio2Element;
-
-            if (
-                audio1Element &&
-                audio2Element &&
-                currentEpisode.playing === true
-            ) {
-                if (audio1Playing) {
-                    audio2Element.pause();
-                    await audio1Element.play();
+                    if (audio2Playing) {
+                        audio1Element.pause();
+                        await audio2Element.play();
+                    }
                 }
 
-                if (audio2Playing) {
+                if (currentEpisode.playing === false) {
                     audio1Element.pause();
-                    await audio2Element.play();
+                    audio2Element.pause();
                 }
             }
+            catch(error) {
+                console.log(error);
+            }
+        }
+
+        render(state: Readonly<State>): Readonly<TemplateResult> {
+            const audio1Element: HTMLAudioElement | null = this.querySelector('#audio-1');
+            const audio2Element: HTMLAudioElement | null = this.querySelector('#audio-2');
+            const currentEpisode: Readonly<Episode> | undefined | null = state.episodes[state.currentEpisodeGuid];
+            const duration: number | 'UNKNOWN' = currentEpisode && audio1Element && audio2Element ? getDuration(currentEpisode, audio1Element, audio2Element) : 'UNKNOWN';            
+            const progressPercentage: number | 'UNKNOWN' = currentEpisode && duration !== 'UNKNOWN' ? getProgressPercentage(currentEpisode, duration) : 'UNKNOWN';
+            const progress: number | 'UNKNOWN' = currentEpisode && !isNaN(parseFloat(currentEpisode.progress)) ? parseFloat(currentEpisode.progress) : 'UNKNOWN';
+            const formattedDuration: string | 'UNKNOWN' = duration !== 'UNKNOWN' ? secondsToHoursMinutesSeconds(duration) : 'UNKNOWN';
+            const formattedProgress: string =  progress !== 'UNKNOWN' ? secondsToHoursMinutesSeconds(progress) : 'UNKNOWN';
+            const currentEpisodeDownloadIndex: number = state.currentEpisodeDownloadIndex;
+
+            const handlePlaybackParamsDefined: boolean = (
+                currentEpisode !== null &&
+                currentEpisode !== undefined &&
+                audio1Element !== null &&
+                audio1Element !== undefined &&
+                audio2Element !== null &&
+                audio2Element !== undefined
+            );
+
+            if (handlePlaybackParamsDefined && audio1Element !== null && audio2Element !== null) {
+                this.handlePlayback(
+                    currentEpisode,
+                    currentEpisodeDownloadIndex,
+                    state.previousEpisodeGuid,
+                    state.currentEpisodeGuid,
+                    audio1Element,
+                    audio2Element,
+                    state.audio1Playing,
+                    state.audio2Playing
+                );
+            }
+
+            return html`
+                <style>
+                    .pc-player-container {
+                        position: fixed;
+                        bottom: 0;
+                        width: ${state.screenType === 'DESKTOP' ? '50vw' : '100vw'};
+                        background-color: white;
+                        box-shadow: inset 0px 5px 5px -5px grey;
+                    }
+        
+                    .pc-player-play-icon {
+                        font-size: calc(50px + 1vmin);
+                        cursor: pointer;
+                    }
+
+                    .pc-player-backward-icon {
+                        font-size: ${pxXLarge};
+                        margin-right: ${pxXXLarge};
+                        margin-left: ${pxXXLarge};
+                        cursor: pointer;
+                    }
+
+                    .pc-player-forward-icon {
+                        font-size: ${pxXLarge};
+                        margin-left: ${pxXLarge};
+                        margin-right: ${pxXLarge};
+                        cursor: pointer;
+                    }
+                </style>
+        
+                <div class="pc-player-container">
+
+                    <div style="padding: calc(10px + 1vmin); display: flex">
+                        <div 
+                            style="width: 100%; position: absolute; top: 0; right: 0; height: 100%; background-color: rgba(1, 1, 1, .05); z-index: -1;"
+                        >
+                            <input 
+                                @input=${(e: Readonly<Event>) => {
+                                    if (
+                                        currentEpisode &&
+                                        audio1Element &&
+                                        audio2Element
+                                    ) {
+                                        this.timeSliderOnInput(e, currentEpisode, audio1Element, audio2Element);
+                                    }
+                                }}
+                                type="range"
+                                style="width: 100%; position: absolute; top: 0; height: 0"
+                                min="0"
+                                max="${duration}"
+                                .value=${progress.toString()}
+                                ?hidden=${formattedDuration === 'UNKNOWN' || formattedProgress === 'UNKNOWN'}
+                            >
+                        </div>
+                        <div style="width: ${progressPercentage}%; position: absolute; top: 0; left: 0; height: 100%; background-color: rgba(1, 1, 1, .1); z-index: -1"></div>
+                        <!-- <i 
+                            class="material-icons pc-player-play-icon"
+                        >
+                            skip_previous
+                        </i> -->
+
+                        <div style="display: flex; flex-direction: column; flex: 1; align-items: center; justify-content: center; flex: 1">
+                            ${
+                                formattedDuration !== 'UNKNOWN' && formattedProgress !== 'UNKNOWN' ? html`
+                                    <div style="font-size: calc(10px + 1vmin);">${formattedProgress === 'UNKNOWN' ? '' : formattedProgress}</div>
+                                    <div><hr style="width: 100%"></div>
+                                    <div style="font-size: calc(10px + 1vmin);">${formattedDuration === 'UNKNOWN' ? '' : formattedDuration}</div>                                
+                                ` : ''
+                            }
+                        </div>
+
+                        <div style="flex: 2; display: flex; align-items: center; justify-content: center">
+                            <i 
+                                class="material-icons pc-player-backward-icon"
+                                @click=${() => {
+                                    if (
+                                        currentEpisode &&
+                                        audio1Element &&
+                                        audio2Element
+                                    ) {
+                                        this.skipBack(currentEpisode, audio1Element, audio2Element);
+                                    }
+                                }}
+                            >
+                                replay_10
+                            </i>
+
+                            ${
+                                state.playerPlaying ? 
+                                html`
+                                    <i 
+                                        class="material-icons pc-player-play-icon"
+                                        @click=${() => this.paused()}
+                                    >
+                                        pause
+                                    </i>
+                                ` :
+                                html`
+                                    <i 
+                                        class="material-icons pc-player-play-icon"
+                                        @click=${() => this.played()}
+                                    >
+                                        play_arrow
+                                    </i>
+                                `
+                            }
+
+                            <i 
+                                class="material-icons pc-player-forward-icon"
+                                @click=${() => {
+                                    if (
+                                        currentEpisode &&
+                                        audio1Element &&
+                                        audio2Element
+                                    ) {
+                                        this.skipForward(currentEpisode, audio1Element, audio2Element);
+                                    }
+                                }}
+                            >
+                                forward_10
+                            </i>
+
+                            <!-- <i 
+                                class="material-icons pc-player-play-icon"
+                            >
+                                skip_next
+                            </i> -->
+                        </div>
+
+                        <div style="flex: 1; display: flex; justify-content: center; align-items: center;">
+                            <select @change=${(e: Readonly<Event>) => this.playbackRateChanged(e)} style="border: none; background-color: transparent">
+                                <option value=".25" ?selected=${state.playbackRate === '.25'}>.25x</option>
+                                <option value=".5" ?selected=${state.playbackRate === '.5'}>.5x</option>
+                                <option value=".75" ?selected=${state.playbackRate === '.75'}>.75x</option>
+                                <option value="1" ?selected=${state.playbackRate === '1'}>1x</option>
+                                <option value="1.25" ?selected=${state.playbackRate === '1.25'}>1.25x</option>
+                                <option value="1.5" ?selected=${state.playbackRate === '1.5'}>1.5x</option>
+                                <option value="1.75" ?selected=${state.playbackRate === '1.75'}>1.75x</option>
+                                <option value="2" ?selected=${state.playbackRate === '2'}>2x</option>
+                            </select>
+                        </div>
+                    </div>
+
+
+                </div>
+
+                <audio
+                    id="audio-1"
+                    src=${state.audio1Src}
+                    preload="metadata"
+                    @loadeddata=${() => {
+                        if (handlePlaybackParamsDefined && audio1Element !== null && audio2Element !== null) {
+                            this.handlePlayback(
+                                currentEpisode,
+                                currentEpisodeDownloadIndex,
+                                state.previousEpisodeGuid,
+                                state.currentEpisodeGuid,
+                                audio1Element,
+                                audio2Element,
+                                state.audio1Playing,
+                                state.audio2Playing
+                            );
+                        }
+                    }}
+                    @ended=${() => this.audio1Ended(currentEpisode, currentEpisodeDownloadIndex, state.audio2Src)}
+                    @timeupdate=${(e: Readonly<Event>) => {
+                        if (currentEpisode && audio1Element) {
+                            this.timeUpdated(currentEpisode, audio1Element);
+                        }
+                    }}
+                    .playbackRate=${parseFloat(state.playbackRate)}
+                ></audio>
+
+                <audio
+                    id="audio-2"
+                    src=${state.audio2Src}
+                    preload="metadata"
+                    @loadeddata=${() => {
+                        if (handlePlaybackParamsDefined && audio1Element !== null && audio2Element !== null) {
+                            this.handlePlayback(
+                                currentEpisode,
+                                currentEpisodeDownloadIndex,
+                                state.previousEpisodeGuid,
+                                state.currentEpisodeGuid,
+                                audio1Element,
+                                audio2Element,
+                                state.audio1Playing,
+                                state.audio2Playing
+                            );
+                        }
+                    }}
+                    @ended=${() => this.audio2Ended(currentEpisode, currentEpisodeDownloadIndex, state.audio1Src)}
+                    @timeupdate=${(e: Readonly<Event>) => {
+                        if (currentEpisode && audio2Element) {
+                            this.timeUpdated(currentEpisode, audio2Element);
+                        }
+                    }}
+                    .playbackRate=${parseFloat(state.playbackRate)}
+                ></audio>
+            `;
+        }
+    }
     
-            if (
-                audio1Element &&
-                audio2Element &&
-                currentEpisode.playing === false
-            ) {
-                audio1Element.pause();
-                audio2Element.pause();
-            }
-        }
-        catch(error) {
-            console.log(error);
-        }
-    }
+    window.customElements.define('pc-player', PCPlayer);
 
-    async function getAudioSources(episode: Readonly<Episode>): Promise<{
-        audio1Src: string,
-        audio2Src: string | 'NOT_SET'
-    }> {
-
-        // TODO I do not know if the types are correct here
-        const arrayBuffer: ArrayBuffer = await get(`${episode.guid}-audio-file-array-buffer`);
-
-        if (arrayBuffer) {
-            // TODO I think we are going to want to release these blobs eventaully...it doesn't seem to be making a difference currently though
-            // window.URL.revokeObjectURL(previousSrc);
-
-            let middleIndex: number = Math.floor(arrayBuffer.byteLength / 2);
-
-            const arrayBuffer1: ArrayBuffer = arrayBuffer.slice(0, middleIndex);
-            const arrayBuffer2: ArrayBuffer = arrayBuffer.slice(middleIndex, arrayBuffer.byteLength);
-
-            const blob1: Blob = new Blob([arrayBuffer1], { type: 'audio/mpeg' });
-            const blob2: Blob = new Blob([arrayBuffer2], { type: 'audio/mpeg' });
-
-            return {
-                audio1Src: window.URL.createObjectURL(blob1),
-                audio2Src: window.URL.createObjectURL(blob2)
-            };
-        }
-        else {
-            return {
-                audio1Src: episode.src,
-                audio2Src: 'NOT_SET'
-            };
-        }
-    }
-
-    function timeSliderOnInput(e: any, element: any) {
-        const progress = e.target.value;
-
-        // TODO it would be nice to do this all through redux, as well as skipping forward and backward
-        const audio1Element = element.querySelector('#audio-1');
-        const audio2Element = element.querySelector('#audio-2');
-
-        // const audioElement = audio1Playing ? audio1Element : audio2Element;
-
-        if (
-            audio1Element &&
-            audio2Element
-        ) {
-
-            if (audio1Playing) {
-                if (progress <= audio1Element.duration) {
-                    audio1Element.currentTime = progress;
-                }
-                else {
-                    audio1Playing = false;
-                    audio2Playing = true;
-
-                    audio2Element.currentTime = progress - audio1Element.duration;
-                }    
-            }
-
-            if (audio2Playing) {
-                if (progress <= audio1Element.duration) {
-
-                    audio1Playing = true;
-                    audio2Playing = false;
-
-                    audio1Element.currentTime = progress;
-                }
-                else {
-                    audio2Element.currentTime = progress - audio1Element.duration;
-                }  
-            }
-            // else {
-                // audioElement.currentTime = progress - audio1Element.currentTime;
-            // }
-        }
-
-        Store.dispatch({
-            type: 'UPDATE_CURRENT_EPISODE_PROGRESS_FROM_SLIDER',
-            progress: new BigNumber(progress).toString()
-        });
-    }
-
-    function getProgressPercentage(element: any) {
-        const audio1Element = element.querySelector('#audio-1');
-        const audio2Element = element.querySelector('#audio-2');
-
-        // const audioElement = audio1Playing ? audio1Element : audio2Element;
-        const duration = getDuration(element);
-
-        if (
-            audio1Element &&
-            audio2Element &&
-            !isNaN(duration) &&
-            !isNaN(audio1Element.currentTime)
-        ) {
-
-            if (audio1Playing) {
-                return (audio1Element.currentTime / duration) * 100;
-            }
-
-            if (audio2Playing) {
-                return ((audio1Element.duration + audio2Element.currentTime) / duration) * 100;
-            }
-
-            // return (audioElement.currentTime / duration) * 100;
-        }
-        else {
-            return 0;
-        }
-    }
-
-    function getDuration(element: any) {
-        const audio1Element = element.querySelector('#audio-1');
-        const audio2Element = element.querySelector('#audio-2');
-
-        if (
-            audio1Element &&
-            audio2Element
-            // !isNaN(audio1Element.duration) &&
-            // !isNaN(audio2Element.duration)
-        ) {
-
-            if (audio2Src === 'NOT_SET') {
-                return audio1Element.duration;
-            }
-            else {
-                return audio1Element.duration + audio2Element.duration;
-            }
-        }
-    }
-
-    function secondsToHoursMinutesSeconds(seconds: any) {
+    function secondsToHoursMinutesSeconds(seconds: Seconds): string {
+        
         const hours = Math.floor(seconds / 3600);
         const hoursRemainder = seconds % 3600;
         const minutes = Math.floor(hoursRemainder / 60);
@@ -476,152 +530,65 @@ StorePromise.then((Store) => {
         return `${hours === 0 ? '' : `${hours}:`}${minutes < 10 ? `0${minutes}` : minutes}:${totalSeconds < 10 ? `0${totalSeconds}` : totalSeconds}`;
     }
 
-    function playbackRateChanged(e: any) {
-        Store.dispatch({
-            type: 'SET_PLAYBACK_RATE',
-            playbackRate: e.target.value
-        });
-    }
+    function getDuration(
+        currentEpisode: Readonly<Episode>,
+        audio1Element: Readonly<HTMLAudioElement>,
+        audio2Element: Readonly<HTMLAudioElement>
+    ): number | 'UNKNOWN' {
 
-    function skipBack(audio1Element: HTMLAudioElement | null, audio2Element: HTMLAudioElement | null): void {
-        if (
-            audio1Element &&
-            audio2Element
-        ) {
-            if (audio1Playing) {
-                audio1Element.currentTime = audio1Element.currentTime - 10;
-
-                // if (audio1Element.currentTime > audio1Element.duration) {
-                //     audio1Playing = false;
-                //     audio2Playing = true;
-                // }
-
-                Store.dispatch({
-                    type: 'UPDATE_CURRENT_EPISODE_PROGRESS',
-                    progress: new BigNumber(audio1Element.currentTime).toString()
-                });
-            }
-
-            if (
-                audio2Playing &&
-                audio2Element.currentTime === 0
-            ) {
-                audio1Playing = true;
-                audio2Playing = false;
-
-                audio1Element.currentTime = audio1Element.duration - 10;
-
-                Store.dispatch({
-                    type: 'UPDATE_CURRENT_EPISODE_PROGRESS',
-                    progress: new BigNumber(audio1Element.duration).toString()
-                });
-            }
-
-            if (
-                audio2Playing
-            ) {
-                audio2Element.currentTime = audio2Element.currentTime - 10;
-
-                // console.log(audio2Element.currentTime);
-
-                // if (audio2Element.currentTime < 0) {
-                //     audio1Playing = true;
-                //     audio2Playing = false;
-                // }
-
-                Store.dispatch({
-                    type: 'UPDATE_CURRENT_EPISODE_PROGRESS',
-                    progress: new BigNumber(audio1Element.duration + audio2Element.currentTime).toString()
-                });
-            }
+        if (currentEpisode.downloadState === 'DOWNLOADED') {
+            // TODO not sure how we're going to get this duration...we could calculate perhaps based on file type, byte length, and bitrate, but that sounds complicated
+            // TODO we might also be able to load up ephemeral audio elements and grab their durations, summing them up and letting them get immediately garbage collected
+            return 'UNKNOWN';
         }
-    }
 
-    function skipForward(audio1Element: HTMLAudioElement | null, audio2Element: HTMLAudioElement | null): void {
         if (
-            audio1Element &&
-            audio2Element
+            currentEpisode.downloadState === 'NOT_DOWNLOADED' ||
+            currentEpisode.downloadState === 'DOWNLOADING'
         ) {
-            const audioElement = audio1Playing ? audio1Element : audio2Element;
-
-            audioElement.currentTime = audioElement.currentTime + 10;
-
-            Store.dispatch({
-                type: 'UPDATE_CURRENT_EPISODE_PROGRESS',
-                progress: new BigNumber(audioElement.currentTime).toString()
-            });
+            if (!isNaN(audio1Element.duration)) {
+                return audio1Element.duration;
+            }
+            else {
+                return 'UNKNOWN';
+            }   
         }
+
+        return 'UNKNOWN';
     }
-    
-    function audio1Ended() {
-        if (audio2Src === 'NOT_SET') {            
-            Store.dispatch({
-                type: 'CURRENT_EPISODE_COMPLETED'
-            });
+
+    function getProgressPercentage(
+        currentEpisode: Readonly<Episode>,
+        duration: number
+    ): number {
+        return (parseFloat(currentEpisode.progress) / duration) * 100
+    }
+
+    async function getInitialAudioSources(currentEpisode: Readonly<Episode>, currentEpisodeDownloadIndex: number): Promise<Readonly<AudioSources>> {        
+        if (currentEpisode.downloadState === 'DOWNLOADED') {
+            const audio1SrcDownloadIndex: number = currentEpisodeDownloadIndex;
+            const audio2SrcDownloadIndex: number = currentEpisodeDownloadIndex + 1;
+
+            const audio1Src: string = await getAudioSourceFromIndexedDB(currentEpisode, audio1SrcDownloadIndex);
+            const audio2Src: string = await getAudioSourceFromIndexedDB(currentEpisode, audio2SrcDownloadIndex);
+
+            return {
+                audio1Src,
+                audio2Src
+            };
         }
         else {
-            audio1Playing = false;
-            audio2Playing = true;
-
-            Store.dispatch({
-                type: 'RENDER'
-            });
+            return {
+                audio1Src: currentEpisode.src,
+                audio2Src: 'NOT_SET'
+            };
         }
     }
 
-    function audio2Ended() {
-        // if (audio1Src === 'NOT_SET') {            
-        //     Store.dispatch({
-        //         type: 'CURRENT_EPISODE_COMPLETED'
-        //     });
-        // }
-        // else {
-        //     audio1Playing = false;
-        //     audio2Playing = true;
-        // }
-        Store.dispatch({
-            type: 'CURRENT_EPISODE_COMPLETED'
-        });
-    }
-    
-    // TODO the counter is a hacky way of doing this bit it helps for now
-    // We only update the progress about once every second instead of 4 times per second
-    // Dispatching an action 4 times per second was really slowing things down
-    let counter = 1;
-    function timeUpdated(e: any, audio2Element: HTMLAudioElement | null) {
-        const progress = audio1Playing ? e.target.currentTime : e.target.currentTime + audio2Element.duration;
-    
-        if (progress === 0) {
-            return;
-        }
-
-        if (e.target.paused) {
-            return;
-        }
-
-        if (counter % 4 !== 0) {
-            counter = counter + 1;
-            return;
-        }
-        else {
-            counter = 1;
-        }
-    
-        Store.dispatch({
-            type: 'UPDATE_CURRENT_EPISODE_PROGRESS',
-            progress: new BigNumber(progress).toString()
-        });
-    }
-    
-    function played() {
-        Store.dispatch({
-            type: 'CURRENT_EPISODE_PLAYED'
-        });
-    }
-    
-    function paused() {
-        Store.dispatch({
-            type: 'CURRENT_EPISODE_PAUSED'
-        });
+    async function getAudioSourceFromIndexedDB(episode: Readonly<Episode>, episodeDownloadIndex: number): Promise<string | 'NOT_SET'> {
+        const audioArrayBuffer: ArrayBuffer | 'NOT_FOUND' = (await get(`${episode.guid}-audio-file-array-buffer-${episodeDownloadIndex}`)) || 'NOT_FOUND';
+        const audioBlob: Readonly<Blob> | 'NOT_CREATED' = audioArrayBuffer !== 'NOT_FOUND' ? new Blob([audioArrayBuffer], { type: 'audio/mpeg' }) : 'NOT_CREATED';        
+        const audioObjectURL: string | 'NOT_SET' = audioBlob !== 'NOT_CREATED' ? window.URL.createObjectURL(audioBlob) : 'NOT_SET';
+        return audioObjectURL;
     }
 });

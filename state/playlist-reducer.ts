@@ -22,7 +22,12 @@ export function PlaylistReducer(
         SetPreviousEpisodeGuidAction |
         MarkEpisodeListenedAction |
         MarkEpisodeUnlistenedAction |
-        AddOrUpdateEpisodeAction
+        AddOrUpdateEpisodeAction |
+        SetAudio1PlayingAction |
+        SetAudio2PlayingAction |
+        SetAudio1SrcAction |
+        SetAudio2SrcAction |
+        SetCurrentEpisodeDownloadIndexAction
 ): Readonly<State> {
 
     if (action.type === 'MARK_EPISODE_LISTENED') {
@@ -703,6 +708,41 @@ export function PlaylistReducer(
             ...state,
             currentPlaylistIndex: newCurrentPlaylistIndex,
             currentEpisodeGuid: newCurrentEpisodeGuid
+        };
+    }
+
+    if (action.type === 'SET_AUDIO_1_PLAYING') {
+        return {
+            ...state,
+            audio1Playing: action.audio1Playing
+        };
+    }
+
+    if (action.type === 'SET_AUDIO_2_PLAYING') {
+        return {
+            ...state,
+            audio2Playing: action.audio2Playing
+        };
+    }
+
+    if (action.type === 'SET_AUDIO_1_SRC') {
+        return {
+            ...state,
+            audio1Src: action.audio1Src
+        };
+    }
+
+    if (action.type === 'SET_AUDIO_2_SRC') {
+        return {
+            ...state,
+            audio2Src: action.audio2Src
+        };
+    }
+
+    if (action.type === 'SET_CURRENT_EPISODE_DOWNLOAD_INDEX') {
+        return {
+            ...state,
+            currentEpisodeDownloadIndex: action.currentEpisodeDownloadIndex
         };
     }
 

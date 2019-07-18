@@ -21,7 +21,7 @@ export const StorePromise: Promise<Readonly<Store<Readonly<State>, Readonly<Podc
 
 async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<PodcryptAction>>>> {
     const persistedState: Readonly<State> = await get('state');
-    const version: number = 35;
+    const version: number = 36;
 
     const InitialState: Readonly<State> = getInitialState(persistedState, version);
     
@@ -281,6 +281,20 @@ function runMigrations(persistedState: Readonly<State>, version: number): Readon
         return runMigrations(newPersistedState, version);
     }
 
+    if (persistedState.version === 35) {
+        const newPersistedState: Readonly<State> = {
+            ...persistedState,
+            version: 36,
+            audio1Playing: false,
+            audio2Playing: false,
+            audio1Src: 'NOT_SET',
+            audio2Src: 'NOT_SET',
+            currentEpisodeDownloadIndex: 0
+        };
+
+        return runMigrations(newPersistedState, version);
+    }
+
     return persistedState;
 }
 
@@ -326,6 +340,11 @@ function getOriginalState(version: number): Readonly<State> {
         podcryptLatestTransactionHash: null,
         payoutProblem: 'NO_PROBLEM',
         nonce: 0,
-        screenType: 'MOBILE'
+        screenType: 'MOBILE',
+        audio1Playing: false,
+        audio2Playing: false,
+        audio1Src: 'NOT_SET',
+        audio2Src: 'NOT_SET',
+        currentEpisodeDownloadIndex: 0
     };
 }
