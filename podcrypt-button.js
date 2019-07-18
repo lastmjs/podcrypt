@@ -10,9 +10,13 @@ class PodcryptButton extends HTMLElement {
 
         shadowRoot.innerHTML = `
             <style>
-                a {
+                .podcrypt-button-anchor {
                     color: inherit;
                     text-decoration: none;
+                }
+
+                .podcrypt-button-image {
+                    height: calc(${logoHeight} + 1vmin);
                 }
 
                 .podcrypt-button-container {
@@ -21,24 +25,25 @@ class PodcryptButton extends HTMLElement {
                 }
 
                 .podcrypt-button-top-text {
-                    font-size: 10px;
+                    font-size: calc(10px + 1vmin);
                     font-weight: bold;
                 }
 
                 .podcrypt-button-bottom-text {
-                    font-size: 15px;
+                    font-size: calc(15px + 1vmin);
                     font-weight: bold;
                 }
             </style>
 
             <a
+                class="podcrypt-button-anchor"
                 href="${href}"
                 target="_blank"
             >
                 <div class="podcrypt-button-container">
                     <img
+                        class="podcrypt-button-image"
                         src="https://podcrypt.app/podcrypt-${logoColor}-transparent.png"
-                        height="${logoHeight}"
                     >
                     <div>
                         <div class="podcrypt-button-top-text">Donate with</div>
