@@ -77,10 +77,6 @@ export async function payout(Store: Readonly<Store<Readonly<State>, Readonly<Pod
     for (let i=0; i < podcasts.length; i++) {
         const podcast: Readonly<Podcast> = podcasts[i];
 
-        if (podcast.paymentsEnabled === false) {
-            continue;
-        }
-
         const podcastTransactionResult = await payPodcast(Store, podcast, retryDelayInMilliseconds);
 
         if (
@@ -88,7 +84,8 @@ export async function payout(Store: Readonly<Store<Readonly<State>, Readonly<Pod
             podcastTransactionResult === 'ALREADY_PAID_FOR_INTERVAL' ||
             podcastTransactionResult === 'FEED_NOT_FOUND' ||
             podcastTransactionResult === 'PODCAST_ETHEREUM_ADDRESS_MALFORMED' ||
-            podcastTransactionResult === 'PODCAST_ETHEREUM_ADDRESS_NOT_FOUND'
+            podcastTransactionResult === 'PODCAST_ETHEREUM_ADDRESS_NOT_FOUND' ||
+            podcastTransactionResult === 'PAYMENTS_DISABLED'
         ) {
             continue;
         }
@@ -112,7 +109,8 @@ export async function payout(Store: Readonly<Store<Readonly<State>, Readonly<Pod
         podcryptTransactionResult !== 'ALREADY_PAID_FOR_INTERVAL' &&
         podcryptTransactionResult !== 'FEED_NOT_FOUND' &&
         podcryptTransactionResult !== 'PODCAST_ETHEREUM_ADDRESS_MALFORMED' &&
-        podcryptTransactionResult !== 'PODCAST_ETHEREUM_ADDRESS_NOT_FOUND'
+        podcryptTransactionResult !== 'PODCAST_ETHEREUM_ADDRESS_NOT_FOUND' &&
+        podcryptTransactionResult !== 'PAYMENTS_DISABLED'
     ) {
         Store.dispatch({
             type: 'SET_PODCRYPT_LATEST_TRANSACTION_HASH',
@@ -154,6 +152,11 @@ export async function payout(Store: Readonly<Store<Readonly<State>, Readonly<Pod
 
 async function payPodcast(Store: Readonly<Store>, podcast: Readonly<Podcast>, retryDelayInMilliseconds: Milliseconds): Promise<TransactionResult> {
     try {
+
+        if (podcast.paymentsEnabled === false) {
+            return 'PAYMENTS_DISABLED';
+        }
+
         const feed = await getRSSFeed(podcast.feedUrl);
 
         if (!feed) {
@@ -218,8 +221,14 @@ export async function getPayoutInfoForPodcast(state: Readonly<State>, podcast: R
     };
 }
 
+// TODO why are we passing in the state and the Store?
 async function payPodcrypt(Store: Readonly<Store>, state: Readonly<State>, retryDelayInMilliseconds: Milliseconds): Promise<TransactionResult> {
     try {
+
+        if (state.podcryptPreviousPayoutDate > state.nextPayoutDate) {
+            return 'ALREADY_PAID_FOR_INTERVAL';
+        }
+
         const to: EthereumAddress = state.podcryptEthereumAddress;
         
         const payoutInfoForPodcrypt: {
