@@ -173,7 +173,7 @@ type Transaction = {
     hash: HexString;
 };
 
-type TransactionResult = Transaction | 'ALREADY_PAID_FOR_INTERVAL' | 'FEED_NOT_FOUND' | 'PODCAST_ETHEREUM_ADDRESS_NOT_FOUND' | 'PODCAST_ETHEREUM_ADDRESS_MALFORMED';
+type TransactionResult = Transaction | 'ALREADY_PAID_FOR_INTERVAL' | 'FEED_NOT_FOUND' | 'PODCAST_ETHEREUM_ADDRESS_NOT_FOUND' | 'PODCAST_ETHEREUM_ADDRESS_MALFORMED' | 'PAYMENTS_DISABLED';
 
 // Uncategorized actions
 
