@@ -53,17 +53,17 @@ StorePromise.then((Store) => {
         ) {
             const sliderInput: Readonly<HTMLInputElement> = e.target as HTMLInputElement;
 
-            if (
-                currentEpisode.downloadState === 'DOWNLOADING' ||
-                currentEpisode.downloadState === 'NOT_DOWNLOADED'
-            ) {
+            // if (
+                // currentEpisode.downloadState === 'DOWNLOADING' ||
+                // currentEpisode.downloadState === 'NOT_DOWNLOADED'
+            // ) {
                 audio1Element.currentTime = parseFloat(sliderInput.value);
 
                 Store.dispatch({
                     type: 'UPDATE_CURRENT_EPISODE_PROGRESS_FROM_SLIDER',
                     progress: new BigNumber(audio1Element.currentTime).toString()
                 });
-            }
+            // }
         }
 
         skipBack(
@@ -71,17 +71,17 @@ StorePromise.then((Store) => {
             audio1Element: HTMLAudioElement,
             audio2Element: Readonly<HTMLAudioElement>
         ) {
-            if (
-                currentEpisode.downloadState === 'DOWNLOADING' ||
-                currentEpisode.downloadState === 'NOT_DOWNLOADED'
-            ) {
+            // if (
+                // currentEpisode.downloadState === 'DOWNLOADING' ||
+                // currentEpisode.downloadState === 'NOT_DOWNLOADED'
+            // ) {
                 audio1Element.currentTime = audio1Element.currentTime - 10;
 
                 Store.dispatch({
                     type: 'UPDATE_CURRENT_EPISODE_PROGRESS',
                     progress: new BigNumber(audio1Element.currentTime).toString()
                 });
-            }
+            // }
         }
 
         skipForward(
@@ -89,83 +89,86 @@ StorePromise.then((Store) => {
             audio1Element: HTMLAudioElement,
             audio2Element: Readonly<HTMLAudioElement>
         ) {
-            if (
-                currentEpisode.downloadState === 'DOWNLOADING' ||
-                currentEpisode.downloadState === 'NOT_DOWNLOADED'
-            ) {
+            // if (
+                // currentEpisode.downloadState === 'DOWNLOADING' ||
+                // currentEpisode.downloadState === 'NOT_DOWNLOADED'
+            // ) {
                 audio1Element.currentTime = audio1Element.currentTime + 10;
 
                 Store.dispatch({
                     type: 'UPDATE_CURRENT_EPISODE_PROGRESS',
                     progress: new BigNumber(audio1Element.currentTime).toString()
                 });
-            }
+            // }
         }
 
         async audio1Ended(currentEpisode: Readonly<Episode>, currentEpisodeDownloadIndex: number, audio2Src: string | 'NOT_SET') {
+            Store.dispatch({
+                type: 'CURRENT_EPISODE_COMPLETED'
+            });
 
-            if (audio2Src === 'NOT_SET') {
-                Store.dispatch({
-                    type: 'CURRENT_EPISODE_COMPLETED'
-                });
-            }
+            // if (audio2Src === 'NOT_SET') {
+            //     Store.dispatch({
+            //         type: 'CURRENT_EPISODE_COMPLETED'
+            //     });
+            // }
 
-            if (currentEpisode.downloadState === 'DOWNLOADED') {
-                Store.dispatch({
-                    type: 'SET_AUDIO_1_PLAYING',
-                    audio1Playing: false
-                });
+            // if (currentEpisode.downloadState === 'DOWNLOADED') {
+            //     Store.dispatch({
+            //         type: 'SET_AUDIO_1_PLAYING',
+            //         audio1Playing: false
+            //     });
     
-                Store.dispatch({
-                    type: 'SET_AUDIO_2_PLAYING',
-                    audio2Playing: true
-                });
+            //     Store.dispatch({
+            //         type: 'SET_AUDIO_2_PLAYING',
+            //         audio2Playing: true
+            //     });
     
-                const audio1Src: string | 'NOT_SET' = await getAudioSourceFromIndexedDB(currentEpisode, currentEpisodeDownloadIndex);
+            //     const audio1Src: string | 'NOT_SET' = await getAudioSourceFromIndexedDB(currentEpisode, currentEpisodeDownloadIndex);
     
-                Store.dispatch({
-                    type: 'SET_AUDIO_1_SRC',
-                    audio1Src
-                });
+            //     Store.dispatch({
+            //         type: 'SET_AUDIO_1_SRC',
+            //         audio1Src
+            //     });
     
-                Store.dispatch({
-                    type: 'SET_CURRENT_EPISODE_DOWNLOAD_INDEX',
-                    currentEpisodeDownloadIndex: currentEpisodeDownloadIndex + 1
-                });
-            }
+            //     Store.dispatch({
+            //         type: 'SET_CURRENT_EPISODE_DOWNLOAD_INDEX',
+            //         currentEpisodeDownloadIndex: currentEpisodeDownloadIndex + 1
+            //     });
+            // }
         }
 
         async audio2Ended(currentEpisode: Readonly<Episode>, currentEpisodeDownloadIndex: number, audio1Src: string | 'NOT_SET') {
             
-            if (audio1Src === 'NOT_SET') {
-                Store.dispatch({
-                    type: 'CURRENT_EPISODE_COMPLETED'
-                });
-            }
+            // if (audio1Src === 'NOT_SET') {
+            //     Store.dispatch({
+            //         type: 'CURRENT_EPISODE_COMPLETED'
+            //     });
+            // }
 
-            if (currentEpisode.downloadState === 'DOWNLOADED') {
-                Store.dispatch({
-                    type: 'SET_AUDIO_1_PLAYING',
-                    audio1Playing: true
-                });
+            // if (currentEpisode.downloadState === 'DOWNLOADED') {
+            //     Store.dispatch({
+            //         type: 'SET_AUDIO_1_PLAYING',
+            //         audio1Playing: true
+            //     });
     
-                Store.dispatch({
-                    type: 'SET_AUDIO_2_PLAYING',
-                    audio2Playing: false
-                });
+            //     Store.dispatch({
+            //         type: 'SET_AUDIO_2_PLAYING',
+            //         audio2Playing: false
+            //     });
     
-                const audio2Src: string | 'NOT_SET' = await getAudioSourceFromIndexedDB(currentEpisode, currentEpisodeDownloadIndex);
+            //     const audio2Src: string | 'NOT_SET' = await getAudioSourceFromIndexedDB(currentEpisode, currentEpisodeDownloadIndex);
     
-                Store.dispatch({
-                    type: 'SET_AUDIO_2_SRC',
-                    audio2Src
-                });
+            //     Store.dispatch({
+            //         type: 'SET_AUDIO_2_SRC',
+            //         audio2Src
+            //     });
     
-                Store.dispatch({
-                    type: 'SET_CURRENT_EPISODE_DOWNLOAD_INDEX',
-                    currentEpisodeDownloadIndex: currentEpisodeDownloadIndex + 1
-                });
-            }
+            //     Store.dispatch({
+            //         type: 'SET_CURRENT_EPISODE_DOWNLOAD_INDEX',
+            //         currentEpisodeDownloadIndex: currentEpisodeDownloadIndex + 1
+            //     });
+            // }
         }
 
         timeUpdated(currentEpisode: Readonly<Episode>, audioElement: Readonly<HTMLAudioElement>) {
@@ -217,36 +220,68 @@ StorePromise.then((Store) => {
                     previousEpisodeGuid: currentEpisodeGuid
                 });
 
+                Store.dispatch({
+                    type: 'SET_AUDIO_1_SRC',
+                    audio1Src: ''
+                });
+
                 // TODO we'll have to change the indeces when trying to get a downloaded episode to play at a given position
                 // TODO we really need a way to make current time/progress to an index...I think we'll need to load up all of the episode info into an index
                 // TODO on first load unfortunately
-                const audioSources: Readonly<AudioSources> = await getInitialAudioSources(currentEpisode, 0);
+                // const audioSources: Readonly<AudioSources> = await getInitialAudioSources(currentEpisode, 0);
 
-                // TODO these probably need to be atomic
-                Store.dispatch({
-                    type: 'SET_AUDIO_1_SRC',
-                    audio1Src: audioSources.audio1Src
-                });
+                // TODO I need to add the check for iOS, in case mediasource is not supported. In that case just grab the blob and do createObjectUrl from that
+                if (currentEpisode.downloadState === 'DOWNLOADED') {
 
-                Store.dispatch({
-                    type: 'SET_AUDIO_2_SRC',
-                    audio2Src: audioSources.audio2Src
-                });
+                    const mediaSource: Readonly<MediaSource> = new MediaSource();
+    
+                    Store.dispatch({
+                        type: 'SET_AUDIO_1_SRC',
+                        audio1Src: window.URL.createObjectURL(mediaSource)
+                    });
+    
+                    await new Promise((resolve) => {
+                        mediaSource.addEventListener('sourceopen', async () => {
+                            // window.URL.revokeObjectURL(audio1Element.src);
+        
+                            const sourceBuffer: Readonly<SourceBuffer> = mediaSource.addSourceBuffer('audio/mpeg');
+                        
+                            await addArrayBuffersToSourceBuffer(currentEpisode, mediaSource, sourceBuffer);
+        
+                            resolve();
+                            // const blob = await new Response().arrayBuffer();
+                        });
+                    });
+                }
+                else {
+                    audio1Element.src = currentEpisode.src;
+                }
 
-                Store.dispatch({
-                    type: 'SET_AUDIO_1_PLAYING',
-                    audio1Playing: true
-                });
+                // // TODO these probably need to be atomic
+                // Store.dispatch({
+                //     type: 'SET_AUDIO_1_SRC',
+                //     audio1Src: audioSources.audio1Src
+                // });
 
-                Store.dispatch({
-                    type: 'SET_AUDIO_2_PLAYING',
-                    audio2Playing: false
-                });
+                // Store.dispatch({
+                //     type: 'SET_AUDIO_2_SRC',
+                //     audio2Src: audioSources.audio2Src
+                // });
 
-                Store.dispatch({
-                    type: 'SET_CURRENT_EPISODE_DOWNLOAD_INDEX',
-                    currentEpisodeDownloadIndex: 2
-                });
+                // Store.dispatch({
+                //     type: 'SET_AUDIO_1_PLAYING',
+                //     audio1Playing: true
+                // });
+
+                // Store.dispatch({
+                //     type: 'SET_AUDIO_2_PLAYING',
+                //     audio2Playing: false
+                // });
+
+                // Store.dispatch({
+                //     type: 'SET_CURRENT_EPISODE_DOWNLOAD_INDEX',
+                //     currentEpisodeDownloadIndex: 2
+                // });
 
                 audio1Element.currentTime = parseFloat(currentEpisode.progress);
             }
@@ -598,25 +633,26 @@ StorePromise.then((Store) => {
         audio2Element: Readonly<HTMLAudioElement>
     ): number | 'UNKNOWN' {
 
-        if (currentEpisode.downloadState === 'DOWNLOADED') {
+        // if (currentEpisode.downloadState === 'DOWNLOADED') {
             // TODO not sure how we're going to get this duration...we could calculate perhaps based on file type, byte length, and bitrate, but that sounds complicated
             // TODO we might also be able to load up ephemeral audio elements and grab their durations, summing them up and letting them get immediately garbage collected
-            return 'UNKNOWN';
-        }
+            // return 'UNKNOWN';
+        // }
 
-        if (
-            currentEpisode.downloadState === 'NOT_DOWNLOADED' ||
-            currentEpisode.downloadState === 'DOWNLOADING'
-        ) {
+        // if (
+            // currentEpisode.downloadState === 'NOT_DOWNLOADED' ||
+            // currentEpisode.downloadState === 'DOWNLOADING'
+        // ) {
             if (!isNaN(audio1Element.duration)) {
+                console.log('audio1Element.duration', audio1Element.duration);
                 return audio1Element.duration;
             }
             else {
                 return 'UNKNOWN';
             }   
-        }
+        // }
 
-        return 'UNKNOWN';
+        // return 'UNKNOWN';
     }
 
     function getProgressPercentage(
@@ -659,5 +695,32 @@ StorePromise.then((Store) => {
         const audioBlob: Readonly<Blob> | 'NOT_CREATED' = audioArrayBuffer !== 'NOT_FOUND' ? new Blob([audioArrayBuffer], { type: 'audio/mpeg' }) : 'NOT_CREATED';        
         const audioObjectURL: string | 'NOT_SET' = audioBlob !== 'NOT_CREATED' ? window.URL.createObjectURL(audioBlob) : 'NOT_SET';
         return audioObjectURL;
+    }
+
+    async function addArrayBuffersToSourceBuffer(
+        currentEpisode: Readonly<Episode>,
+        mediaSource: Readonly<MediaSource>,
+        sourceBuffer: Readonly<SourceBuffer>,
+        chunkIndex: number = 0
+    ): Promise<void> {
+        const chunk: ArrayBuffer | null | undefined = await get(`${currentEpisode.guid}-audio-file-array-buffer-${chunkIndex}`);
+
+        if (
+            chunk === null ||
+            chunk === undefined
+        ) {
+            // sourceBuffer.addEventListener('updateend', () => {
+                mediaSource.endOfStream();
+            // });
+            return;
+        }
+
+        sourceBuffer.appendBuffer(chunk);
+
+        await new Promise((resolve) => {
+            sourceBuffer.addEventListener('updateend', resolve);
+        });
+
+        addArrayBuffersToSourceBuffer(currentEpisode, mediaSource, sourceBuffer, chunkIndex + 1);
     }
 });
