@@ -220,10 +220,25 @@ StorePromise.then((Store) => {
                     previousEpisodeGuid: currentEpisodeGuid
                 });
 
+                
+
                 Store.dispatch({
                     type: 'SET_AUDIO_1_SRC',
                     audio1Src: ''
                 });
+
+                if (currentEpisode.downloadState === 'DOWNLOADED') {
+                    console.log(1)
+                    const episodeAudioInfo = await getEpisodeAudioInfo(currentEpisode);
+                    console.log(2)
+                    console.log('episodeAudioInfo', episodeAudioInfo);
+                }
+
+
+                // Store.dispatch({
+                //     type: 'SET_AUDIO_1_SRC',
+                //     audio1Src: ''
+                // });
 
                 // TODO we'll have to change the indeces when trying to get a downloaded episode to play at a given position
                 // TODO we really need a way to make current time/progress to an index...I think we'll need to load up all of the episode info into an index
@@ -231,31 +246,31 @@ StorePromise.then((Store) => {
                 // const audioSources: Readonly<AudioSources> = await getInitialAudioSources(currentEpisode, 0);
 
                 // TODO I need to add the check for iOS, in case mediasource is not supported. In that case just grab the blob and do createObjectUrl from that
-                if (currentEpisode.downloadState === 'DOWNLOADED') {
+                // if (currentEpisode.downloadState === 'DOWNLOADED') {
 
-                    const mediaSource: Readonly<MediaSource> = new MediaSource();
+                //     const mediaSource: Readonly<MediaSource> = new MediaSource();
     
-                    Store.dispatch({
-                        type: 'SET_AUDIO_1_SRC',
-                        audio1Src: window.URL.createObjectURL(mediaSource)
-                    });
+                //     Store.dispatch({
+                //         type: 'SET_AUDIO_1_SRC',
+                //         audio1Src: window.URL.createObjectURL(mediaSource)
+                //     });
     
-                    await new Promise((resolve) => {
-                        mediaSource.addEventListener('sourceopen', async () => {
-                            // window.URL.revokeObjectURL(audio1Element.src);
+                //     await new Promise((resolve) => {
+                //         mediaSource.addEventListener('sourceopen', async () => {
+                //             // window.URL.revokeObjectURL(audio1Element.src);
         
-                            const sourceBuffer: Readonly<SourceBuffer> = mediaSource.addSourceBuffer('audio/mpeg');
+                //             // const sourceBuffer: Readonly<SourceBuffer> = mediaSource.addSourceBuffer('audio/mpeg');
                         
-                            await addArrayBuffersToSourceBuffer(currentEpisode, mediaSource, sourceBuffer);
+                //             await addArrayBuffersToSourceBuffer(currentEpisode, mediaSource);
         
-                            resolve();
-                            // const blob = await new Response().arrayBuffer();
-                        });
-                    });
-                }
-                else {
-                    audio1Element.src = currentEpisode.src;
-                }
+                //             resolve();
+                //             // const blob = await new Response().arrayBuffer();
+                //         });
+                //     });
+                // }
+                // else {
+                //     audio1Element.src = currentEpisode.src;
+                // }
 
                 // // TODO these probably need to be atomic
                 // Store.dispatch({
@@ -283,7 +298,7 @@ StorePromise.then((Store) => {
                 //     currentEpisodeDownloadIndex: 2
                 // });
 
-                audio1Element.currentTime = parseFloat(currentEpisode.progress);
+                // audio1Element.currentTime = parseFloat(currentEpisode.progress);
             }
 
             await this.playOrPause(currentEpisode, audio1Element, audio2Element, audio1Playing, audio2Playing);
@@ -697,12 +712,18 @@ StorePromise.then((Store) => {
         return audioObjectURL;
     }
 
+    // TODO I will have to deal with calculating the length, adding new buffers to the buffer, and seeking on my own
+    // TODO media source extensions at least gives me a way of updating the audio live I believe, without changing audio elements
+    // TODO it will take some more work but hopefully will function properly
     async function addArrayBuffersToSourceBuffer(
         currentEpisode: Readonly<Episode>,
         mediaSource: Readonly<MediaSource>,
-        sourceBuffer: Readonly<SourceBuffer>,
+        // sourceBuffer: Readonly<SourceBuffer>,
         chunkIndex: number = 0
     ): Promise<void> {
+
+        console.log('chunkIndex', chunkIndex);
+
         const chunk: ArrayBuffer | null | undefined = await get(`${currentEpisode.guid}-audio-file-array-buffer-${chunkIndex}`);
 
         if (
@@ -715,12 +736,85 @@ StorePromise.then((Store) => {
             return;
         }
 
-        sourceBuffer.appendBuffer(chunk);
+        // const middleIndex: number = Math.floor(chunk.byteLength / 2);
 
+        // const chunk1: ArrayBuffer = chunk.slice(0, middleIndex);
+        // const chunk2: ArrayBuffer = chunk.slice(middleIndex, chunk.byteLength);
+
+        const sourceBuffer: Readonly<SourceBuffer> = mediaSource.addSourceBuffer('audio/mpeg');
+
+        sourceBuffer.appendBuffer(chunk);
+        
         await new Promise((resolve) => {
             sourceBuffer.addEventListener('updateend', resolve);
         });
 
-        addArrayBuffersToSourceBuffer(currentEpisode, mediaSource, sourceBuffer, chunkIndex + 1);
+        // mediaSource.addEventListener('')
+        
+        // sourceBuffer.addEventListener('')
+        // sourceBuffer.remove
+
+        // sourceBuffer.appendBuffer(chunk2);
+
+        // await new Promise((resolve) => {
+        //     sourceBuffer.addEventListener('updateend', resolve);
+        // });
+
+        // await new Promise((resolve) => setTimeout(resolve, 5000));
+
+        addArrayBuffersToSourceBuffer(currentEpisode, mediaSource, chunkIndex + 1);
+    }
+
+    type EpisodeAudioInfo = {
+        duration: number;
+        episodeChunkInfos: ReadonlyArray<EpisodeChunkInfo>;
+    }
+
+    type EpisodeChunkInfo = {
+        chunkIndex: number;
+        startTime: Seconds;
+        endTime: Seconds;
+    }
+
+    async function getEpisodeAudioInfo(
+        episode: Readonly<Episode>,
+        chunkIndex: number = 0,
+        episodeAudioInfo: Readonly<EpisodeAudioInfo> = {
+            duration: 0,
+            episodeChunkInfos: []
+        }
+    ): Promise<EpisodeAudioInfo> {
+
+        const chunk: ArrayBuffer | null | undefined = await get(`${episode.guid}-audio-file-array-buffer-${chunkIndex}`);
+
+        if (
+            chunk === null ||
+            chunk === undefined
+        ) {
+            return episodeAudioInfo;
+        }
+
+        const audioElement: HTMLAudioElement = document.createElement('audio');
+        const objectURL: string = window.URL.createObjectURL(new Blob([chunk]));
+        audioElement.src = objectURL;
+        
+        await new Promise((resolve) => audioElement.addEventListener('durationchange', resolve));
+        
+        // TODO the start times and end times might need to be changed to not ever overlap, we'll see
+        const previousEpisodeChunkInfo: Readonly<EpisodeChunkInfo> | undefined = episodeAudioInfo.episodeChunkInfos[episodeAudioInfo.episodeChunkInfos.length - 1];
+        const duration: Seconds = audioElement.duration;
+        const startTime: Seconds = previousEpisodeChunkInfo ? previousEpisodeChunkInfo.endTime : 0; // TODO this should be the end time of the previous episodeChunkInfo
+        const endTime: Seconds = startTime + duration;
+        const episodeChunkInfo: Readonly<EpisodeChunkInfo> = {
+            chunkIndex,
+            startTime,
+            endTime
+        };
+
+        return await getEpisodeAudioInfo(episode, chunkIndex + 1, {
+            ...episodeAudioInfo,
+            duration: episodeAudioInfo.duration + duration,
+            episodeChunkInfos: [...episodeAudioInfo.episodeChunkInfos, episodeChunkInfo]
+        });
     }
 });
