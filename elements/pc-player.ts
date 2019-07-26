@@ -56,52 +56,54 @@ StorePromise.then((Store) => {
             audio2Element: HTMLAudioElement
         ) {
 
-            if (this.episodeAudioInfo === null) {
-                alert('this.episodeAudioInfo is null');
-                return;
-            }
-
-            const episodeChunkInfo: EpisodeChunkInfo | undefined = this.episodeAudioInfo.episodeChunkInfos.find((episodeChunkInfo) => {
-                return newCurrentTime >= episodeChunkInfo.startTime && newCurrentTime < episodeChunkInfo.endTime;
-            });
-
-            if (episodeChunkInfo === undefined) {
-                alert('episodeChunkInfo is undefined');
-                return;
-            }
-
-            const chunkIndex = episodeChunkInfo.chunkIndex;
-
-            if (chunkIndex === Store.getState().currentEpisodeDownloadIndex) {
-
-                audio1Element.currentTime = newCurrentTime;
-
+            if (currentEpisode.downloadState === 'DOWNLOADED') {
+                if (this.episodeAudioInfo === null) {
+                    alert('this.episodeAudioInfo is null');
+                    return;
+                }
+    
+                const episodeChunkInfo: EpisodeChunkInfo | undefined = this.episodeAudioInfo.episodeChunkInfos.find((episodeChunkInfo) => {
+                    return newCurrentTime >= episodeChunkInfo.startTime && newCurrentTime < episodeChunkInfo.endTime;
+                });
+    
+                if (episodeChunkInfo === undefined) {
+                    alert('episodeChunkInfo is undefined');
+                    return;
+                }
+    
+                const chunkIndex = episodeChunkInfo.chunkIndex;
+    
+                if (chunkIndex === Store.getState().currentEpisodeDownloadIndex) {
+    
+                    audio1Element.currentTime = newCurrentTime;
+    
+                    Store.dispatch({
+                        type: 'UPDATE_CURRENT_EPISODE_PROGRESS_FROM_SLIDER',
+                        progress: new BigNumber(audio1Element.currentTime).toString()
+                    });    
+    
+                    return;
+                }
+    
+                if (this.sourceBuffer === null) {
+                    alert('this.sourceBuffer is null');
+                    return;
+                }
+                
+                this.sourceBuffer.abort();
+    
+                this.sourceBuffer.timestampOffset = episodeChunkInfo.startTime;
+                
+                // TODO i am still trying to figure out the time range thing...I was using Infinity
+                this.sourceBuffer.remove(0, this.sourceBuffer.buffered.end(0));
+                
+                await addArrayBufferToSourceBuffer(currentEpisode, chunkIndex, this.sourceBuffer);
+                
                 Store.dispatch({
-                    type: 'UPDATE_CURRENT_EPISODE_PROGRESS_FROM_SLIDER',
-                    progress: new BigNumber(audio1Element.currentTime).toString()
-                });    
-
-                return;
+                    type: 'SET_CURRENT_EPISODE_DOWNLOAD_INDEX',
+                    currentEpisodeDownloadIndex: chunkIndex
+                });
             }
-
-            if (this.sourceBuffer === null) {
-                alert('this.sourceBuffer is null');
-                return;
-            }
-            
-            this.sourceBuffer.abort();
-
-            this.sourceBuffer.timestampOffset = episodeChunkInfo.startTime;
-            
-            // TODO i am still trying to figure out the time range thing...I was using Infinity
-            this.sourceBuffer.remove(0, this.sourceBuffer.buffered.end(0));
-            
-            await addArrayBufferToSourceBuffer(currentEpisode, chunkIndex, this.sourceBuffer);
-            
-            Store.dispatch({
-                type: 'SET_CURRENT_EPISODE_DOWNLOAD_INDEX',
-                currentEpisodeDownloadIndex: chunkIndex
-            });
 
             audio1Element.currentTime = newCurrentTime;
 
@@ -200,41 +202,38 @@ StorePromise.then((Store) => {
 
         async timeUpdated(currentEpisode: Readonly<Episode>, audioElement: Readonly<HTMLAudioElement>) {
            
-            if (this.episodeAudioInfo === null) {
-                alert('this.episodeAudioInfo is null');
-                return;
-            }
-
-            const currentEpisodeChunkInfo = this.episodeAudioInfo.episodeChunkInfos[Store.getState().currentEpisodeDownloadIndex];
-
-            console.log('currentEpisode.progress', parseFloat(currentEpisode.progress));
-            console.log('currentEpisodeChunkInfo.endTime - 10', currentEpisodeChunkInfo.endTime - 10);
-
-            if (
-                parseFloat(currentEpisode.progress) >= (currentEpisodeChunkInfo.endTime - 10)
-            ) {
-                console.log('switch chunks');
-                if (this.sourceBuffer === null) {
-                    alert('this.sourceBuffer is null');
+            if (currentEpisode.downloadState === 'DOWNLOADED') {
+                if (this.episodeAudioInfo === null) {
                     return;
                 }
-
+    
+                const currentEpisodeChunkInfo = this.episodeAudioInfo.episodeChunkInfos[Store.getState().currentEpisodeDownloadIndex];
                 const nextEpisodeChunkInfo = this.episodeAudioInfo.episodeChunkInfos[Store.getState().currentEpisodeDownloadIndex + 1];
-
-                this.sourceBuffer.abort();
-
-                this.sourceBuffer.timestampOffset = nextEpisodeChunkInfo.startTime;
-
-                this.sourceBuffer.remove(0, this.sourceBuffer.buffered.end(0) - 10);
-            
-                await addArrayBufferToSourceBuffer(currentEpisode, Store.getState().currentEpisodeDownloadIndex + 1, this.sourceBuffer);
+        
+                // TODO comment everything that is crazy
+                if (
+                    nextEpisodeChunkInfo &&
+                    parseFloat(currentEpisode.progress) >= (currentEpisodeChunkInfo.endTime - 10)
+                ) {
+                    if (this.sourceBuffer === null) {
+                        return;
+                    }
+    
+                    this.sourceBuffer.abort();
+    
+                    this.sourceBuffer.timestampOffset = nextEpisodeChunkInfo.startTime;
+    
+                    this.sourceBuffer.remove(0, this.sourceBuffer.buffered.end(0) - 10);
                 
-                Store.dispatch({
-                    type: 'SET_CURRENT_EPISODE_DOWNLOAD_INDEX',
-                    currentEpisodeDownloadIndex: Store.getState().currentEpisodeDownloadIndex + 1
-                });    
+                    await addArrayBufferToSourceBuffer(currentEpisode, Store.getState().currentEpisodeDownloadIndex + 1, this.sourceBuffer);
+                    
+                    Store.dispatch({
+                        type: 'SET_CURRENT_EPISODE_DOWNLOAD_INDEX',
+                        currentEpisodeDownloadIndex: Store.getState().currentEpisodeDownloadIndex + 1
+                    });    
+                }
             }
-            
+
             const progress = parseFloat(currentEpisode.progress) > audioElement.currentTime ? audioElement.currentTime + currentEpisode.progress : audioElement.currentTime;
     
             if (progress === 0) {
@@ -263,9 +262,6 @@ StorePromise.then((Store) => {
             });
         }
 
-        // TODO we might want to make the transition between episodes even smoother, instead of restarting the audio sources
-        // TODO for each episode, when an audio element ends it can just load the next episode into the next audio element
-        // TODO actually, we might be able to get rid of the current episode switching nonsense entirely
         async handlePlayback(
             currentEpisode: Readonly<Episode>,
             previousEpisodeGuid: EpisodeGuid,
@@ -312,9 +308,11 @@ StorePromise.then((Store) => {
                     this.mediaSource.duration = this.episodeAudioInfo.duration;
                 }
                 else {
-                    audio1Element.src = currentEpisode.src;
+                    Store.dispatch({
+                        type: 'SET_AUDIO_1_SRC',
+                        audio1Src: currentEpisode.src
+                    });
                 }
-
 
                 // Store.dispatch({
                 //     type: 'SET_AUDIO_1_SRC',
