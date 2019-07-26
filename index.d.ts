@@ -164,6 +164,7 @@ type State = {
     readonly audio1Src: string | 'NOT_SET';
     readonly audio2Src: string | 'NOT_SET';
     readonly currentEpisodeDownloadIndex: number;
+    readonly currentEpisodeChangedManually: boolean;
 }
 
 type HexString = string;
@@ -471,6 +472,11 @@ type SetCurrentEpisodeDownloadIndexAction = {
     readonly currentEpisodeDownloadIndex: number;
 }
 
+type SetCurrentEpisodeChangedManuallyAction = {
+    readonly type: 'SET_CURRENT_EPISODE_CHANGED_MANUALLY';
+    readonly currentEpisodeChangedManually: boolean;
+}
+
 type PodcryptAction = 
     RenderAction |
     SetStateAction |
@@ -529,7 +535,8 @@ type PodcryptAction =
     SetAudio2PlayingAction |
     SetAudio1SrcAction |
     SetAudio2SrcAction |
-    SetCurrentEpisodeDownloadIndexAction;
+    SetCurrentEpisodeDownloadIndexAction |
+    SetCurrentEpisodeChangedManuallyAction;
 
 type AudioSources = {
     readonly audio1Src: string | 'NOT_SET';

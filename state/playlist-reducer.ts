@@ -27,8 +27,16 @@ export function PlaylistReducer(
         SetAudio2PlayingAction |
         SetAudio1SrcAction |
         SetAudio2SrcAction |
-        SetCurrentEpisodeDownloadIndexAction
+        SetCurrentEpisodeDownloadIndexAction |
+        SetCurrentEpisodeChangedManuallyAction
 ): Readonly<State> {
+
+    if (action.type === 'SET_CURRENT_EPISODE_CHANGED_MANUALLY') {
+        return {
+            ...state,
+            currentEpisodeChangedManually: action.currentEpisodeChangedManually
+        };
+    }
 
     if (action.type === 'MARK_EPISODE_LISTENED') {
 
@@ -229,7 +237,8 @@ export function PlaylistReducer(
                 ...state.episodes,
                 [newCurrentEpisode.guid]: newCurrentEpisode,
                 [oldCurrentEpisode.guid]: oldCurrentEpisode
-            }
+            },
+            currentEpisodeChangedManually: true
         };
     }
 
@@ -267,7 +276,8 @@ export function PlaylistReducer(
                 ...state.episodes,
                 [newCurrentEpisode.guid]: newCurrentEpisode,
                 [oldCurrentEpisode.guid]: oldCurrentEpisode
-            }
+            },
+            currentEpisodeChangedManually: true
         };
     }
 
@@ -386,7 +396,8 @@ export function PlaylistReducer(
                 episodes: {
                     ...state.episodes,
                     [modifiedNewCurrentEpisode.guid]: modifiedNewCurrentEpisode
-                }
+                },
+                currentEpisodeChangedManually: true
             };
         }
         else if (newCurrentEpisodeGuid === state.currentEpisodeGuid) {
@@ -422,7 +433,8 @@ export function PlaylistReducer(
                         ...currentEpisode,
                         playing: false
                     }
-                }
+                },
+                currentEpisodeChangedManually: true
             };
         }
     }

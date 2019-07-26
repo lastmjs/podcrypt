@@ -68,7 +68,8 @@ export function getInitialState(persistedState: Readonly<State> | null | undefin
 
     return {
         ...migratedState,
-        previousEpisodeGuid: 'NOT_SET'
+        previousEpisodeGuid: 'NOT_SET',
+        currentEpisodeChangedManually: true
     };
 }
 
@@ -345,6 +346,7 @@ function getOriginalState(version: number): Readonly<State> {
         audio2Playing: false,
         audio1Src: 'NOT_SET',
         audio2Src: 'NOT_SET',
-        currentEpisodeDownloadIndex: 0
+        currentEpisodeDownloadIndex: 0,
+        currentEpisodeChangedManually: true
     };
 }
