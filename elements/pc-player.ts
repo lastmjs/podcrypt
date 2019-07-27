@@ -96,6 +96,7 @@ StorePromise.then((Store) => {
             ) {
                 if (this.currentEpisodeAudioInfo === null) {
                     alert('this.episodeAudioInfo is null');
+                    releaseTimeUpdateLock(this);
                     return;
                 }
     
@@ -105,6 +106,7 @@ StorePromise.then((Store) => {
     
                 if (episodeChunkInfo === undefined) {
                     alert('episodeChunkInfo is undefined');
+                    releaseTimeUpdateLock(this);
                     return;
                 }
     
@@ -112,20 +114,21 @@ StorePromise.then((Store) => {
     
                 if (chunkIndex === Store.getState().currentEpisodeDownloadIndex) {
     
-                    console.log('should be in here')
-
-                    audioElement.currentTime = newCurrentTime;
-    
                     Store.dispatch({
                         type: 'UPDATE_CURRENT_EPISODE_PROGRESS_FROM_SLIDER',
                         progress: new BigNumber(audioElement.currentTime).toString()
-                    });    
+                    }); 
+
+                    audioElement.currentTime = newCurrentTime;  
+
+                    releaseTimeUpdateLock(this);
     
                     return;
                 }
     
                 if (this.sourceBuffer === null) {
                     alert('this.sourceBuffer is null');
+                    releaseTimeUpdateLock(this);
                     return;
                 }
                                 
@@ -144,12 +147,12 @@ StorePromise.then((Store) => {
                 });
             }
 
-            audioElement.currentTime = newCurrentTime;
-
             Store.dispatch({
                 type: 'UPDATE_CURRENT_EPISODE_PROGRESS_FROM_SLIDER',
                 progress: new BigNumber(audioElement.currentTime).toString()
             });
+
+            audioElement.currentTime = newCurrentTime;
 
             releaseTimeUpdateLock(this);
         }
@@ -310,7 +313,12 @@ StorePromise.then((Store) => {
 
             if (mediaSourceExtensionsSupported()) {
                 await obtainTimeUpdateLock(this);
-                await this.handleChunkTransitions(currentEpisode, audioElement, progress);
+                const currentEpisode: Readonly<Episode> | undefined | null = Store.getState().episodes[Store.getState().currentEpisodeGuid];
+                
+                if (currentEpisode !== null && currentEpisode !== undefined) {
+                    await this.handleChunkTransitions(currentEpisode, audioElement, progress);
+                }
+                
                 releaseTimeUpdateLock(this);
             }
         }
@@ -892,23 +900,20 @@ StorePromise.then((Store) => {
         // TODO go in here and grab all of the chunks and return the blob...
     }
 
-    function obtainTimeUpdateLock(pcPlayer: PCPlayer) {
-        return new Promise(async (resolve) => {
-
-            if (pcPlayer.timeUpdateLock === false) {
-                pcPlayer.timeUpdateLock = true;
-                resolve();
-            }
-
-            if (pcPlayer.timeUpdateLock === true) {
-                await new Promise((resolve) => setTimeout(resolve, 100));
-                await obtainTimeUpdateLock(pcPlayer);
-            }
-        });
+    async function obtainTimeUpdateLock(pcPlayer: PCPlayer) {
+        if (pcPlayer.timeUpdateLock === false) {
+            pcPlayer.timeUpdateLock = true;
+            console.log('lock obtained');
+        }
+        else {
+            await new Promise((resolve) => setTimeout(resolve, 100));
+            await obtainTimeUpdateLock(pcPlayer);
+        }
     }
 
     function releaseTimeUpdateLock(pcPlayer: PCPlayer) {
         pcPlayer.timeUpdateLock = false;
+        console.log('lock released');
     }
 
 });
