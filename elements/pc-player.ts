@@ -16,7 +16,7 @@ StorePromise.then((Store) => {
     class PCPlayer extends HTMLElement {
 
         mediaSource: MediaSource | null = mediaSourceExtensionsSupported() ? new MediaSource() : null;
-        objectURL: string = mediaSourceExtensionsSupported() ? window.URL.createObjectURL(this.mediaSource) : '';
+        objectURL: string = '';
         sourceBuffer: SourceBuffer | null = null;
         currentEpisodeAudioInfo: EpisodeAudioInfo | null = null;
         nextCurrentEpisodeAudioInfo: EpisodeAudioInfo | null = null;
@@ -42,17 +42,6 @@ StorePromise.then((Store) => {
                     type: 'RENDER'
                 })
             }, 5000);
-
-            if (mediaSourceExtensionsSupported()) {
-
-                if (this.mediaSource === null) {
-                    return;
-                }
-
-                // TODO if the current episode is not downloaded, this promise will not resolve until a downloaded episode is played
-                await new Promise((resolve) => this.mediaSource.addEventListener('sourceopen', resolve));
-                this.sourceBuffer = this.mediaSource.addSourceBuffer('audio/mpeg');
-            }
         }
 
         async audioEnded(currentEpisode: Readonly<Episode>, audioElement: HTMLAudioElement) {
@@ -109,9 +98,6 @@ StorePromise.then((Store) => {
                 const episodeChunkInfo: EpisodeChunkInfo | undefined = this.currentEpisodeAudioInfo.episodeChunkInfos.find((episodeChunkInfo: Readonly<EpisodeChunkInfo>) => {
                     return newCurrentTime >= episodeChunkInfo.startTime && newCurrentTime < episodeChunkInfo.endTime;
                 });
-
-                console.log('newCurrentTime', newCurrentTime);
-                console.log('this.currentEpisodeAudioInfo', this.currentEpisodeAudioInfo);
     
                 if (episodeChunkInfo === undefined) {
                     alert('episodeChunkInfo is undefined');
@@ -122,6 +108,8 @@ StorePromise.then((Store) => {
     
                 if (chunkIndex === Store.getState().currentEpisodeDownloadIndex) {
     
+                    console.log('should be in here')
+
                     audioElement.currentTime = newCurrentTime;
     
                     Store.dispatch({
@@ -172,7 +160,7 @@ StorePromise.then((Store) => {
             currentEpisode: Readonly<Episode>,
             audioElement: HTMLAudioElement
         ) {
-            const newCurrentTime = audioElement.currentTime + 10 > audioElement.duration ? audioElement.duration : audioElement.currentTime + 10;
+            const newCurrentTime = audioElement.currentTime + 10 >= audioElement.duration ? audioElement.duration - 1 : audioElement.currentTime + 10;
             this.currentTimeChanged(newCurrentTime, currentEpisode, audioElement);
         }
 
@@ -229,8 +217,6 @@ StorePromise.then((Store) => {
                 ) {
                     throw new Error('this.sourceBuffer is not defined');
                 }
-
-                console.log('this.sourceBuffer.buffered', this.sourceBuffer.buffered);
             
                 // const originalDuration = this.mediaSource.duration;
 
@@ -256,7 +242,6 @@ StorePromise.then((Store) => {
         }
 
         async completeTransitionToNextEpisode(audioElement: HTMLAudioElement) {
-            console.log('completeTransitionToNextEpisode');
             Store.dispatch({
                 type: 'CURRENT_EPISODE_COMPLETED'
             });
@@ -301,9 +286,7 @@ StorePromise.then((Store) => {
             currentEpisode: Readonly<Episode>,
             audioElement: HTMLAudioElement
         ) {
-            console.log(currentEpisode.title)
-
-            const progress = parseFloat(currentEpisode.progress) > audioElement.currentTime ? audioElement.currentTime + parseFloat(currentEpisode.progress) : audioElement.currentTime;
+            const progress = audioElement.currentTime;
     
             if (progress === 0) {
                 return;
@@ -329,23 +312,19 @@ StorePromise.then((Store) => {
                     return;
                 }
     
-                console.log('this.currentEpisodeAudioInfo', this.currentEpisodeAudioInfo)
-
                 const currentChunkInfo: Readonly<EpisodeChunkInfo> = this.currentEpisodeAudioInfo.episodeChunkInfos[Store.getState().currentEpisodeDownloadIndex];
                 const nextChunkInfo: Readonly<EpisodeChunkInfo> = this.currentEpisodeAudioInfo.episodeChunkInfos[Store.getState().currentEpisodeDownloadIndex + 1];
-        
-                console.log('currentEpisode.progress', currentEpisode.progress);
-                console.log('currentChunkInfo.endTime', currentChunkInfo.endTime);
+
+                console.log('currentChunkInfo.chunkIndex', currentChunkInfo.chunkIndex);
+                console.log('parseFloat(currentEpisode.progress)', parseFloat(currentEpisode.progress));
+                console.log('currentChunkInfo.endTime - 10', currentChunkInfo.endTime - 10);
 
                 const shouldTransitionToNextChunkInCurrentEpisode: boolean = nextChunkInfo && parseFloat(currentEpisode.progress) >= (currentChunkInfo.endTime - 10);
                 const shouldTransitionToNextChunkInNextEpisode: boolean = !nextChunkInfo && parseFloat(currentEpisode.progress) >= (currentChunkInfo.endTime - 10);
                 const shouldCompleteTransitionToNextEpisode: boolean = !nextChunkInfo && parseFloat(currentEpisode.progress) >= (currentChunkInfo.endTime - 1);
 
-                console.log('shouldTransitionToNextChunkInCurrentEpisode', shouldTransitionToNextChunkInCurrentEpisode);
-                console.log('shouldTransitionToNextChunkInNextEpisode', shouldTransitionToNextChunkInNextEpisode);
-                console.log('shouldCompleteTransitionToNextEpisode', shouldCompleteTransitionToNextEpisode);
-
                 if (shouldTransitionToNextChunkInCurrentEpisode) {
+                    console.log('this.transitionToNextChunkInCurrentEpisode');
                     await this.transitionToNextChunkInCurrentEpisode(currentEpisode, nextChunkInfo);
                 }
 
@@ -380,7 +359,7 @@ StorePromise.then((Store) => {
 
         async playOrPause(
             currentEpisode: Readonly<Episode>,
-            audioElement: Readonly<HTMLAudioElement>
+            audioElement: HTMLAudioElement
         ) {
             try {
                 if (currentEpisode.playing === true) {
@@ -392,6 +371,11 @@ StorePromise.then((Store) => {
                 }
             }
             catch(error) {
+
+                // TODO I do not like having to do this, but for now it works
+                // TODO switching between streaming episodes does not remember the current time without this, there is an exception thrown every time for some reason
+                audioElement.currentTime = parseFloat(currentEpisode.progress);
+
                 console.log(error);
             }
         }
@@ -469,6 +453,17 @@ StorePromise.then((Store) => {
                 currentEpisode.downloadState === 'DOWNLOADED' &&
                 mediaSourceExtensionsSupported()
             ) {
+
+                if (this.mediaSource === null) {
+                    return;
+                }
+
+                this.objectURL = window.URL.createObjectURL(this.mediaSource)
+
+                // TODO if the current episode is not downloaded, this promise will not resolve until a downloaded episode is played
+                await new Promise((resolve) => this.mediaSource.addEventListener('sourceopen', resolve));
+                this.sourceBuffer = this.mediaSource.addSourceBuffer('audio/mpeg');
+
                 this.currentEpisodeAudioInfo = await getEpisodeAudioInfo(currentEpisode);
 
                 const episodeChunkInfo: Readonly<EpisodeChunkInfo> | 'NOT_FOUND' = getEpisodeChunkInfoForTime(this.currentEpisodeAudioInfo, parseFloat(currentEpisode.progress));
@@ -700,8 +695,19 @@ StorePromise.then((Store) => {
                             this.audioEnded(currentEpisode, audioElement);
                         }
                     }}
+                    @loadeddata=${() => {
+                        if (
+                            currentEpisode &&
+                            audioElement
+                        ) {
+                            this.playOrPause(currentEpisode, audioElement);
+                        }
+                    }}
                     @timeupdate=${(e: Readonly<Event>) => {
-                        if (currentEpisode && audioElement) {
+                        if (
+                            currentEpisode &&
+                            audioElement
+                        ) {
                             this.timeUpdated(currentEpisode, audioElement);
                         }
                     }}
@@ -752,7 +758,7 @@ StorePromise.then((Store) => {
         currentEpisode: Readonly<Episode>,
         duration: number
     ): number {
-        return (parseFloat(currentEpisode.progress) / duration) * 100
+        return (parseFloat(currentEpisode.progress) / duration) * 100;
     }
 
     async function addArrayBufferToSourceBuffer(
