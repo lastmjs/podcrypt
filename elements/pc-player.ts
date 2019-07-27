@@ -849,7 +849,12 @@ StorePromise.then((Store) => {
 
         await new Promise((resolve) => mediaSource.addEventListener('sourceopen', resolve));
 
-        const sourceBuffer = mediaSource.addSourceBuffer('audio/mpeg');
+        // TODO grab the mime type from the blob in the future
+
+        const extension = episode.src.slice(episode.src.length - 3, episode.src.length);
+        const mimeType = extension === 'mp4' ? 'audio/mp4' : 'audio/mpeg';
+
+        const sourceBuffer = mediaSource.addSourceBuffer(mimeType);
 
         sourceBuffer.appendBuffer(chunk);
         
