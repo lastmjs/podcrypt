@@ -844,27 +844,35 @@ StorePromise.then((Store) => {
         }
 
         const audioElement: HTMLAudioElement = document.createElement('audio');
-        const mediaSource = new MediaSource();
-        audioElement.src = window.URL.createObjectURL(mediaSource);
+        const blob = new Blob([chunk]);
+        const objectURL = window.URL.createObjectURL(blob);
+        audioElement.src = objectURL;
 
-        await new Promise((resolve) => mediaSource.addEventListener('sourceopen', resolve));
+        await new Promise((resolve) => audioElement.addEventListener('durationchange', resolve));
 
-        // TODO grab the mime type from the blob in the future
+        // const mediaSource = new MediaSource();
+        // audioElement.src = window.URL.createObjectURL(mediaSource);
 
-        const extension = episode.src.slice(episode.src.length - 3, episode.src.length);
-        const mimeType = extension === 'mp4' ? 'audio/mp4; codecs="flac"' : 'audio/mpeg';
+        // await new Promise((resolve) => mediaSource.addEventListener('sourceopen', resolve));
 
-        const sourceBuffer = mediaSource.addSourceBuffer(mimeType);
+        // // TODO grab the mime type from the blob in the future
 
-        sourceBuffer.appendBuffer(chunk);
+        // const extension = episode.src.slice(episode.src.length - 3, episode.src.length);
+        // const mimeType = extension === 'mp4' ? 'audio/mp4; codecs="flac"' : 'audio/mpeg';
+
+        // const sourceBuffer = mediaSource.addSourceBuffer(mimeType);
+
+        // sourceBuffer.appendBuffer(chunk);
         
-        await new Promise((resolve) => sourceBuffer.addEventListener('updateend', resolve));
+        // await new Promise((resolve) => sourceBuffer.addEventListener('updateend', resolve));
 
-        mediaSource.endOfStream();
+        // mediaSource.endOfStream();
         
         // TODO the start times and end times might need to be changed to not ever overlap, we'll see
         const previousEpisodeChunkInfo: Readonly<EpisodeChunkInfo> | undefined = episodeAudioInfo.episodeChunkInfos[episodeAudioInfo.episodeChunkInfos.length - 1];
-        const duration: Seconds = mediaSource.duration;
+        // const duration: Seconds = mediaSource.duration;
+        const duration: Seconds = audioElement.duration;
+        console.log('duration', duration);
         const startTime: Seconds = previousEpisodeChunkInfo ? previousEpisodeChunkInfo.endTime : 0; // TODO this should be the end time of the previous episodeChunkInfo
         const endTime: Seconds = startTime + duration;
         const episodeChunkInfo: Readonly<EpisodeChunkInfo> = {
