@@ -303,7 +303,13 @@ StorePromise.then((Store) => {
             });
 
             if (mediaSourceExtensionsSupported()) {
-                await this.handleChunkTransitions(currentEpisode, audioElement, progress);
+                if (this.timeUpdateLock === false) {
+                    this.timeUpdateLock = true;
+
+                    await this.handleChunkTransitions(currentEpisode, audioElement, progress);
+
+                    this.timeUpdateLock = false;
+                }
             }
         }
 
@@ -334,14 +340,8 @@ StorePromise.then((Store) => {
                 }
 
                 if (shouldCompleteTransitionToNextEpisode) {
-                    if (this.timeUpdateLock === false) {
-                        this.timeUpdateLock = true;
-
-                        await this.transitionToNextChunkInNextEpisode(progress);
-                        await this.completeTransitionToNextEpisode(audioElement);    
-
-                        this.timeUpdateLock = false;
-                    }
+                    await this.transitionToNextChunkInNextEpisode(progress);
+                    await this.completeTransitionToNextEpisode(audioElement);    
                 }
             }
         }
