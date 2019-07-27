@@ -296,6 +296,8 @@ StorePromise.then((Store) => {
             currentEpisode: Readonly<Episode>,
             audioElement: HTMLAudioElement
         ) {
+            await obtainTimeUpdateLock(this);
+
             const progress = audioElement.currentTime;
     
             if (progress === 0) {
@@ -312,15 +314,14 @@ StorePromise.then((Store) => {
             });
 
             if (mediaSourceExtensionsSupported()) {
-                await obtainTimeUpdateLock(this);
                 const currentEpisode: Readonly<Episode> | undefined | null = Store.getState().episodes[Store.getState().currentEpisodeGuid];
                 
                 if (currentEpisode !== null && currentEpisode !== undefined) {
                     await this.handleChunkTransitions(currentEpisode, audioElement, progress);
-                }
-                
-                releaseTimeUpdateLock(this);
+                }                
             }
+
+            releaseTimeUpdateLock(this);
         }
 
         async handleChunkTransitions(currentEpisode: Readonly<Episode>, audioElement: HTMLAudioElement, progress: number) {
