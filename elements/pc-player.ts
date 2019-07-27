@@ -868,6 +868,8 @@ StorePromise.then((Store) => {
             endTime
         };
 
+        window.URL.revokeObjectURL(audioElement.src);
+
         return await getEpisodeAudioInfo(episode, chunkIndex + 1, {
             ...episodeAudioInfo,
             duration: episodeAudioInfo.duration + duration,
