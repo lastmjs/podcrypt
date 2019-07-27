@@ -282,6 +282,7 @@ StorePromise.then((Store) => {
             this.mediaSource.duration = this.currentEpisodeAudioInfo.duration; 
         }
 
+        // TODO I think we need to use the lock mechanism on anything that is updating the buffer...so this funciton and currentTimeChanged, because these events are messing with that sometimes
         async timeUpdated(
             currentEpisode: Readonly<Episode>,
             audioElement: HTMLAudioElement
@@ -772,13 +773,13 @@ StorePromise.then((Store) => {
 
         sourceBuffer.abort();
         sourceBuffer.timestampOffset = timestampOffset;
-        // sourceBuffer.timestampOffset = sourceBuffer.buffered.length !== 0 ? sourceBuffer.buffered.end(0) : 0;
 
         if (
             removeStart !== 'DO_NOT_REMOVE' &&
             removeEnd !== 'DO_NOT_REMOVE'
         ) {
             sourceBuffer.remove(removeStart, removeEnd);
+            await new Promise((resolve) => sourceBuffer.addEventListener('updateend', resolve));
         }
 
         const chunk: ArrayBuffer | null | undefined = await get(`${episode.guid}-audio-file-array-buffer-${chunkIndex}`);
