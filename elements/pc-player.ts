@@ -1,3 +1,6 @@
+// TODO consider intelligent locking for tasks that could happen concurrently...the way I am doing it or thinking of doing it seems a bit naive, because all tasks fired during a lock or forgotten, I might want to implement a queue or semaphore thing so that the events are not forgotten
+// TODO add protections against exceptions when skipping backward a bunch or forward a bunch, over chunkindex lines
+
 import { 
     html,
     render as litRender,
@@ -85,6 +88,7 @@ StorePromise.then((Store) => {
             currentEpisode: Readonly<Episode>,
             audioElement: HTMLAudioElement
         ) {
+            await obtainTimeUpdateLock(this);
 
             if (
                 currentEpisode.downloadState === 'DOWNLOADED' &&
@@ -92,6 +96,7 @@ StorePromise.then((Store) => {
             ) {
                 if (this.currentEpisodeAudioInfo === null) {
                     alert('this.episodeAudioInfo is null');
+                    releaseTimeUpdateLock(this);
                     return;
                 }
     
@@ -101,6 +106,7 @@ StorePromise.then((Store) => {
     
                 if (episodeChunkInfo === undefined) {
                     alert('episodeChunkInfo is undefined');
+                    releaseTimeUpdateLock(this);
                     return;
                 }
     
@@ -108,20 +114,21 @@ StorePromise.then((Store) => {
     
                 if (chunkIndex === Store.getState().currentEpisodeDownloadIndex) {
     
-                    console.log('should be in here')
-
-                    audioElement.currentTime = newCurrentTime;
-    
                     Store.dispatch({
                         type: 'UPDATE_CURRENT_EPISODE_PROGRESS_FROM_SLIDER',
                         progress: new BigNumber(audioElement.currentTime).toString()
-                    });    
+                    }); 
+
+                    audioElement.currentTime = newCurrentTime;  
+
+                    releaseTimeUpdateLock(this);
     
                     return;
                 }
     
                 if (this.sourceBuffer === null) {
                     alert('this.sourceBuffer is null');
+                    releaseTimeUpdateLock(this);
                     return;
                 }
                                 
@@ -140,28 +147,30 @@ StorePromise.then((Store) => {
                 });
             }
 
-            audioElement.currentTime = newCurrentTime;
-
             Store.dispatch({
                 type: 'UPDATE_CURRENT_EPISODE_PROGRESS_FROM_SLIDER',
                 progress: new BigNumber(audioElement.currentTime).toString()
             });
+
+            audioElement.currentTime = newCurrentTime;
+
+            releaseTimeUpdateLock(this);
         }
 
-        skipBack(
+        async skipBack(
             currentEpisode: Readonly<Episode>,
             audioElement: HTMLAudioElement
         ) {
             const newCurrentTime = audioElement.currentTime - 10 < 0 ? 0 : audioElement.currentTime - 10;
-            this.currentTimeChanged(newCurrentTime, currentEpisode, audioElement);
+            await this.currentTimeChanged(newCurrentTime, currentEpisode, audioElement);
         }
 
-        skipForward(
+        async skipForward(
             currentEpisode: Readonly<Episode>,
             audioElement: HTMLAudioElement
         ) {
             const newCurrentTime = audioElement.currentTime + 10 >= audioElement.duration ? audioElement.duration - 1 : audioElement.currentTime + 10;
-            this.currentTimeChanged(newCurrentTime, currentEpisode, audioElement);
+            await this.currentTimeChanged(newCurrentTime, currentEpisode, audioElement);
         }
 
         async transitionToNextChunkInCurrentEpisode(episode: Readonly<Episode>, nextChunkInfo: Readonly<EpisodeChunkInfo>) {
@@ -303,13 +312,14 @@ StorePromise.then((Store) => {
             });
 
             if (mediaSourceExtensionsSupported()) {
-                if (this.timeUpdateLock === false) {
-                    this.timeUpdateLock = true;
-
+                await obtainTimeUpdateLock(this);
+                const currentEpisode: Readonly<Episode> | undefined | null = Store.getState().episodes[Store.getState().currentEpisodeGuid];
+                
+                if (currentEpisode !== null && currentEpisode !== undefined) {
                     await this.handleChunkTransitions(currentEpisode, audioElement, progress);
-
-                    this.timeUpdateLock = false;
                 }
+                
+                releaseTimeUpdateLock(this);
             }
         }
 
@@ -888,6 +898,22 @@ StorePromise.then((Store) => {
     // TODO once media source extensions are supported, remove this stuff
     async function getEntireEpisodeBlob() {
         // TODO go in here and grab all of the chunks and return the blob...
+    }
+
+    async function obtainTimeUpdateLock(pcPlayer: PCPlayer) {
+        if (pcPlayer.timeUpdateLock === false) {
+            pcPlayer.timeUpdateLock = true;
+            console.log('lock obtained');
+        }
+        else {
+            await new Promise((resolve) => setTimeout(resolve, 100));
+            await obtainTimeUpdateLock(pcPlayer);
+        }
+    }
+
+    function releaseTimeUpdateLock(pcPlayer: PCPlayer) {
+        pcPlayer.timeUpdateLock = false;
+        console.log('lock released');
     }
 
 });
