@@ -1,9 +1,3 @@
-// TODO everything needs to be chunked...downloading the files needs to be chunked,
-// TODO saving the files to IndexedDB needs to be chunked, retrieving the files from IndexedDB needs to be chunked
-// TODO Turning the retrieved files into object urls needs to be chunked
-// TODO We need a smooth transition from one audio element to the next, I think 10mb chunks might be best
-// TODO test releasing object urls, I think that might be ruining everything
-
 import { 
     html,
     render as litRender,
@@ -21,13 +15,50 @@ StorePromise.then((Store) => {
 
     class PCPlayer extends HTMLElement {
 
-        mediaSource: MediaSource = new MediaSource();
+        mediaSource: MediaSource | null = mediaSourceExtensionsSupported() ? new MediaSource() : null;
+        objectURL: string = '';
         sourceBuffer: SourceBuffer | null = null;
-        episodeAudioInfo: EpisodeAudioInfo | null = null;
+        currentEpisodeAudioInfo: EpisodeAudioInfo | null = null;
+        nextCurrentEpisodeAudioInfo: EpisodeAudioInfo | null = null;
+        timeUpdateLock = false;
 
         constructor() {
             super();
-            Store.subscribe(() => litRender(this.render(Store.getState()), this));
+
+            Store.subscribe(async () => {
+                litRender(await this.render(Store.getState()), this);
+            });
+        }
+
+        async connectedCallback() {
+            
+            Store.dispatch({
+                type: 'RENDER'
+            });
+
+            // TODO this is just to make sure that the current episode shows up nicely in the player...do this in a faster and more deterministic way
+            setTimeout(() => {
+                Store.dispatch({
+                    type: 'RENDER'
+                })
+            }, 5000);
+        }
+
+        async audioEnded(currentEpisode: Readonly<Episode>, audioElement: HTMLAudioElement) {
+
+            if (
+                currentEpisode.downloadState !== 'DOWNLOADED' ||
+                (
+                    currentEpisode.downloadState === 'DOWNLOADED' &&
+                    !mediaSourceExtensionsSupported()
+                )
+            ) {
+                Store.dispatch({
+                    type: 'CURRENT_EPISODE_COMPLETED'
+                });
+
+                await this.playOrPause(currentEpisode, audioElement);
+            }
         }
 
         playbackRateChanged(e: Readonly<Event>) {
@@ -52,17 +83,19 @@ StorePromise.then((Store) => {
         async currentTimeChanged(
             newCurrentTime: number,
             currentEpisode: Readonly<Episode>,
-            audio1Element: HTMLAudioElement,
-            audio2Element: HTMLAudioElement
+            audioElement: HTMLAudioElement
         ) {
 
-            if (currentEpisode.downloadState === 'DOWNLOADED') {
-                if (this.episodeAudioInfo === null) {
+            if (
+                currentEpisode.downloadState === 'DOWNLOADED' &&
+                mediaSourceExtensionsSupported()
+            ) {
+                if (this.currentEpisodeAudioInfo === null) {
                     alert('this.episodeAudioInfo is null');
                     return;
                 }
     
-                const episodeChunkInfo: EpisodeChunkInfo | undefined = this.episodeAudioInfo.episodeChunkInfos.find((episodeChunkInfo) => {
+                const episodeChunkInfo: EpisodeChunkInfo | undefined = this.currentEpisodeAudioInfo.episodeChunkInfos.find((episodeChunkInfo: Readonly<EpisodeChunkInfo>) => {
                     return newCurrentTime >= episodeChunkInfo.startTime && newCurrentTime < episodeChunkInfo.endTime;
                 });
     
@@ -75,11 +108,13 @@ StorePromise.then((Store) => {
     
                 if (chunkIndex === Store.getState().currentEpisodeDownloadIndex) {
     
-                    audio1Element.currentTime = newCurrentTime;
+                    console.log('should be in here')
+
+                    audioElement.currentTime = newCurrentTime;
     
                     Store.dispatch({
                         type: 'UPDATE_CURRENT_EPISODE_PROGRESS_FROM_SLIDER',
-                        progress: new BigNumber(audio1Element.currentTime).toString()
+                        progress: new BigNumber(audioElement.currentTime).toString()
                     });    
     
                     return;
@@ -89,15 +124,15 @@ StorePromise.then((Store) => {
                     alert('this.sourceBuffer is null');
                     return;
                 }
-                
-                this.sourceBuffer.abort();
-    
-                this.sourceBuffer.timestampOffset = episodeChunkInfo.startTime;
-                
-                // TODO i am still trying to figure out the time range thing...I was using Infinity
-                this.sourceBuffer.remove(0, this.sourceBuffer.buffered.end(0));
-                
-                await addArrayBufferToSourceBuffer(currentEpisode, chunkIndex, this.sourceBuffer);
+                                
+                await addArrayBufferToSourceBuffer(
+                    currentEpisode,
+                    chunkIndex,
+                    this.sourceBuffer,
+                    episodeChunkInfo.startTime,
+                    0,
+                    this.sourceBuffer.buffered.end(0)
+                );
                 
                 Store.dispatch({
                     type: 'SET_CURRENT_EPISODE_DOWNLOAD_INDEX',
@@ -105,136 +140,153 @@ StorePromise.then((Store) => {
                 });
             }
 
-            audio1Element.currentTime = newCurrentTime;
+            audioElement.currentTime = newCurrentTime;
 
             Store.dispatch({
                 type: 'UPDATE_CURRENT_EPISODE_PROGRESS_FROM_SLIDER',
-                progress: new BigNumber(audio1Element.currentTime).toString()
+                progress: new BigNumber(audioElement.currentTime).toString()
             });
         }
 
         skipBack(
             currentEpisode: Readonly<Episode>,
-            audio1Element: HTMLAudioElement,
-            audio2Element: Readonly<HTMLAudioElement>
+            audioElement: HTMLAudioElement
         ) {
-            const newCurrentTime = audio1Element.currentTime = audio1Element.currentTime - 10;
-            this.currentTimeChanged(newCurrentTime, currentEpisode, audio1Element, audio2Element);
+            const newCurrentTime = audioElement.currentTime - 10 < 0 ? 0 : audioElement.currentTime - 10;
+            this.currentTimeChanged(newCurrentTime, currentEpisode, audioElement);
         }
 
         skipForward(
             currentEpisode: Readonly<Episode>,
-            audio1Element: HTMLAudioElement,
-            audio2Element: Readonly<HTMLAudioElement>
+            audioElement: HTMLAudioElement
         ) {
-            const newCurrentTime = audio1Element.currentTime = audio1Element.currentTime + 10;
-            this.currentTimeChanged(newCurrentTime, currentEpisode, audio1Element, audio2Element);
+            const newCurrentTime = audioElement.currentTime + 10 >= audioElement.duration ? audioElement.duration - 1 : audioElement.currentTime + 10;
+            this.currentTimeChanged(newCurrentTime, currentEpisode, audioElement);
         }
 
-        async audio1Ended(currentEpisode: Readonly<Episode>, currentEpisodeDownloadIndex: number, audio2Src: string | 'NOT_SET') {
+        async transitionToNextChunkInCurrentEpisode(episode: Readonly<Episode>, nextChunkInfo: Readonly<EpisodeChunkInfo>) {
+
+            if (this.sourceBuffer === null) {
+                return;
+            }
+            
+            await addArrayBufferToSourceBuffer(
+                episode,
+                nextChunkInfo.chunkIndex,
+                this.sourceBuffer,
+                nextChunkInfo.startTime,
+                0,
+                this.sourceBuffer.buffered.end(0) - 10
+            );
+
+            Store.dispatch({
+                type: 'SET_CURRENT_EPISODE_DOWNLOAD_INDEX',
+                currentEpisodeDownloadIndex: nextChunkInfo.chunkIndex
+            });
+        }
+
+        async transitionToNextChunkInNextEpisode(progress: number) {
+            const state: Readonly<State> = Store.getState();
+
+            const nextCurrentPlaylistIndex: number = state.currentPlaylistIndex + 1;
+            const nextCurrentEpisodeGuid: EpisodeGuid | undefined = state.playlist[nextCurrentPlaylistIndex];
+            const nextCurrentEpisode: Readonly<Episode> | undefined = state.episodes[nextCurrentEpisodeGuid];
+
+            if (
+                nextCurrentEpisode !== undefined &&
+                nextCurrentEpisode.downloadState === 'DOWNLOADED' &&
+                this.nextCurrentEpisodeAudioInfo === null
+            ) {
+                this.nextCurrentEpisodeAudioInfo = await getEpisodeAudioInfo(nextCurrentEpisode);
+
+                const episodeChunkInfo: Readonly<EpisodeChunkInfo> | 'NOT_FOUND' = getEpisodeChunkInfoForTime(this.nextCurrentEpisodeAudioInfo, parseFloat(nextCurrentEpisode.progress));
+
+                if (episodeChunkInfo === 'NOT_FOUND') {
+                    throw new Error('episodeChunkInfo not found');
+                }
+
+                // TODO I think we might want to remove this and put it in the complete transition function, otherwise seeking and such might get messed up
+                Store.dispatch({
+                    type: 'SET_CURRENT_EPISODE_DOWNLOAD_INDEX',
+                    currentEpisodeDownloadIndex: episodeChunkInfo.chunkIndex
+                });
+
+                if (
+                    this.sourceBuffer === null ||
+                    this.sourceBuffer === undefined
+                ) {
+                    throw new Error('this.sourceBuffer is not defined');
+                }
+            
+                // const originalDuration = this.mediaSource.duration;
+
+                await addArrayBufferToSourceBuffer(
+                    nextCurrentEpisode,
+                    episodeChunkInfo.chunkIndex,
+                    this.sourceBuffer,
+                    // this.mediaSource.duration,
+                    // episodeChunkInfo.startTime,
+                    // progress,
+                    // 0, // TODO I think the timestampOffset is breaking transitions between episodes
+                    // parseFloat(nextCurrentEpisode.progress),
+                    // 0,
+                    // this.sourceBuffer.buffered.length > 0 ? this.sourceBuffer.buffered.end(0) : 0,
+                    0,
+                    0,
+                    // this.sourceBuffer.buffered.end(0) - 10,
+                    Infinity
+                );
+
+                // this.mediaSource.duration = originalDuration;
+            }
+        }
+
+        async completeTransitionToNextEpisode(audioElement: HTMLAudioElement) {
             Store.dispatch({
                 type: 'CURRENT_EPISODE_COMPLETED'
             });
 
-            // if (audio2Src === 'NOT_SET') {
-            //     Store.dispatch({
-            //         type: 'CURRENT_EPISODE_COMPLETED'
-            //     });
-            // }
+            const currentEpisode: Readonly<Episode> | undefined | null = Store.getState().episodes[Store.getState().currentEpisodeGuid];
+            const currentPodcast: Readonly<Podcast> | undefined | null = currentEpisode ? Store.getState().podcasts[currentEpisode.feedUrl] : null;
 
-            // if (currentEpisode.downloadState === 'DOWNLOADED') {
-            //     Store.dispatch({
-            //         type: 'SET_AUDIO_1_PLAYING',
-            //         audio1Playing: false
-            //     });
-    
-            //     Store.dispatch({
-            //         type: 'SET_AUDIO_2_PLAYING',
-            //         audio2Playing: true
-            //     });
-    
-            //     const audio1Src: string | 'NOT_SET' = await getAudioSourceFromIndexedDB(currentEpisode, currentEpisodeDownloadIndex);
-    
-            //     Store.dispatch({
-            //         type: 'SET_AUDIO_1_SRC',
-            //         audio1Src
-            //     });
-    
-            //     Store.dispatch({
-            //         type: 'SET_CURRENT_EPISODE_DOWNLOAD_INDEX',
-            //         currentEpisodeDownloadIndex: currentEpisodeDownloadIndex + 1
-            //     });
-            // }
-        }
-
-        async audio2Ended(currentEpisode: Readonly<Episode>, currentEpisodeDownloadIndex: number, audio1Src: string | 'NOT_SET') {
-            
-            // if (audio1Src === 'NOT_SET') {
-            //     Store.dispatch({
-            //         type: 'CURRENT_EPISODE_COMPLETED'
-            //     });
-            // }
-
-            // if (currentEpisode.downloadState === 'DOWNLOADED') {
-            //     Store.dispatch({
-            //         type: 'SET_AUDIO_1_PLAYING',
-            //         audio1Playing: true
-            //     });
-    
-            //     Store.dispatch({
-            //         type: 'SET_AUDIO_2_PLAYING',
-            //         audio2Playing: false
-            //     });
-    
-            //     const audio2Src: string | 'NOT_SET' = await getAudioSourceFromIndexedDB(currentEpisode, currentEpisodeDownloadIndex);
-    
-            //     Store.dispatch({
-            //         type: 'SET_AUDIO_2_SRC',
-            //         audio2Src
-            //     });
-    
-            //     Store.dispatch({
-            //         type: 'SET_CURRENT_EPISODE_DOWNLOAD_INDEX',
-            //         currentEpisodeDownloadIndex: currentEpisodeDownloadIndex + 1
-            //     });
-            // }
-        }
-
-        async timeUpdated(currentEpisode: Readonly<Episode>, audioElement: Readonly<HTMLAudioElement>) {
-           
-            if (currentEpisode.downloadState === 'DOWNLOADED') {
-                if (this.episodeAudioInfo === null) {
-                    return;
-                }
-    
-                const currentEpisodeChunkInfo = this.episodeAudioInfo.episodeChunkInfos[Store.getState().currentEpisodeDownloadIndex];
-                const nextEpisodeChunkInfo = this.episodeAudioInfo.episodeChunkInfos[Store.getState().currentEpisodeDownloadIndex + 1];
-        
-                // TODO comment everything that is crazy
-                if (
-                    nextEpisodeChunkInfo &&
-                    parseFloat(currentEpisode.progress) >= (currentEpisodeChunkInfo.endTime - 10)
-                ) {
-                    if (this.sourceBuffer === null) {
-                        return;
-                    }
-    
-                    this.sourceBuffer.abort();
-    
-                    this.sourceBuffer.timestampOffset = nextEpisodeChunkInfo.startTime;
-    
-                    this.sourceBuffer.remove(0, this.sourceBuffer.buffered.end(0) - 10);
-                
-                    await addArrayBufferToSourceBuffer(currentEpisode, Store.getState().currentEpisodeDownloadIndex + 1, this.sourceBuffer);
-                    
-                    Store.dispatch({
-                        type: 'SET_CURRENT_EPISODE_DOWNLOAD_INDEX',
-                        currentEpisodeDownloadIndex: Store.getState().currentEpisodeDownloadIndex + 1
-                    });    
-                }
+            if (currentPodcast && currentEpisode) {
+                this.setupMediaNotification(currentPodcast, currentEpisode, audioElement);
             }
 
-            const progress = parseFloat(currentEpisode.progress) > audioElement.currentTime ? audioElement.currentTime + currentEpisode.progress : audioElement.currentTime;
+            if (
+                currentEpisode === null ||
+                currentEpisode === undefined
+            ) {
+                return;
+            }
+
+            audioElement.currentTime = parseFloat(currentEpisode.progress);
+
+            if (this.nextCurrentEpisodeAudioInfo === null) {
+                return;
+            }
+
+            this.currentEpisodeAudioInfo = {
+                ...this.nextCurrentEpisodeAudioInfo
+            };
+            this.nextCurrentEpisodeAudioInfo = null;
+
+            if (this.currentEpisodeAudioInfo === null) {
+                return;
+            }
+
+            if (this.mediaSource === null) {
+                return;
+            }
+
+            this.mediaSource.duration = this.currentEpisodeAudioInfo.duration; 
+        }
+
+        async timeUpdated(
+            currentEpisode: Readonly<Episode>,
+            audioElement: HTMLAudioElement
+        ) {
+            const progress = audioElement.currentTime;
     
             if (progress === 0) {
                 return;
@@ -248,6 +300,49 @@ StorePromise.then((Store) => {
                 type: 'UPDATE_CURRENT_EPISODE_PROGRESS',
                 progress: new BigNumber(progress).toString()
             });
+
+            if (mediaSourceExtensionsSupported()) {
+                await this.handleChunkTransitions(currentEpisode, audioElement, progress);
+            }
+        }
+
+        async handleChunkTransitions(currentEpisode: Readonly<Episode>, audioElement: HTMLAudioElement, progress: number) {
+            if (currentEpisode.downloadState === 'DOWNLOADED') {
+                if (this.currentEpisodeAudioInfo === null) {
+                    return;
+                }
+    
+                const currentChunkInfo: Readonly<EpisodeChunkInfo> = this.currentEpisodeAudioInfo.episodeChunkInfos[Store.getState().currentEpisodeDownloadIndex];
+                const nextChunkInfo: Readonly<EpisodeChunkInfo> = this.currentEpisodeAudioInfo.episodeChunkInfos[Store.getState().currentEpisodeDownloadIndex + 1];
+
+                console.log('currentChunkInfo.chunkIndex', currentChunkInfo.chunkIndex);
+                console.log('parseFloat(currentEpisode.progress)', parseFloat(currentEpisode.progress));
+                console.log('currentChunkInfo.endTime - 10', currentChunkInfo.endTime - 10);
+
+                const shouldTransitionToNextChunkInCurrentEpisode: boolean = nextChunkInfo && parseFloat(currentEpisode.progress) >= (currentChunkInfo.endTime - 10);
+                const shouldTransitionToNextChunkInNextEpisode: boolean = !nextChunkInfo && parseFloat(currentEpisode.progress) >= (currentChunkInfo.endTime - 10);
+                const shouldCompleteTransitionToNextEpisode: boolean = !nextChunkInfo && parseFloat(currentEpisode.progress) >= (currentChunkInfo.endTime - 1);
+
+                if (shouldTransitionToNextChunkInCurrentEpisode) {
+                    console.log('this.transitionToNextChunkInCurrentEpisode');
+                    await this.transitionToNextChunkInCurrentEpisode(currentEpisode, nextChunkInfo);
+                }
+
+                if (shouldTransitionToNextChunkInNextEpisode) {
+                    // this.transitionToNextChunkInNextEpisode(progress);
+                }
+
+                if (shouldCompleteTransitionToNextEpisode) {
+                    if (this.timeUpdateLock === false) {
+                        this.timeUpdateLock = true;
+
+                        await this.transitionToNextChunkInNextEpisode(progress);
+                        await this.completeTransitionToNextEpisode(audioElement);    
+
+                        this.timeUpdateLock = false;
+                    }
+                }
+            }
         }
 
         played() {
@@ -262,153 +357,25 @@ StorePromise.then((Store) => {
             });
         }
 
-        async handlePlayback(
-            currentEpisode: Readonly<Episode>,
-            previousEpisodeGuid: EpisodeGuid,
-            currentEpisodeGuid: EpisodeGuid,
-            audio1Element: HTMLAudioElement,
-            audio2Element: Readonly<HTMLAudioElement>,
-            audio1Playing: boolean,
-            audio2Playing: boolean
-        ) {
-            const episodeChanged: boolean = currentEpisodeGuid !== previousEpisodeGuid;
-
-            if (episodeChanged) {
-                Store.dispatch({
-                    type: 'SET_PREVIOUS_EPISODE_GUID',
-                    previousEpisodeGuid: currentEpisodeGuid
-                });
-
-                Store.dispatch({
-                    type: 'SET_AUDIO_1_SRC',
-                    audio1Src: ''
-                });
-
-                Store.dispatch({
-                    type: 'SET_CURRENT_EPISODE_DOWNLOAD_INDEX',
-                    currentEpisodeDownloadIndex: 0
-                });
-
-                if (currentEpisode.downloadState === 'DOWNLOADED') {
-                    this.episodeAudioInfo = await getEpisodeAudioInfo(currentEpisode);
-
-                    this.mediaSource = new MediaSource();
-
-                    Store.dispatch({
-                        type: 'SET_AUDIO_1_SRC',
-                        audio1Src: window.URL.createObjectURL(this.mediaSource)
-                    });
-
-                    await new Promise((resolve) => this.mediaSource.addEventListener('sourceopen', resolve));
-
-                    this.sourceBuffer = this.mediaSource.addSourceBuffer('audio/mpeg');
-
-                    await addArrayBufferToSourceBuffer(currentEpisode, Store.getState().currentEpisodeDownloadIndex, this.sourceBuffer);
-        
-                    this.mediaSource.duration = this.episodeAudioInfo.duration;
-                }
-                else {
-                    Store.dispatch({
-                        type: 'SET_AUDIO_1_SRC',
-                        audio1Src: currentEpisode.src
-                    });
-                }
-
-                // Store.dispatch({
-                //     type: 'SET_AUDIO_1_SRC',
-                //     audio1Src: ''
-                // });
-
-                // TODO we'll have to change the indeces when trying to get a downloaded episode to play at a given position
-                // TODO we really need a way to make current time/progress to an index...I think we'll need to load up all of the episode info into an index
-                // TODO on first load unfortunately
-                // const audioSources: Readonly<AudioSources> = await getInitialAudioSources(currentEpisode, 0);
-
-                // TODO I need to add the check for iOS, in case mediasource is not supported. In that case just grab the blob and do createObjectUrl from that
-                // if (currentEpisode.downloadState === 'DOWNLOADED') {
-
-                //     const mediaSource: Readonly<MediaSource> = new MediaSource();
-    
-                //     Store.dispatch({
-                //         type: 'SET_AUDIO_1_SRC',
-                //         audio1Src: window.URL.createObjectURL(mediaSource)
-                //     });
-    
-                //     await new Promise((resolve) => {
-                //         mediaSource.addEventListener('sourceopen', async () => {
-                //             // window.URL.revokeObjectURL(audio1Element.src);
-        
-                //             // const sourceBuffer: Readonly<SourceBuffer> = mediaSource.addSourceBuffer('audio/mpeg');
-                        
-                //             await addArrayBuffersToSourceBuffer(currentEpisode, mediaSource);
-        
-                //             resolve();
-                //             // const blob = await new Response().arrayBuffer();
-                //         });
-                //     });
-                // }
-                // else {
-                //     audio1Element.src = currentEpisode.src;
-                // }
-
-                // // TODO these probably need to be atomic
-                // Store.dispatch({
-                //     type: 'SET_AUDIO_1_SRC',
-                //     audio1Src: audioSources.audio1Src
-                // });
-
-                // Store.dispatch({
-                //     type: 'SET_AUDIO_2_SRC',
-                //     audio2Src: audioSources.audio2Src
-                // });
-
-                // Store.dispatch({
-                //     type: 'SET_AUDIO_1_PLAYING',
-                //     audio1Playing: true
-                // });
-
-                // Store.dispatch({
-                //     type: 'SET_AUDIO_2_PLAYING',
-                //     audio2Playing: false
-                // });
-
-                // Store.dispatch({
-                //     type: 'SET_CURRENT_EPISODE_DOWNLOAD_INDEX',
-                //     currentEpisodeDownloadIndex: 2
-                // });
-
-                audio1Element.currentTime = parseFloat(currentEpisode.progress);
-            }
-
-            await this.playOrPause(currentEpisode, audio1Element, audio2Element, audio1Playing, audio2Playing);
-        }
-
         async playOrPause(
             currentEpisode: Readonly<Episode>,
-            audio1Element: Readonly<HTMLAudioElement>,
-            audio2Element: Readonly<HTMLAudioElement>,
-            audio1Playing: boolean,
-            audio2Playing: boolean
+            audioElement: HTMLAudioElement
         ) {
             try {
                 if (currentEpisode.playing === true) {
-                    if (audio1Playing) {
-                        audio2Element.pause();
-                        await audio1Element.play();
-                    }
-
-                    if (audio2Playing) {
-                        audio1Element.pause();
-                        await audio2Element.play();
-                    }
+                    await audioElement.play();
                 }
 
                 if (currentEpisode.playing === false) {
-                    audio1Element.pause();
-                    audio2Element.pause();
+                    audioElement.pause();
                 }
             }
             catch(error) {
+
+                // TODO I do not like having to do this, but for now it works
+                // TODO switching between streaming episodes does not remember the current time without this, there is an exception thrown every time for some reason
+                audioElement.currentTime = parseFloat(currentEpisode.progress);
+
                 console.log(error);
             }
         }
@@ -416,8 +383,7 @@ StorePromise.then((Store) => {
         setupMediaNotification(
             currentPodcast: Readonly<Podcast>,
             currentEpisode: Readonly<Episode>,
-            audio1Element: Readonly<HTMLAudioElement>,
-            audio2Element: Readonly<HTMLAudioElement>
+            audioElement: Readonly<HTMLAudioElement>
         ): void {
     
             const navigator = window.navigator as any;
@@ -450,11 +416,11 @@ StorePromise.then((Store) => {
                 });
     
                 navigator.mediaSession.setActionHandler('seekbackward', () => {
-                    this.skipBack(currentEpisode, audio1Element, audio2Element);
+                    this.skipBack(currentEpisode, audioElement);
                 });
     
                 navigator.mediaSession.setActionHandler('seekforward', () => {
-                    this.skipForward(currentEpisode, audio1Element, audio2Element);                
+                    this.skipForward(currentEpisode, audioElement);                
                 });
     
                 navigator.mediaSession.setActionHandler('previoustrack', () => {
@@ -471,41 +437,106 @@ StorePromise.then((Store) => {
             }
         }
 
-        render(state: Readonly<State>): Readonly<TemplateResult> {
+        async handleManualEpisodeChange(
+            currentPodcast: Readonly<Podcast>,
+            currentEpisode: Readonly<Episode>,
+            audioElement: HTMLAudioElement
+        ) {
+            Store.dispatch({
+                type: 'SET_CURRENT_EPISODE_CHANGED_MANUALLY',
+                currentEpisodeChangedManually: false
+            });
+
+            this.setupMediaNotification(currentPodcast, currentEpisode, audioElement);
+
+            if (
+                currentEpisode.downloadState === 'DOWNLOADED' &&
+                mediaSourceExtensionsSupported()
+            ) {
+
+                if (this.mediaSource === null) {
+                    return;
+                }
+
+                this.objectURL = window.URL.createObjectURL(this.mediaSource)
+
+                // TODO if the current episode is not downloaded, this promise will not resolve until a downloaded episode is played
+                await new Promise((resolve) => this.mediaSource.addEventListener('sourceopen', resolve));
+                this.sourceBuffer = this.mediaSource.addSourceBuffer('audio/mpeg');
+
+                this.currentEpisodeAudioInfo = await getEpisodeAudioInfo(currentEpisode);
+
+                const episodeChunkInfo: Readonly<EpisodeChunkInfo> | 'NOT_FOUND' = getEpisodeChunkInfoForTime(this.currentEpisodeAudioInfo, parseFloat(currentEpisode.progress));
+
+                if (episodeChunkInfo === 'NOT_FOUND') {
+                    throw new Error('episodeChunkInfo not found');
+                }
+
+                if (
+                    this.sourceBuffer === null ||
+                    this.sourceBuffer === undefined
+                ) {
+                    throw new Error('this.sourceBuffer is not defined');
+                }
+    
+                await addArrayBufferToSourceBuffer(
+                    currentEpisode,
+                    episodeChunkInfo.chunkIndex,
+                    this.sourceBuffer,
+                    episodeChunkInfo.startTime,
+                    this.sourceBuffer.buffered.length !== 0 ? 0 : 'DO_NOT_REMOVE',
+                    this.sourceBuffer.buffered.length !== 0 ? Infinity : 'DO_NOT_REMOVE'
+                );
+
+                if (this.mediaSource === null) {
+                    return;
+                }
+
+                this.mediaSource.duration = this.currentEpisodeAudioInfo.duration;
+
+                Store.dispatch({
+                    type: 'SET_CURRENT_EPISODE_DOWNLOAD_INDEX',
+                    currentEpisodeDownloadIndex: episodeChunkInfo.chunkIndex
+                });
+            }
+
+            if (
+                currentEpisode.downloadState === 'DOWNLOADED' &&
+                !mediaSourceExtensionsSupported()
+            ) {
+
+            }
+
+            audioElement.currentTime = parseFloat(currentEpisode.progress);
+        }
+
+        async render(state: Readonly<State>): Promise<Readonly<TemplateResult>> {
                         
-            const audio1Element: HTMLAudioElement | null = this.querySelector('#audio-1');
-            const audio2Element: HTMLAudioElement | null = this.querySelector('#audio-2');
+            const audioElement: HTMLAudioElement | null = this.querySelector('audio');
             const currentEpisode: Readonly<Episode> | undefined | null = state.episodes[state.currentEpisodeGuid];
             const currentPodcast: Readonly<Podcast> | undefined | null = currentEpisode ? state.podcasts[currentEpisode.feedUrl] : null;
-            const duration: number | 'UNKNOWN' = currentEpisode && audio1Element && audio2Element ? getDuration(currentEpisode, audio1Element, audio2Element) : 'UNKNOWN';            
+            const duration: number | 'UNKNOWN' = currentEpisode && audioElement ? getDuration(audioElement) : 'UNKNOWN';            
             const progressPercentage: number | 'UNKNOWN' = currentEpisode && duration !== 'UNKNOWN' ? getProgressPercentage(currentEpisode, duration) : 'UNKNOWN';
             const progress: number | 'UNKNOWN' = currentEpisode && !isNaN(parseFloat(currentEpisode.progress)) ? parseFloat(currentEpisode.progress) : 'UNKNOWN';
             const formattedDuration: string | 'UNKNOWN' = duration !== 'UNKNOWN' ? secondsToHoursMinutesSeconds(duration) : 'UNKNOWN';
             const formattedProgress: string =  progress !== 'UNKNOWN' ? secondsToHoursMinutesSeconds(progress) : 'UNKNOWN';
-            const currentEpisodeDownloadIndex: number = state.currentEpisodeDownloadIndex;
 
-            const handlePlaybackParamsDefined: boolean = (
-                currentEpisode !== null &&
-                currentEpisode !== undefined &&
+            if (
+                state.currentEpisodeChangedManually &&
                 currentPodcast !== null &&
                 currentPodcast !== undefined &&
-                audio1Element !== null &&
-                audio1Element !== undefined &&
-                audio2Element !== null &&
-                audio2Element !== undefined
-            );
+                currentEpisode !== null &&
+                currentEpisode !== undefined &&
+                audioElement !== null
+            ) {
+                await this.handleManualEpisodeChange(currentPodcast, currentEpisode, audioElement);
+            }
 
-            if (handlePlaybackParamsDefined && audio1Element !== null && audio2Element !== null && currentPodcast !== null) {
-                this.handlePlayback(
-                    currentEpisode,
-                    state.previousEpisodeGuid,
-                    state.currentEpisodeGuid,
-                    audio1Element,
-                    audio2Element,
-                    state.audio1Playing,
-                    state.audio2Playing
-                );
-                this.setupMediaNotification(currentPodcast, currentEpisode, audio1Element, audio2Element);
+            if (
+                currentEpisode &&
+                audioElement
+            ) {
+                await this.playOrPause(currentEpisode, audioElement);
             }
 
             return html`
@@ -548,10 +579,9 @@ StorePromise.then((Store) => {
                                 @input=${(e: Readonly<Event>) => {
                                     if (
                                         currentEpisode &&
-                                        audio1Element &&
-                                        audio2Element
+                                        audioElement
                                     ) {
-                                        this.currentTimeChanged(parseFloat((e.target as any).value), currentEpisode, audio1Element, audio2Element);
+                                        this.currentTimeChanged(parseFloat((e.target as any).value), currentEpisode, audioElement);
                                     }
                                 }}
                                 type="range"
@@ -585,10 +615,9 @@ StorePromise.then((Store) => {
                                 @click=${() => {
                                     if (
                                         currentEpisode &&
-                                        audio1Element &&
-                                        audio2Element
+                                        audioElement
                                     ) {
-                                        this.skipBack(currentEpisode, audio1Element, audio2Element);
+                                        this.skipBack(currentEpisode, audioElement);
                                     }
                                 }}
                             >
@@ -620,10 +649,9 @@ StorePromise.then((Store) => {
                                 @click=${() => {
                                     if (
                                         currentEpisode &&
-                                        audio1Element &&
-                                        audio2Element
+                                        audioElement
                                     ) {
-                                        this.skipForward(currentEpisode, audio1Element, audio2Element);
+                                        this.skipForward(currentEpisode, audioElement);
                                     }
                                 }}
                             >
@@ -655,52 +683,32 @@ StorePromise.then((Store) => {
                 </div>
 
                 <audio
-                    id="audio-1"
-                    src=${state.audio1Src}
+                    src=${getSrc(currentEpisode, this)}
                     preload="metadata"
+                    @ended=${() => {
+                        if (
+                            currentEpisode !== null &&
+                            currentEpisode !== undefined &&
+                            audioElement !== null &&
+                            audioElement !== undefined
+                        ) {
+                            this.audioEnded(currentEpisode, audioElement);
+                        }
+                    }}
                     @loadeddata=${() => {
-                        if (handlePlaybackParamsDefined && audio1Element !== null && audio2Element !== null) {
-                            this.handlePlayback(
-                                currentEpisode,
-                                state.previousEpisodeGuid,
-                                state.currentEpisodeGuid,
-                                audio1Element,
-                                audio2Element,
-                                state.audio1Playing,
-                                state.audio2Playing
-                            );
+                        if (
+                            currentEpisode &&
+                            audioElement
+                        ) {
+                            this.playOrPause(currentEpisode, audioElement);
                         }
                     }}
-                    @ended=${() => this.audio1Ended(currentEpisode, currentEpisodeDownloadIndex, state.audio2Src)}
                     @timeupdate=${(e: Readonly<Event>) => {
-                        if (currentEpisode && audio1Element) {
-                            this.timeUpdated(currentEpisode, audio1Element);
-                        }
-                    }}
-                    .playbackRate=${parseFloat(state.playbackRate)}
-                ></audio>
-
-                <audio
-                    id="audio-2"
-                    src=${state.audio2Src}
-                    preload="metadata"
-                    @loadeddata=${() => {
-                        if (handlePlaybackParamsDefined && audio1Element !== null && audio2Element !== null) {
-                            this.handlePlayback(
-                                currentEpisode,
-                                state.previousEpisodeGuid,
-                                state.currentEpisodeGuid,
-                                audio1Element,
-                                audio2Element,
-                                state.audio1Playing,
-                                state.audio2Playing
-                            );
-                        }
-                    }}
-                    @ended=${() => this.audio2Ended(currentEpisode, currentEpisodeDownloadIndex, state.audio1Src)}
-                    @timeupdate=${(e: Readonly<Event>) => {
-                        if (currentEpisode && audio2Element) {
-                            this.timeUpdated(currentEpisode, audio2Element);
+                        if (
+                            currentEpisode &&
+                            audioElement
+                        ) {
+                            this.timeUpdated(currentEpisode, audioElement);
                         }
                     }}
                     .playbackRate=${parseFloat(state.playbackRate)}
@@ -710,6 +718,22 @@ StorePromise.then((Store) => {
     }
     
     window.customElements.define('pc-player', PCPlayer);
+
+    function getSrc(currentEpisode: Readonly<Episode> | null | undefined, pcPlayer: PCPlayer) {
+        if (
+            currentEpisode === null ||
+            currentEpisode === undefined
+        ) {
+            return '';
+        }
+
+        if (currentEpisode.downloadState === 'DOWNLOADED') {
+            return pcPlayer.objectURL;
+        }
+        else {
+            return currentEpisode.src;
+        }
+    }
 
     function secondsToHoursMinutesSeconds(seconds: Seconds): string {
         
@@ -721,80 +745,42 @@ StorePromise.then((Store) => {
         return `${hours === 0 ? '' : `${hours}:`}${minutes < 10 ? `0${minutes}` : minutes}:${totalSeconds < 10 ? `0${totalSeconds}` : totalSeconds}`;
     }
 
-    function getDuration(
-        currentEpisode: Readonly<Episode>,
-        audio1Element: Readonly<HTMLAudioElement>,
-        audio2Element: Readonly<HTMLAudioElement>
-    ): number | 'UNKNOWN' {
-
-        // if (currentEpisode.downloadState === 'DOWNLOADED') {
-            // TODO not sure how we're going to get this duration...we could calculate perhaps based on file type, byte length, and bitrate, but that sounds complicated
-            // TODO we might also be able to load up ephemeral audio elements and grab their durations, summing them up and letting them get immediately garbage collected
-            // return 'UNKNOWN';
-        // }
-
-        // if (
-            // currentEpisode.downloadState === 'NOT_DOWNLOADED' ||
-            // currentEpisode.downloadState === 'DOWNLOADING'
-        // ) {
-            if (!isNaN(audio1Element.duration)) {
-                return audio1Element.duration;
-            }
-            else {
-                return 'UNKNOWN';
-            }   
-        // }
-
-        // return 'UNKNOWN';
+    function getDuration(audioElement: Readonly<HTMLAudioElement>): number | 'UNKNOWN' {
+        if (!isNaN(audioElement.duration)) {
+            return audioElement.duration;
+        }
+        else {
+            return 'UNKNOWN';
+        }   
     }
 
     function getProgressPercentage(
         currentEpisode: Readonly<Episode>,
         duration: number
     ): number {
-        return (parseFloat(currentEpisode.progress) / duration) * 100
-    }
-
-    async function getInitialAudioSources(currentEpisode: Readonly<Episode>, currentEpisodeDownloadIndex: number): Promise<Readonly<AudioSources>> {        
-        if (currentEpisode.downloadState === 'DOWNLOADED') {
-            const audio1SrcDownloadIndex: number = currentEpisodeDownloadIndex;
-            const audio2SrcDownloadIndex: number = currentEpisodeDownloadIndex + 1;
-
-            const audio1Src: string = await getAudioSourceFromIndexedDB(currentEpisode, audio1SrcDownloadIndex);
-            const audio2Src: string = await getAudioSourceFromIndexedDB(currentEpisode, audio2SrcDownloadIndex);
-
-            console.log('currentEpisode', currentEpisode);
-            console.log('audio1Src', audio1Src);
-            console.log('audio2Src', audio2Src);
-
-            return {
-                audio1Src,
-                audio2Src
-            };
-        }
-        else {
-            return {
-                audio1Src: currentEpisode.src,
-                audio2Src: 'NOT_SET'
-            };
-        }
-    }
-
-    async function getAudioSourceFromIndexedDB(episode: Readonly<Episode>, episodeDownloadIndex: number): Promise<string | 'NOT_SET'> {
-       
-        console.log(`${episode.guid}-audio-file-array-buffer-${episodeDownloadIndex}`)
-        const audioArrayBuffer: ArrayBuffer | 'NOT_FOUND' = (await get(`${episode.guid}-audio-file-array-buffer-${episodeDownloadIndex}`)) || 'NOT_FOUND';
-        console.log('audioArrayBuffer', audioArrayBuffer);
-        const audioBlob: Readonly<Blob> | 'NOT_CREATED' = audioArrayBuffer !== 'NOT_FOUND' ? new Blob([audioArrayBuffer], { type: 'audio/mpeg' }) : 'NOT_CREATED';        
-        const audioObjectURL: string | 'NOT_SET' = audioBlob !== 'NOT_CREATED' ? window.URL.createObjectURL(audioBlob) : 'NOT_SET';
-        return audioObjectURL;
+        return (parseFloat(currentEpisode.progress) / duration) * 100;
     }
 
     async function addArrayBufferToSourceBuffer(
         episode: Readonly<Episode>,
         chunkIndex: number,
-        sourceBuffer: SourceBuffer
-    ): Promise<'CHUNK_APPENDED' | 'NO_MORE_CHUNKS'> {
+        sourceBuffer: SourceBuffer,
+        timestampOffset: number,
+        removeStart: number | 'DO_NOT_REMOVE',
+        removeEnd: number | 'DO_NOT_REMOVE'
+    ): Promise<'CHUNK_APPENDED' | 'CHUNK_NOT_FOUND'> {
+
+        sourceBuffer.abort();
+        sourceBuffer.timestampOffset = timestampOffset;
+        // sourceBuffer.timestampOffset = sourceBuffer.buffered.length !== 0 ? sourceBuffer.buffered.end(0) : 0;
+
+        if (
+            removeStart !== 'DO_NOT_REMOVE' &&
+            removeEnd !== 'DO_NOT_REMOVE'
+        ) {
+            sourceBuffer.remove(removeStart, removeEnd);
+        }
+
         const chunk: ArrayBuffer | null | undefined = await get(`${episode.guid}-audio-file-array-buffer-${chunkIndex}`);
 
         if (
@@ -804,67 +790,17 @@ StorePromise.then((Store) => {
             // sourceBuffer.addEventListener('updateend', () => {
                 // mediaSource.endOfStream();
             // });
-            return 'NO_MORE_CHUNKS';
+            return 'CHUNK_NOT_FOUND';
         }
 
         sourceBuffer.appendBuffer(chunk);
-
+        
         await new Promise((resolve) => sourceBuffer.addEventListener('updateend', resolve));
 
+        // TODO sequence mode may help me get rid of having to use timestampOffset
+        // sourceBuffer.mode = 'sequence';
+
         return 'CHUNK_APPENDED';
-    }
-
-    // TODO I will have to deal with calculating the length, adding new buffers to the buffer, and seeking on my own
-    // TODO media source extensions at least gives me a way of updating the audio live I believe, without changing audio elements
-    // TODO it will take some more work but hopefully will function properly
-    async function addArrayBuffersToSourceBuffer(
-        currentEpisode: Readonly<Episode>,
-        mediaSource: Readonly<MediaSource>,
-        // sourceBuffer: Readonly<SourceBuffer>,
-        chunkIndex: number = 0
-    ): Promise<void> {
-
-        console.log('chunkIndex', chunkIndex);
-
-        const chunk: ArrayBuffer | null | undefined = await get(`${currentEpisode.guid}-audio-file-array-buffer-${chunkIndex}`);
-
-        if (
-            chunk === null ||
-            chunk === undefined
-        ) {
-            // sourceBuffer.addEventListener('updateend', () => {
-                mediaSource.endOfStream();
-            // });
-            return;
-        }
-
-        // const middleIndex: number = Math.floor(chunk.byteLength / 2);
-
-        // const chunk1: ArrayBuffer = chunk.slice(0, middleIndex);
-        // const chunk2: ArrayBuffer = chunk.slice(middleIndex, chunk.byteLength);
-
-        const sourceBuffer: Readonly<SourceBuffer> = mediaSource.addSourceBuffer('audio/mpeg');
-
-        sourceBuffer.appendBuffer(chunk);
-        
-        await new Promise((resolve) => {
-            sourceBuffer.addEventListener('updateend', resolve);
-        });
-
-        // mediaSource.addEventListener('')
-        
-        // sourceBuffer.addEventListener('')
-        // sourceBuffer.remove
-
-        // sourceBuffer.appendBuffer(chunk2);
-
-        // await new Promise((resolve) => {
-        //     sourceBuffer.addEventListener('updateend', resolve);
-        // });
-
-        // await new Promise((resolve) => setTimeout(resolve, 5000));
-
-        addArrayBuffersToSourceBuffer(currentEpisode, mediaSource, chunkIndex + 1);
     }
 
     type EpisodeAudioInfo = {
@@ -928,9 +864,29 @@ StorePromise.then((Store) => {
         });
     }
 
-    async function getEpisodeChunk(episode: Episode, chunkIndex: number) {
-        const chunk: ArrayBuffer | null | undefined = await get(`${episode.guid}-audio-file-array-buffer-${chunkIndex}`);
+    function getEpisodeChunkInfoForTime(episodeAudioInfo: Readonly<EpisodeAudioInfo>, time: number): Readonly<EpisodeChunkInfo> | 'NOT_FOUND' {
+        const episodeChunkInfo: EpisodeChunkInfo | undefined = episodeAudioInfo.episodeChunkInfos.find((episodeChunkInfo) => {
+            return time >= episodeChunkInfo.startTime && time < episodeChunkInfo.endTime;
+        });
 
-        return chunk;
+        if (episodeChunkInfo === undefined) {
+            return 'NOT_FOUND'
+        }
+        else {
+            return episodeChunkInfo;
+        }
     }
+
+    // TODO this is meant only to be used by platforms that do not support media source extensions (iOS!!!)
+    // TODO once media source extensions are supported, remove this stuff
+    function mediaSourceExtensionsSupported() {
+        return (window as any).MediaSource;
+    }
+
+    // TODO this is meant only to be used by platforms that do not support media source extensions (iOS!!!)
+    // TODO once media source extensions are supported, remove this stuff
+    async function getEntireEpisodeBlob() {
+        // TODO go in here and grab all of the chunks and return the blob...
+    }
+
 });
