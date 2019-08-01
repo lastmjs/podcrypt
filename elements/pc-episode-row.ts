@@ -18,7 +18,8 @@ import {
     addEpisodeToPlaylist,
     getAudioFileResponse,
     copyTextToClipboard,
-    podcryptProxy
+    podcryptProxy,
+    downloadedOrigin
 } from '../services/utilities';
 import { 
     set,
@@ -373,11 +374,19 @@ StorePromise.then((Store) => {
 
                     // const audioFileArrayBuffer = await response.arrayBuffer();
 
-                    await fetchAndSaveAudioFileArrayBuffer(episode);
+                    // await fetchAndSaveAudioFileArrayBuffer(episode);
 
                     // TODO somewhere in this process iOS Safari fails with a null exception, and I believe it is while saving to indexedDB
                     // TODO I believe iOS indexeddb does not support storing blobs. try an arraybuffer instead
                     // await set(`${episode.guid}-audio-file-array-buffer`, audioFileArrayBuffer);
+
+                    const audioFileResponse = await fetch(`${podcryptProxy}${episode.src}`);
+
+                    console.log('audioFileResponse', audioFileResponse);
+
+                    const cache = await window.caches.open('EPISODE_AUDIO_CACHE');
+
+                    await cache.put(`${downloadedOrigin}${episode.src}`, audioFileResponse);
 
                     Store.dispatch({
                         type: 'SET_EPISODE_DOWNLOAD_STATE',
@@ -385,10 +394,10 @@ StorePromise.then((Store) => {
                         downloadState: 'DOWNLOADED'
                     });
 
-                    Store.dispatch({
-                        type: 'SET_PREVIOUS_EPISODE_GUID',
-                        previousEpisodeGuid: 'NOT_SET'
-                    });
+                    // Store.dispatch({
+                    //     type: 'SET_PREVIOUS_EPISODE_GUID',
+                    //     previousEpisodeGuid: 'NOT_SET'
+                    // });
                 }
             }
             catch(error) {
@@ -398,13 +407,9 @@ StorePromise.then((Store) => {
 
         if (value === 'Delete') {
             try {
-                const indexedDBKeys = await keys();
-                const episodeKeys = indexedDBKeys.filter((key) => key.startsWith(`${episode.guid}-audio-file-array-buffer`));
-                
-                for (let i=0; i < episodeKeys.length; i++) {
-                    const episodeKey = episodeKeys[i];
-                    await del(episodeKey);
-                }
+                const cache = await window.caches.open('EPISODE_AUDIO_CACHE');
+
+                await cache.delete(`${downloadedOrigin}${episode.src}`);
 
                 Store.dispatch({
                     type: 'SET_EPISODE_DOWNLOAD_STATE',

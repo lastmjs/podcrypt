@@ -3,6 +3,7 @@ import BigNumber from 'bignumber.js';
 import { ethersProvider } from './ethers-provider';
 import '../node_modules/ethers/dist/ethers.min.js';
 
+export const downloadedOrigin = 'https://download.proxy.podcrypt.app/';
 export const podcryptProxy = 'https://proxy.podcrypt.app/';
 // export const podcryptProxy = 'https://localhost:4000/';
 

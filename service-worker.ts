@@ -11,19 +11,21 @@ self.addEventListener('install', (event) => {
         .open(CACHE_NAME)
         .then((cache) => {
             return cache.addAll(urlsToCache);
-        })
+        });
     );
 });
 
 self.addEventListener('fetch', (event) => {
     // TODO Figure out why audio requests have a destination of video
     // We do not respond to media requests because service workers don't currently support Range headers or 206 partial content responses
+    
+    console.log('event.request.url', event.request.url);
+
     if (
-        event.request.destination !== 'audio' &&
-        event.request.destination !== 'video' &&
-        !event.request.url.includes('.mp3') &&
-        !event.request.url.includes('.m4a')
+        event.request.url.includes('index.html') ||
+        event.request.url.startsWith('https://download.proxy.podcrypt.app/')
     ) {
+        console.log('attempting to return from cache')
         event.respondWith(
             caches
             .match(event.request)
@@ -35,4 +37,28 @@ self.addEventListener('fetch', (event) => {
             })
         );
     }
+
+    // const cachedResponse = await caches.match(event.request);
+
+    // if (cachedResponse) {
+    //     event.respondWith(cachedResponse);
+    // }
+    
+    // if (
+    //     event.request.destination !== 'audio' &&
+    //     event.request.destination !== 'video' &&
+    //     !event.request.url.includes('.mp3') &&
+    //     !event.request.url.includes('.m4a')
+    // ) {
+    //     event.respondWith(
+    //         caches
+    //         .match(event.request)
+    //         .then((response) => {
+    //             if (response) {
+    //                 return response;
+    //             }
+    //             return fetch(event.request);
+    //         })
+    //     );
+    // }
 });

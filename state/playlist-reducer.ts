@@ -539,7 +539,8 @@ export function PlaylistReducer(
                 ...state.episodes,
                 [newCurrentEpisode.guid]: newCurrentEpisode,
                 [newNextCurrentEpisode.guid]: newNextCurrentEpisode
-            }
+            },
+            currentEpisodeChangedManually: true
         };
     }
 
