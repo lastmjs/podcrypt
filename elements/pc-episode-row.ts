@@ -266,14 +266,20 @@ StorePromise.then((Store) => {
                             }
 
                             ${
-                                Store.getState().episodes[episode.guid] && Store.getState().episodes[episode.guid].downloadState === 'DOWNLOADED' ?
+                                Store.getState().episodes[episode.guid] && (Store.getState().episodes[episode.guid].downloadState === 'DOWNLOADED' || Store.getState().episodes[episode.guid].downloadState === 'DOWNLOADING') ?
                                 html`
                                     <div class="pc-episode-row-downloaded-container">
-                                        <i 
-                                            class="material-icons pc-episode-row-downloaded-icon"
-                                        >
-                                            done
-                                        </i>
+                                        ${
+                                            Store.getState().episodes[episode.guid].downloadState === 'DOWNLOADED' ?
+                                            html`
+                                                <i 
+                                                    class="material-icons pc-episode-row-downloaded-icon"
+                                                >
+                                                    done
+                                                </i>
+                                            ` :
+                                            html`<div>Downloading...</div>`
+                                        }
                                     </div>
                                 ` :
                                 html``
