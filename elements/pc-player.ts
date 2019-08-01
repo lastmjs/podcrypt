@@ -1,6 +1,3 @@
-// TODO consider intelligent locking for tasks that could happen concurrently...the way I am doing it or thinking of doing it seems a bit naive, because all tasks fired during a lock or forgotten, I might want to implement a queue or semaphore thing so that the events are not forgotten
-// TODO add protections against exceptions when skipping backward a bunch or forward a bunch, over chunkindex lines
-
 import { 
     html,
     render as litRender,
@@ -13,17 +10,13 @@ import {
 } from '../services/css';
 import BigNumber from 'bignumber.js';
 import { get } from 'idb-keyval';
+import {
+    downloadedOrigin
+} from '../services/utilities';
 
 StorePromise.then((Store) => {
 
     class PCPlayer extends HTMLElement {
-
-        mediaSource: MediaSource | null = mediaSourceExtensionsSupported() ? new MediaSource() : null;
-        objectURL: string = '';
-        sourceBuffer: SourceBuffer | null = null;
-        currentEpisodeAudioInfo: EpisodeAudioInfo | null = null;
-        nextCurrentEpisodeAudioInfo: EpisodeAudioInfo | null = null;
-        timeUpdateLock = false;
 
         constructor() {
             super();
@@ -49,19 +42,11 @@ StorePromise.then((Store) => {
 
         async audioEnded(currentEpisode: Readonly<Episode>, audioElement: HTMLAudioElement) {
 
-            if (
-                currentEpisode.downloadState !== 'DOWNLOADED' ||
-                (
-                    currentEpisode.downloadState === 'DOWNLOADED' &&
-                    !mediaSourceExtensionsSupported()
-                )
-            ) {
-                Store.dispatch({
-                    type: 'CURRENT_EPISODE_COMPLETED'
-                });
+            Store.dispatch({
+                type: 'CURRENT_EPISODE_COMPLETED'
+            });
 
-                await this.playOrPause(currentEpisode, audioElement);
-            }
+            // await this.playOrPause(currentEpisode, audioElement);
         }
 
         playbackRateChanged(e: Readonly<Event>) {
@@ -85,210 +70,28 @@ StorePromise.then((Store) => {
 
         async currentTimeChanged(
             newCurrentTime: number,
-            currentEpisode: Readonly<Episode>,
             audioElement: HTMLAudioElement
         ) {
-            await obtainTimeUpdateLock(this);
-
-            if (
-                currentEpisode.downloadState === 'DOWNLOADED' &&
-                mediaSourceExtensionsSupported()
-            ) {
-                if (this.currentEpisodeAudioInfo === null) {
-                    alert('this.episodeAudioInfo is null');
-                    releaseTimeUpdateLock(this);
-                    return;
-                }
-    
-                const episodeChunkInfo: EpisodeChunkInfo | undefined = this.currentEpisodeAudioInfo.episodeChunkInfos.find((episodeChunkInfo: Readonly<EpisodeChunkInfo>) => {
-                    return newCurrentTime >= episodeChunkInfo.startTime && newCurrentTime < episodeChunkInfo.endTime;
-                });
-    
-                if (episodeChunkInfo === undefined) {
-                    alert('episodeChunkInfo is undefined');
-                    releaseTimeUpdateLock(this);
-                    return;
-                }
-    
-                const chunkIndex = episodeChunkInfo.chunkIndex;
-    
-                if (chunkIndex === Store.getState().currentEpisodeDownloadIndex) {
-    
-                    Store.dispatch({
-                        type: 'UPDATE_CURRENT_EPISODE_PROGRESS_FROM_SLIDER',
-                        progress: new BigNumber(audioElement.currentTime).toString()
-                    }); 
-
-                    audioElement.currentTime = newCurrentTime;  
-
-                    releaseTimeUpdateLock(this);
-    
-                    return;
-                }
-    
-                if (this.sourceBuffer === null) {
-                    alert('this.sourceBuffer is null');
-                    releaseTimeUpdateLock(this);
-                    return;
-                }
-                                
-                await addArrayBufferToSourceBuffer(
-                    currentEpisode,
-                    chunkIndex,
-                    this.sourceBuffer,
-                    episodeChunkInfo.startTime,
-                    0,
-                    this.sourceBuffer.buffered.end(0)
-                );
-                
-                Store.dispatch({
-                    type: 'SET_CURRENT_EPISODE_DOWNLOAD_INDEX',
-                    currentEpisodeDownloadIndex: chunkIndex
-                });
-            }
-
             Store.dispatch({
                 type: 'UPDATE_CURRENT_EPISODE_PROGRESS_FROM_SLIDER',
                 progress: new BigNumber(audioElement.currentTime).toString()
             });
 
             audioElement.currentTime = newCurrentTime;
-
-            releaseTimeUpdateLock(this);
         }
 
         async skipBack(
-            currentEpisode: Readonly<Episode>,
             audioElement: HTMLAudioElement
         ) {
             const newCurrentTime = audioElement.currentTime - 10 < 0 ? 0 : audioElement.currentTime - 10;
-            await this.currentTimeChanged(newCurrentTime, currentEpisode, audioElement);
+            audioElement.currentTime = newCurrentTime;
         }
 
         async skipForward(
-            currentEpisode: Readonly<Episode>,
             audioElement: HTMLAudioElement
         ) {
             const newCurrentTime = audioElement.currentTime + 10 >= audioElement.duration ? audioElement.duration - 1 : audioElement.currentTime + 10;
-            await this.currentTimeChanged(newCurrentTime, currentEpisode, audioElement);
-        }
-
-        async transitionToNextChunkInCurrentEpisode(episode: Readonly<Episode>, nextChunkInfo: Readonly<EpisodeChunkInfo>) {
-
-            if (this.sourceBuffer === null) {
-                return;
-            }
-            
-            await addArrayBufferToSourceBuffer(
-                episode,
-                nextChunkInfo.chunkIndex,
-                this.sourceBuffer,
-                nextChunkInfo.startTime,
-                0,
-                this.sourceBuffer.buffered.end(0) - 10
-            );
-
-            Store.dispatch({
-                type: 'SET_CURRENT_EPISODE_DOWNLOAD_INDEX',
-                currentEpisodeDownloadIndex: nextChunkInfo.chunkIndex
-            });
-        }
-
-        async transitionToNextChunkInNextEpisode(progress: number) {
-            const state: Readonly<State> = Store.getState();
-
-            const nextCurrentPlaylistIndex: number = state.currentPlaylistIndex + 1;
-            const nextCurrentEpisodeGuid: EpisodeGuid | undefined = state.playlist[nextCurrentPlaylistIndex];
-            const nextCurrentEpisode: Readonly<Episode> | undefined = state.episodes[nextCurrentEpisodeGuid];
-
-            if (
-                nextCurrentEpisode !== undefined &&
-                nextCurrentEpisode.downloadState === 'DOWNLOADED' &&
-                this.nextCurrentEpisodeAudioInfo === null
-            ) {
-                this.nextCurrentEpisodeAudioInfo = await getEpisodeAudioInfo(nextCurrentEpisode);
-
-                const episodeChunkInfo: Readonly<EpisodeChunkInfo> | 'NOT_FOUND' = getEpisodeChunkInfoForTime(this.nextCurrentEpisodeAudioInfo, parseFloat(nextCurrentEpisode.progress));
-
-                if (episodeChunkInfo === 'NOT_FOUND') {
-                    throw new Error('episodeChunkInfo not found');
-                }
-
-                // TODO I think we might want to remove this and put it in the complete transition function, otherwise seeking and such might get messed up
-                Store.dispatch({
-                    type: 'SET_CURRENT_EPISODE_DOWNLOAD_INDEX',
-                    currentEpisodeDownloadIndex: episodeChunkInfo.chunkIndex
-                });
-
-                if (
-                    this.sourceBuffer === null ||
-                    this.sourceBuffer === undefined
-                ) {
-                    throw new Error('this.sourceBuffer is not defined');
-                }
-            
-                // const originalDuration = this.mediaSource.duration;
-
-                await addArrayBufferToSourceBuffer(
-                    nextCurrentEpisode,
-                    episodeChunkInfo.chunkIndex,
-                    this.sourceBuffer,
-                    // this.mediaSource.duration,
-                    // episodeChunkInfo.startTime,
-                    // progress,
-                    // 0, // TODO I think the timestampOffset is breaking transitions between episodes
-                    // parseFloat(nextCurrentEpisode.progress),
-                    // 0,
-                    // this.sourceBuffer.buffered.length > 0 ? this.sourceBuffer.buffered.end(0) : 0,
-                    0,
-                    0,
-                    // this.sourceBuffer.buffered.end(0) - 10,
-                    Infinity
-                );
-
-                // this.mediaSource.duration = originalDuration;
-            }
-        }
-
-        async completeTransitionToNextEpisode(audioElement: HTMLAudioElement) {
-            Store.dispatch({
-                type: 'CURRENT_EPISODE_COMPLETED'
-            });
-
-            const currentEpisode: Readonly<Episode> | undefined | null = Store.getState().episodes[Store.getState().currentEpisodeGuid];
-            const currentPodcast: Readonly<Podcast> | undefined | null = currentEpisode ? Store.getState().podcasts[currentEpisode.feedUrl] : null;
-
-            if (currentPodcast && currentEpisode) {
-                this.setupMediaNotification(currentPodcast, currentEpisode, audioElement);
-            }
-
-            if (
-                currentEpisode === null ||
-                currentEpisode === undefined
-            ) {
-                return;
-            }
-
-            audioElement.currentTime = parseFloat(currentEpisode.progress);
-
-            if (this.nextCurrentEpisodeAudioInfo === null) {
-                return;
-            }
-
-            this.currentEpisodeAudioInfo = {
-                ...this.nextCurrentEpisodeAudioInfo
-            };
-            this.nextCurrentEpisodeAudioInfo = null;
-
-            if (this.currentEpisodeAudioInfo === null) {
-                return;
-            }
-
-            if (this.mediaSource === null) {
-                return;
-            }
-
-            this.mediaSource.duration = this.currentEpisodeAudioInfo.duration; 
+            audioElement.currentTime = newCurrentTime;
         }
 
         // TODO I think we need to use the lock mechanism on anything that is updating the buffer...so this funciton and currentTimeChanged, because these events are messing with that sometimes
@@ -310,50 +113,6 @@ StorePromise.then((Store) => {
                 type: 'UPDATE_CURRENT_EPISODE_PROGRESS',
                 progress: new BigNumber(progress).toString()
             });
-
-            if (mediaSourceExtensionsSupported()) {
-                await obtainTimeUpdateLock(this);
-                const currentEpisode: Readonly<Episode> | undefined | null = Store.getState().episodes[Store.getState().currentEpisodeGuid];
-                
-                if (currentEpisode !== null && currentEpisode !== undefined) {
-                    await this.handleChunkTransitions(currentEpisode, audioElement, progress);
-                }
-                
-                releaseTimeUpdateLock(this);
-            }
-        }
-
-        async handleChunkTransitions(currentEpisode: Readonly<Episode>, audioElement: HTMLAudioElement, progress: number) {
-            if (currentEpisode.downloadState === 'DOWNLOADED') {
-                if (this.currentEpisodeAudioInfo === null) {
-                    return;
-                }
-    
-                const currentChunkInfo: Readonly<EpisodeChunkInfo> = this.currentEpisodeAudioInfo.episodeChunkInfos[Store.getState().currentEpisodeDownloadIndex];
-                const nextChunkInfo: Readonly<EpisodeChunkInfo> = this.currentEpisodeAudioInfo.episodeChunkInfos[Store.getState().currentEpisodeDownloadIndex + 1];
-
-                console.log('currentChunkInfo.chunkIndex', currentChunkInfo.chunkIndex);
-                console.log('parseFloat(currentEpisode.progress)', parseFloat(currentEpisode.progress));
-                console.log('currentChunkInfo.endTime - 10', currentChunkInfo.endTime - 10);
-
-                const shouldTransitionToNextChunkInCurrentEpisode: boolean = nextChunkInfo && parseFloat(currentEpisode.progress) >= (currentChunkInfo.endTime - 10);
-                const shouldTransitionToNextChunkInNextEpisode: boolean = !nextChunkInfo && parseFloat(currentEpisode.progress) >= (currentChunkInfo.endTime - 10);
-                const shouldCompleteTransitionToNextEpisode: boolean = !nextChunkInfo && parseFloat(currentEpisode.progress) >= (currentChunkInfo.endTime - 1);
-
-                if (shouldTransitionToNextChunkInCurrentEpisode) {
-                    console.log('this.transitionToNextChunkInCurrentEpisode');
-                    await this.transitionToNextChunkInCurrentEpisode(currentEpisode, nextChunkInfo);
-                }
-
-                if (shouldTransitionToNextChunkInNextEpisode) {
-                    // this.transitionToNextChunkInNextEpisode(progress);
-                }
-
-                if (shouldCompleteTransitionToNextEpisode) {
-                    await this.transitionToNextChunkInNextEpisode(progress);
-                    await this.completeTransitionToNextEpisode(audioElement);    
-                }
-            }
         }
 
         played() {
@@ -372,6 +131,10 @@ StorePromise.then((Store) => {
             currentEpisode: Readonly<Episode>,
             audioElement: HTMLAudioElement
         ) {
+            if (this.changingEpisodes === true) {
+                return;
+            }
+
             try {
                 if (currentEpisode.playing === true) {
                     await audioElement.play();
@@ -427,11 +190,11 @@ StorePromise.then((Store) => {
                 });
     
                 navigator.mediaSession.setActionHandler('seekbackward', () => {
-                    this.skipBack(currentEpisode, audioElement);
+                    this.skipBack(audioElement);
                 });
     
                 navigator.mediaSession.setActionHandler('seekforward', () => {
-                    this.skipForward(currentEpisode, audioElement);                
+                    this.skipForward(audioElement);                
                 });
     
                 navigator.mediaSession.setActionHandler('previoustrack', () => {
@@ -446,79 +209,6 @@ StorePromise.then((Store) => {
                     });
                 });
             }
-        }
-
-        async handleManualEpisodeChange(
-            currentPodcast: Readonly<Podcast>,
-            currentEpisode: Readonly<Episode>,
-            audioElement: HTMLAudioElement
-        ) {
-            Store.dispatch({
-                type: 'SET_CURRENT_EPISODE_CHANGED_MANUALLY',
-                currentEpisodeChangedManually: false
-            });
-
-            this.setupMediaNotification(currentPodcast, currentEpisode, audioElement);
-
-            if (
-                currentEpisode.downloadState === 'DOWNLOADED' &&
-                mediaSourceExtensionsSupported()
-            ) {
-
-                if (this.mediaSource === null) {
-                    return;
-                }
-
-                this.objectURL = window.URL.createObjectURL(this.mediaSource)
-
-                // TODO if the current episode is not downloaded, this promise will not resolve until a downloaded episode is played
-                await new Promise((resolve) => this.mediaSource.addEventListener('sourceopen', resolve));
-                this.sourceBuffer = this.mediaSource.addSourceBuffer('audio/mpeg');
-
-                this.currentEpisodeAudioInfo = await getEpisodeAudioInfo(currentEpisode);
-
-                const episodeChunkInfo: Readonly<EpisodeChunkInfo> | 'NOT_FOUND' = getEpisodeChunkInfoForTime(this.currentEpisodeAudioInfo, parseFloat(currentEpisode.progress));
-
-                if (episodeChunkInfo === 'NOT_FOUND') {
-                    throw new Error('episodeChunkInfo not found');
-                }
-
-                if (
-                    this.sourceBuffer === null ||
-                    this.sourceBuffer === undefined
-                ) {
-                    throw new Error('this.sourceBuffer is not defined');
-                }
-    
-                await addArrayBufferToSourceBuffer(
-                    currentEpisode,
-                    episodeChunkInfo.chunkIndex,
-                    this.sourceBuffer,
-                    episodeChunkInfo.startTime,
-                    this.sourceBuffer.buffered.length !== 0 ? 0 : 'DO_NOT_REMOVE',
-                    this.sourceBuffer.buffered.length !== 0 ? Infinity : 'DO_NOT_REMOVE'
-                );
-
-                if (this.mediaSource === null) {
-                    return;
-                }
-
-                this.mediaSource.duration = this.currentEpisodeAudioInfo.duration;
-
-                Store.dispatch({
-                    type: 'SET_CURRENT_EPISODE_DOWNLOAD_INDEX',
-                    currentEpisodeDownloadIndex: episodeChunkInfo.chunkIndex
-                });
-            }
-
-            if (
-                currentEpisode.downloadState === 'DOWNLOADED' &&
-                !mediaSourceExtensionsSupported()
-            ) {
-
-            }
-
-            audioElement.currentTime = parseFloat(currentEpisode.progress);
         }
 
         async render(state: Readonly<State>): Promise<Readonly<TemplateResult>> {
@@ -539,10 +229,20 @@ StorePromise.then((Store) => {
                 currentEpisode !== null &&
                 currentEpisode !== undefined &&
                 audioElement !== null
-            ) {
-                await this.handleManualEpisodeChange(currentPodcast, currentEpisode, audioElement);
-            }
+            ) {      
+                this.changingEpisodes = true;
+                
+                Store.dispatch({
+                    type: 'SET_CURRENT_EPISODE_CHANGED_MANUALLY',
+                    currentEpisodeChangedManually: false
+                });
+    
+                audioElement.currentTime = parseFloat(currentEpisode.progress);
+                this.setupMediaNotification(currentPodcast, currentEpisode, audioElement);    
 
+                this.changingEpisodes = false;
+            }
+            
             if (
                 currentEpisode &&
                 audioElement
@@ -589,10 +289,9 @@ StorePromise.then((Store) => {
                             <input 
                                 @input=${(e: Readonly<Event>) => {
                                     if (
-                                        currentEpisode &&
                                         audioElement
                                     ) {
-                                        this.currentTimeChanged(parseFloat((e.target as any).value), currentEpisode, audioElement);
+                                        this.currentTimeChanged(parseFloat((e.target as any).value), audioElement);
                                     }
                                 }}
                                 type="range"
@@ -625,10 +324,9 @@ StorePromise.then((Store) => {
                                 class="material-icons pc-player-backward-icon"
                                 @click=${() => {
                                     if (
-                                        currentEpisode &&
                                         audioElement
                                     ) {
-                                        this.skipBack(currentEpisode, audioElement);
+                                        this.skipBack(audioElement);
                                     }
                                 }}
                             >
@@ -659,10 +357,9 @@ StorePromise.then((Store) => {
                                 class="material-icons pc-player-forward-icon"
                                 @click=${() => {
                                     if (
-                                        currentEpisode &&
                                         audioElement
                                     ) {
-                                        this.skipForward(currentEpisode, audioElement);
+                                        this.skipForward(audioElement);
                                     }
                                 }}
                             >
@@ -711,6 +408,7 @@ StorePromise.then((Store) => {
                             currentEpisode &&
                             audioElement
                         ) {
+                            audioElement.currentTime = parseFloat(currentEpisode.progress);
                             this.playOrPause(currentEpisode, audioElement);
                         }
                     }}
@@ -739,7 +437,7 @@ StorePromise.then((Store) => {
         }
 
         if (currentEpisode.downloadState === 'DOWNLOADED') {
-            return pcPlayer.objectURL;
+            return `${downloadedOrigin}${currentEpisode.src}`;
         }
         else {
             return currentEpisode.src;
@@ -771,164 +469,4 @@ StorePromise.then((Store) => {
     ): number {
         return (parseFloat(currentEpisode.progress) / duration) * 100;
     }
-
-    async function addArrayBufferToSourceBuffer(
-        episode: Readonly<Episode>,
-        chunkIndex: number,
-        sourceBuffer: SourceBuffer,
-        timestampOffset: number,
-        removeStart: number | 'DO_NOT_REMOVE',
-        removeEnd: number | 'DO_NOT_REMOVE'
-    ): Promise<'CHUNK_APPENDED' | 'CHUNK_NOT_FOUND'> {
-
-        sourceBuffer.abort();
-        sourceBuffer.timestampOffset = timestampOffset;
-
-        if (
-            removeStart !== 'DO_NOT_REMOVE' &&
-            removeEnd !== 'DO_NOT_REMOVE'
-        ) {
-            sourceBuffer.remove(removeStart, removeEnd);
-            await new Promise((resolve) => sourceBuffer.addEventListener('updateend', resolve));
-        }
-
-        const chunk: ArrayBuffer | null | undefined = await get(`${episode.guid}-audio-file-array-buffer-${chunkIndex}`);
-
-        if (
-            chunk === null ||
-            chunk === undefined
-        ) {
-            // sourceBuffer.addEventListener('updateend', () => {
-                // mediaSource.endOfStream();
-            // });
-            return 'CHUNK_NOT_FOUND';
-        }
-
-        sourceBuffer.appendBuffer(chunk);
-        
-        await new Promise((resolve) => sourceBuffer.addEventListener('updateend', resolve));
-
-        // TODO sequence mode may help me get rid of having to use timestampOffset
-        // sourceBuffer.mode = 'sequence';
-
-        return 'CHUNK_APPENDED';
-    }
-
-    type EpisodeAudioInfo = {
-        duration: number;
-        episodeChunkInfos: ReadonlyArray<EpisodeChunkInfo>;
-    }
-
-    type EpisodeChunkInfo = {
-        chunkIndex: number;
-        startTime: Seconds;
-        endTime: Seconds;
-    }
-
-    async function getEpisodeAudioInfo(
-        episode: Readonly<Episode>,
-        chunkIndex: number = 0,
-        episodeAudioInfo: Readonly<EpisodeAudioInfo> = {
-            duration: 0,
-            episodeChunkInfos: []
-        }
-    ): Promise<EpisodeAudioInfo> {
-
-        const chunk: ArrayBuffer | null | undefined = await get(`${episode.guid}-audio-file-array-buffer-${chunkIndex}`);
-
-        if (
-            chunk === null ||
-            chunk === undefined
-        ) {
-            return episodeAudioInfo;
-        }
-
-        const audioElement: HTMLAudioElement = document.createElement('audio');
-        const blob = new Blob([chunk]);
-        const objectURL = window.URL.createObjectURL(blob);
-        audioElement.src = objectURL;
-
-        await new Promise((resolve) => audioElement.addEventListener('durationchange', resolve));
-
-        // const mediaSource = new MediaSource();
-        // audioElement.src = window.URL.createObjectURL(mediaSource);
-
-        // await new Promise((resolve) => mediaSource.addEventListener('sourceopen', resolve));
-
-        // // TODO grab the mime type from the blob in the future
-
-        // const extension = episode.src.slice(episode.src.length - 3, episode.src.length);
-        // const mimeType = extension === 'mp4' ? 'audio/mp4; codecs="flac"' : 'audio/mpeg';
-
-        // const sourceBuffer = mediaSource.addSourceBuffer(mimeType);
-
-        // sourceBuffer.appendBuffer(chunk);
-        
-        // await new Promise((resolve) => sourceBuffer.addEventListener('updateend', resolve));
-
-        // mediaSource.endOfStream();
-        
-        // TODO the start times and end times might need to be changed to not ever overlap, we'll see
-        const previousEpisodeChunkInfo: Readonly<EpisodeChunkInfo> | undefined = episodeAudioInfo.episodeChunkInfos[episodeAudioInfo.episodeChunkInfos.length - 1];
-        // const duration: Seconds = mediaSource.duration;
-        const duration: Seconds = audioElement.duration;
-        console.log('duration', duration);
-        const startTime: Seconds = previousEpisodeChunkInfo ? previousEpisodeChunkInfo.endTime : 0; // TODO this should be the end time of the previous episodeChunkInfo
-        const endTime: Seconds = startTime + duration;
-        const episodeChunkInfo: Readonly<EpisodeChunkInfo> = {
-            chunkIndex,
-            startTime,
-            endTime
-        };
-
-        window.URL.revokeObjectURL(audioElement.src);
-
-        return await getEpisodeAudioInfo(episode, chunkIndex + 1, {
-            ...episodeAudioInfo,
-            duration: episodeAudioInfo.duration + duration,
-            episodeChunkInfos: [...episodeAudioInfo.episodeChunkInfos, episodeChunkInfo]
-        });
-    }
-
-    function getEpisodeChunkInfoForTime(episodeAudioInfo: Readonly<EpisodeAudioInfo>, time: number): Readonly<EpisodeChunkInfo> | 'NOT_FOUND' {
-        const episodeChunkInfo: EpisodeChunkInfo | undefined = episodeAudioInfo.episodeChunkInfos.find((episodeChunkInfo) => {
-            return time >= episodeChunkInfo.startTime && time < episodeChunkInfo.endTime;
-        });
-
-        if (episodeChunkInfo === undefined) {
-            return 'NOT_FOUND'
-        }
-        else {
-            return episodeChunkInfo;
-        }
-    }
-
-    // TODO this is meant only to be used by platforms that do not support media source extensions (iOS!!!)
-    // TODO once media source extensions are supported, remove this stuff
-    function mediaSourceExtensionsSupported() {
-        return (window as any).MediaSource;
-    }
-
-    // TODO this is meant only to be used by platforms that do not support media source extensions (iOS!!!)
-    // TODO once media source extensions are supported, remove this stuff
-    async function getEntireEpisodeBlob() {
-        // TODO go in here and grab all of the chunks and return the blob...
-    }
-
-    async function obtainTimeUpdateLock(pcPlayer: PCPlayer) {
-        if (pcPlayer.timeUpdateLock === false) {
-            pcPlayer.timeUpdateLock = true;
-            console.log('lock obtained');
-        }
-        else {
-            await new Promise((resolve) => setTimeout(resolve, 100));
-            await obtainTimeUpdateLock(pcPlayer);
-        }
-    }
-
-    function releaseTimeUpdateLock(pcPlayer: PCPlayer) {
-        pcPlayer.timeUpdateLock = false;
-        console.log('lock released');
-    }
-
 });
