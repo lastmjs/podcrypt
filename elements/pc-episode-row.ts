@@ -18,8 +18,7 @@ import {
     addEpisodeToPlaylist,
     getAudioFileResponse,
     copyTextToClipboard,
-    podcryptProxy,
-    downloadedOrigin
+    podcryptProxy
 } from '../services/utilities';
 import { 
     set,
@@ -392,7 +391,7 @@ StorePromise.then((Store) => {
 
                     const cache = await window.caches.open('EPISODE_AUDIO_CACHE');
 
-                    await cache.put(`${downloadedOrigin}${episode.src}`, audioFileResponse);
+                    await cache.put(`${podcryptProxy}${episode.src}`, audioFileResponse);
 
                     Store.dispatch({
                         type: 'SET_EPISODE_DOWNLOAD_STATE',
@@ -415,7 +414,7 @@ StorePromise.then((Store) => {
             try {
                 const cache = await window.caches.open('EPISODE_AUDIO_CACHE');
 
-                await cache.delete(`${downloadedOrigin}${episode.src}`);
+                await cache.delete(`${podcryptProxy}${episode.src}`);
 
                 Store.dispatch({
                     type: 'SET_EPISODE_DOWNLOAD_STATE',
