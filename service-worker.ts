@@ -23,7 +23,7 @@ self.addEventListener('fetch', (event) => {
 
     if (
         event.request.url.includes('index.html') ||
-        event.request.url.startsWith('https://download.proxy.podcrypt.app/')
+        event.request.url.startsWith('https://proxy.podcrypt.app/')
     ) {
         console.log('attempting to return from cache')
 

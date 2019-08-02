@@ -11,7 +11,7 @@ import {
 import BigNumber from 'bignumber.js';
 import { get } from 'idb-keyval';
 import {
-    downloadedOrigin
+    podcryptProxy
 } from '../services/utilities';
 
 StorePromise.then((Store) => {
@@ -437,7 +437,7 @@ StorePromise.then((Store) => {
         }
 
         if (currentEpisode.downloadState === 'DOWNLOADED') {
-            return `${downloadedOrigin}${currentEpisode.src}`;
+            return `${podcryptProxy}${currentEpisode.src}`;
         }
         else {
             return currentEpisode.src;
