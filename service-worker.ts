@@ -47,15 +47,17 @@ self.addEventListener('fetch', (event) => {
 
                             // response.headers.set('Content-Range', `bytes ${start}-${end}/${arrayBuffer.byteLength}`);
 
-                            return new Response(arrayBuffer.slice(start, end + 1), {
+                            const slicedBuffer = arrayBuffer.slice(start, end + 1);
+
+                            return new Response(slicedBuffer, {
                                 status: 206,
                                 statusText: 'Partial Content',
                                 // headers: response.headers
                                 headers: [
                                     // ['Content-Type', response.headers.get('Content-Type')],
-                                    ['Content-Type', 'audio/mpeg'],
+                                    // ['Content-Type', 'audio/mpeg'],
                                     ['Content-Range', `bytes ${start}-${end}/${arrayBuffer.byteLength}`],
-                                    ['Content-Length', `${end - 1 - start}`]
+                                    ['Content-Length', `${slicedBuffer.byteLength}`]
                                 ]
                             });
                         });
