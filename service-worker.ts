@@ -42,18 +42,20 @@ self.addEventListener('fetch', (event) => {
                     if (rangeHeader) {
                         return response.arrayBuffer().then((arrayBuffer) => {
                             const bytes = rangeHeader.replace('bytes=', '').split('-');
-                            const start = bytes[0];
-                            const end = bytes[1] || arrayBuffer.byteLength - 1;
+                            const start: number = bytes[0];
+                            const end: number = bytes[1] || arrayBuffer.byteLength - 1;
 
-                            response.headers.set('Content-Range', `bytes ${start}-${end}/${arrayBuffer.byteLength}`);
+                            // response.headers.set('Content-Range', `bytes ${start}-${end}/${arrayBuffer.byteLength}`);
 
                             return new Response(arrayBuffer.slice(start, end + 1), {
                                 status: 206,
                                 statusText: 'Partial Content',
-                                headers: response.headers
-                                // headers: [
-                                //     ['Content-Range', `bytes ${start}-${end}/${arrayBuffer.byteLength}`]
-                                // ]
+                                // headers: response.headers
+                                headers: [
+                                    // ['Content-Type', response.headers.get('Content-Type')],
+                                    ['Content-Type', 'audio/mpeg'],
+                                    ['Content-Range', `bytes ${start}-${end}/${arrayBuffer.byteLength}`]
+                                ]
                             });
                         });
                     }
