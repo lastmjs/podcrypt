@@ -45,7 +45,7 @@ self.addEventListener('fetch', (event) => {
                             const start = bytes[0];
                             const end = bytes[1] || arrayBuffer.byteLength - 1;
 
-                            response.headers.append('Content-Range', `bytes ${start}-${end}/${arrayBuffer.byteLength}`);
+                            response.headers.set('Content-Range', `bytes ${start}-${end}/${arrayBuffer.byteLength}`);
 
                             return new Response(arrayBuffer.slice(start, end + 1), {
                                 status: 206,
