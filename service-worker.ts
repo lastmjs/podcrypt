@@ -55,7 +55,7 @@ self.addEventListener('fetch', (event) => {
                                     // ['Content-Type', response.headers.get('Content-Type')],
                                     ['Content-Type', 'audio/mpeg'],
                                     ['Content-Range', `bytes ${start}-${end}/${arrayBuffer.byteLength}`],
-                                    ['Content-Length', `${end - start}`]
+                                    ['Content-Length', `${end - 1 - start}`]
                                 ]
                             });
                         });
