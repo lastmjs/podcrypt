@@ -33,6 +33,7 @@ self.addEventListener('fetch', (event) => {
 
         // TODO I got some good help from here: https://philna.sh/blog/2018/10/23/service-workers-beware-safaris-range-request/
         // TODO and here: https://github.com/philnash/philna.sh/blob/ba798a2d5d8364fc7c1dae1819cbd8ef103c8b67/sw.js#L50-L94
+        // TODO and here: https://stackoverflow.com/questions/54138601/cant-access-arraybuffer-on-rangerequest
         // TODO I am not sure if it's enough to apply the MIT license, but we'll see
         event.respondWith(
             caches
@@ -42,8 +43,8 @@ self.addEventListener('fetch', (event) => {
                     if (rangeHeader) {
                         return response.arrayBuffer().then((arrayBuffer) => {
                             const bytes = rangeHeader.replace('bytes=', '').split('-');
-                            const start: number = bytes[0];
-                            const end: number = bytes[1] || arrayBuffer.byteLength - 1;
+                            const start: number = parseInt(bytes[0]);
+                            const end: number = parseInt(bytes[1]) || arrayBuffer.byteLength - 1;
 
                             // response.headers.set('Content-Range', `bytes ${start}-${end}/${arrayBuffer.byteLength}`);
 
