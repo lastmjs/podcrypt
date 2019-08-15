@@ -18,7 +18,8 @@ export function DefaultReducer(
         SetEthereumAddressAction |
         DeletePodcastAction |
         SetNonceAction |
-        WindowResizeEventAction
+        WindowResizeEventAction |
+        ADD_DOWNLOAD_CHUNK_DATUM_TO_EPISODE
 ): Readonly<State> {
 
     if (action.type === 'WINDOW_RESIZE_EVENT') {
@@ -182,6 +183,22 @@ export function DefaultReducer(
         return {
             ...state,
             nonce: action.nonce
+        };
+    }
+
+    if (action.type === 'ADD_DOWNLOAD_CHUNK_DATUM_TO_EPISODE') {
+
+        const episode = state.episodes[action.episodeGuid];
+
+        return {
+            ...state,
+            episodes: {
+                ...state.episodes,
+                [episode.guid]: {
+                    ...episode,
+                    downloadChunkData: [...episode.downloadChunkData, action.downloadChunkDatum]
+                }
+            }
         };
     }
 

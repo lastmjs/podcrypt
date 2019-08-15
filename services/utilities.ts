@@ -5,6 +5,7 @@ import '../node_modules/ethers/dist/ethers.min.js';
 
 export const podcryptProxy = 'https://proxy.podcrypt.app/';
 // export const podcryptProxy = 'https://localhost:4000/';
+export const podcryptDownloadURL = 'https://download.podcrypt.app/';
 
 export const cryptonatorAPIEndpoint: CryptonatorETHPriceAPIEndpoint = `https://api.cryptonator.com/api/ticker/eth-usd`;
 export const etherscanAPIEndpoint: EtherscanETHPriceAPIEndpoint = `https://api.etherscan.io/api?module=stats&action=ethprice`;
@@ -232,7 +233,8 @@ export function createEpisodeFromPodcastAndItem(podcast: Readonly<Podcast>, item
         progress: '0',
         isoDate: item.isoDate,
         downloadState: 'NOT_DOWNLOADED',
-        description: item.content
+        description: item.content,
+        downloadChunkData: []
     };
 
     return episode;

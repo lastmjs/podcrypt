@@ -72,6 +72,13 @@ type Episode = {
     readonly isoDate: string;
     readonly downloadState: EpisodeDownloadState;
     readonly description: string;
+    readonly downloadChunkData: ReadonlyArray<DownloadChunkDatum>;
+}
+
+type DownloadChunkDatum = {
+    key: string;
+    startByte: number;
+    endByte: number;
 }
 
 type EpisodeDownloadState = 'NOT_DOWNLOADED' | 'DOWNLOADING' | 'DOWNLOADED';
@@ -266,6 +273,12 @@ type SetNonceAction = {
 type WindowResizeEventAction = {
     readonly type: 'WINDOW_RESIZE_EVENT';
     readonly screenType: ScreenType;
+}
+
+type ADD_DOWNLOAD_CHUNK_DATUM_TO_EPISODE = {
+    readonly type: 'ADD_DOWNLOAD_CHUNK_DATUM_TO_EPISODE';
+    readonly episodeGuid: EpisodeGuid;
+    readonly downloadChunkDatum: Readonly<DownloadChunkDatum>;
 }
 
 // Payout actions
@@ -536,7 +549,8 @@ type PodcryptAction =
     SetAudio1SrcAction |
     SetAudio2SrcAction |
     SetCurrentEpisodeDownloadIndexAction |
-    SetCurrentEpisodeChangedManuallyAction;
+    SetCurrentEpisodeChangedManuallyAction | 
+    ADD_DOWNLOAD_CHUNK_DATUM_TO_EPISODE;
 
 type AudioSources = {
     readonly audio1Src: string | 'NOT_SET';
