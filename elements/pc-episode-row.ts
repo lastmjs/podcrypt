@@ -338,7 +338,7 @@ StorePromise.then((Store) => {
 
         if (value === 'Download') {
             try {
-                const confirmed = confirm('Downloads are experimental. Do you want to go for it anyway?');
+                const confirmed = !['iPad', 'iPhone', 'iPod', 'iPad Simulator', 'iPhone Simulator', 'iPod Simulator'].includes(navigator.platform) || confirm('Downloads are experimental. Do you want to go for it anyway?');
     
                 if (confirmed) {
                     Store.dispatch({
