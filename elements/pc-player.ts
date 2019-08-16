@@ -1,3 +1,5 @@
+// TODO look into using a local redux store to get rid of the mutations
+
 import { 
     html,
     render as litRender,
@@ -11,7 +13,7 @@ import {
 import BigNumber from 'bignumber.js';
 import { get } from 'idb-keyval';
 import {
-    podcryptProxy
+    podcryptDownloadURL
 } from '../services/utilities';
 
 StorePromise.then((Store) => {
@@ -437,7 +439,7 @@ StorePromise.then((Store) => {
         }
 
         if (currentEpisode.downloadState === 'DOWNLOADED') {
-            return `${podcryptProxy}${currentEpisode.src}`;
+            return `${podcryptDownloadURL}${currentEpisode.src}`;
         }
         else {
             return currentEpisode.src;

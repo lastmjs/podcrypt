@@ -379,19 +379,19 @@ StorePromise.then((Store) => {
 
                     // const audioFileArrayBuffer = await response.arrayBuffer();
 
-                    // await fetchAndSaveAudioFileArrayBuffer(episode);
+                    await fetchAndSaveAudioFileArrayBuffer(episode);
 
                     // TODO somewhere in this process iOS Safari fails with a null exception, and I believe it is while saving to indexedDB
                     // TODO I believe iOS indexeddb does not support storing blobs. try an arraybuffer instead
                     // await set(`${episode.guid}-audio-file-array-buffer`, audioFileArrayBuffer);
 
-                    const audioFileResponse = await fetch(`${podcryptProxy}${episode.src}`);
+                    // const audioFileResponse = await fetch(`${podcryptProxy}${episode.src}`);
 
-                    console.log('audioFileResponse', audioFileResponse);
+                    // console.log('audioFileResponse', audioFileResponse);
 
-                    const cache = await window.caches.open('EPISODE_AUDIO_CACHE');
+                    // const cache = await window.caches.open('EPISODE_AUDIO_CACHE');
 
-                    await cache.put(`${podcryptProxy}${episode.src}`, audioFileResponse);
+                    // await cache.put(`${podcryptProxy}${episode.src}`, audioFileResponse);
 
                     Store.dispatch({
                         type: 'SET_EPISODE_DOWNLOAD_STATE',
@@ -478,7 +478,7 @@ StorePromise.then((Store) => {
         episode: Readonly<Episode>,
         index: number=0,
         rangeStart: number=0,
-        rangeEnd: number=10485759,
+        rangeEnd: number=5242879,
         arrayBuffer: ArrayBuffer=new ArrayBuffer(0)
     ): Promise<ArrayBuffer> {
                 
@@ -498,28 +498,87 @@ StorePromise.then((Store) => {
             throw new Error(`The file could not be downloaded. The response status was ${audioFileResponse.status}`);
         }
 
-        const audioFileArrayBuffer = await audioFileResponse.arrayBuffer();
+        const audioFileBlob = await audioFileResponse.blob();
 
-        await set(`${episode.guid}-audio-file-array-buffer-${index}`, audioFileArrayBuffer);
+        console.log(audioFileResponse.headers.get('Content-Range'));
+
+        const contentRangeHeaderValue = audioFileResponse.headers.get('Content-Range');
+
+        if (contentRangeHeaderValue === null) {
+            throw new Error(`The file could not be downloaded. No Content-Range header present`);
+        }
+
+        // const bytes = contentRangeHeaderValue.match(/bytes ((\d*)-(\d*)|\*)\/(\d*\*?)/);
+
+        // console.log(bytes);
+
+        // TODO we might have to deal with bytes=1- or */ or something weird like that, make sure to handle everything
+        // const bytes = contentRangeHeaderValue.replace('bytes=', '').split('-');
+
+        // const start = parseInt(bytes[0]);
+        // const end = parseInt(bytes[1]);
+
+        // TODO add a property for download progress
+        const { 
+            start,
+            end,
+            total
+        } = getStartAndEndAndTotalFromContentRangeHeader(contentRangeHeaderValue);
+
+        const idbKey = `${episode.guid}-${start}-${end}`;
+
+        // TODO well, iOS only just started in 12.4 to allow blobs to be saved in IndexedDB...should I just store as arraybuffers and do the conversion in the service worker?
+        await set(idbKey, audioFileBlob);
+
+        Store.dispatch({
+            type: 'ADD_DOWNLOAD_CHUNK_DATUM_TO_EPISODE',
+            episodeGuid: episode.guid,
+            downloadChunkDatum: {
+                startByte: start,
+                endByte: end,
+                key: idbKey
+            }
+        });
 
         const responseContentLength: string | null = audioFileResponse.headers.get('Content-Length');
 
         if (
             responseContentLength === null
         ) {
-            throw new Error('The Content-Length header was not set');
+            throw new Error('The file could not be downloaded. The Content-Length header was not set');
         }
 
         console.log('audioFileResponse', audioFileResponse.headers.get('Content-Length'));
 
         if (
-            parseInt(responseContentLength) < 10485760
+            parseInt(responseContentLength) < 5242880
         ) {
             return arrayBuffer;
         }
 
-        // const audioFileBlob = await audioFileResponse.blob();
-        // return audioFileBlob;
-        return await fetchAndSaveAudioFileArrayBuffer(episode, index + 1, rangeStart + 10485759, rangeEnd + 10485759, arrayBuffer);
+        return await fetchAndSaveAudioFileArrayBuffer(episode, index + 1, rangeStart + 5242879, rangeEnd + 5242879, arrayBuffer);
+    }
+
+    function getStartAndEndAndTotalFromContentRangeHeader(contentRangeHeader: string): { start: number; end: number; total: number } {
+        const bytes: Readonly<RegExpMatchArray> | null = contentRangeHeader.match(/bytes ((\d*)-(\d*)|\*)\/(\d*\*?)/);
+        
+        if (bytes === null) {
+            throw new Error('The file could not be downloaded. Faulty mach on Content-Range header');
+        }
+
+        if (bytes[1] === '*') {
+            return {
+                start: 0,
+                end: parseInt(bytes[4]),
+                total: parseInt(bytes[4])
+            };
+        }
+        else {
+            return {
+                start:parseInt(bytes[2]),
+                end: parseInt(bytes[3]),
+                total: parseInt(bytes[4])
+            }
+        }
     }
 });

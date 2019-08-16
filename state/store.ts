@@ -16,12 +16,15 @@ import {
     Version32Episode,
     Version33State
  } from './version-32-migration-helpers';
+import {
+    migrateFrom36To37
+} from './migrations/migrate-from-36-to-37';
 
 export const StorePromise: Promise<Readonly<Store<Readonly<State>, Readonly<PodcryptAction>>>> = prepareStore();
 
 async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<PodcryptAction>>>> {
     const persistedState: Readonly<State> = await get('state');
-    const version: number = 36;
+    const version: number = 37;
 
     const InitialState: Readonly<State> = getInitialState(persistedState, version);
     
@@ -73,6 +76,7 @@ export function getInitialState(persistedState: Readonly<State> | null | undefin
     };
 }
 
+// TODO we are going to need to make this asynchronous, because we should be fixing IndexedDB as well in migrations
 function runMigrations(persistedState: Readonly<State>, version: number): Readonly<State> {
     console.log('runMigrations()');
 
@@ -292,6 +296,12 @@ function runMigrations(persistedState: Readonly<State>, version: number): Readon
             audio2Src: 'NOT_SET',
             currentEpisodeDownloadIndex: 0
         };
+
+        return runMigrations(newPersistedState, version);
+    }
+
+    if (persistedState.version === 36) {
+        const newPersistedState: Readonly<State> = migrateFrom36To37(persistedState);
 
         return runMigrations(newPersistedState, version);
     }
