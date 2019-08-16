@@ -504,10 +504,6 @@ StorePromise.then((Store) => {
 
         const contentRangeHeaderValue = audioFileResponse.headers.get('Content-Range');
 
-        if (contentRangeHeaderValue === null) {
-            throw new Error(`The file could not be downloaded. No Content-Range header present`);
-        }
-
         // const bytes = contentRangeHeaderValue.match(/bytes ((\d*)-(\d*)|\*)\/(\d*\*?)/);
 
         // console.log(bytes);
@@ -518,12 +514,22 @@ StorePromise.then((Store) => {
         // const start = parseInt(bytes[0]);
         // const end = parseInt(bytes[1]);
 
+        const responseContentLength: string | null = audioFileResponse.headers.get('Content-Length');
+
+        if (
+            responseContentLength === null
+        ) {
+            throw new Error('The file could not be downloaded. The Content-Length header was not set');
+        }
+
+        console.log(`audioFileResponse.headers.get('Content-Length')`, audioFileResponse.headers.get('Content-Length'));
+
         // TODO add a property for download progress
         const { 
             start,
             end,
             total
-        } = getStartAndEndAndTotalFromContentRangeHeader(contentRangeHeaderValue);
+        } = getStartAndEndAndTotalFromContentRangeHeader(contentRangeHeaderValue, parseInt(responseContentLength));
 
         const idbKey = `${episode.guid}-${start}-${end}`;
 
@@ -540,16 +546,6 @@ StorePromise.then((Store) => {
             }
         });
 
-        const responseContentLength: string | null = audioFileResponse.headers.get('Content-Length');
-
-        if (
-            responseContentLength === null
-        ) {
-            throw new Error('The file could not be downloaded. The Content-Length header was not set');
-        }
-
-        console.log('audioFileResponse', audioFileResponse.headers.get('Content-Length'));
-
         if (
             parseInt(responseContentLength) < 5242880
         ) {
@@ -559,26 +555,40 @@ StorePromise.then((Store) => {
         return await fetchAndSaveAudioFileArrayBuffer(episode, index + 1, rangeStart + 5242879, rangeEnd + 5242879, arrayBuffer);
     }
 
-    function getStartAndEndAndTotalFromContentRangeHeader(contentRangeHeader: string): { start: number; end: number; total: number } {
-        const bytes: Readonly<RegExpMatchArray> | null = contentRangeHeader.match(/bytes ((\d*)-(\d*)|\*)\/(\d*\*?)/);
-        
-        if (bytes === null) {
-            throw new Error('The file could not be downloaded. Faulty mach on Content-Range header');
-        }
+    function getStartAndEndAndTotalFromContentRangeHeader(
+        contentRangeHeader: string | null,
+        contentLength: number
+    ): { start: number; end: number; total: number } {
 
-        if (bytes[1] === '*') {
+        if (contentRangeHeader === null) {
             return {
                 start: 0,
-                end: parseInt(bytes[4]),
-                total: parseInt(bytes[4])
+                end: contentLength - 1,
+                total: contentLength
             };
         }
         else {
-            return {
-                start:parseInt(bytes[2]),
-                end: parseInt(bytes[3]),
-                total: parseInt(bytes[4])
+            const bytes: Readonly<RegExpMatchArray> | null = contentRangeHeader.match(/bytes ((\d*)-(\d*)|\*)\/(\d*\*?)/);
+            
+            if (bytes === null) {
+                throw new Error('The file could not be downloaded. Faulty mach on Content-Range header');
+            }
+    
+            if (bytes[1] === '*') {
+                return {
+                    start: 0,
+                    end: parseInt(bytes[4]),
+                    total: parseInt(bytes[4])
+                };
+            }
+            else {
+                return {
+                    start: parseInt(bytes[2]),
+                    end: parseInt(bytes[3]),
+                    total: parseInt(bytes[4])
+                }
             }
         }
+
     }
 });
