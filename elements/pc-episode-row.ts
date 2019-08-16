@@ -527,6 +527,7 @@ StorePromise.then((Store) => {
 
         const idbKey = `${episode.guid}-${start}-${end}`;
 
+        // TODO well, iOS only just started in 12.4 to allow blobs to be saved in IndexedDB...should I just store as arraybuffers and do the conversion in the service worker?
         await set(idbKey, audioFileBlob);
 
         Store.dispatch({

@@ -107,6 +107,8 @@ function idbGet(key: string): Promise<any> {
     });
 }
 
+// TODO this function needs some work...the indeces and everything do not seem exactly right
+// TODO at the end of an episode things are getting wonky
 async function getFinalArrayBuffer(
     episode: Readonly<Episode>,
     startByte: number,
@@ -129,10 +131,9 @@ async function getFinalArrayBuffer(
     const almostFinalArrayBuffer: ArrayBuffer = await new Response(masterBlob).arrayBuffer();
 
     const startDownloadChunkDatum: Readonly<DownloadChunkDatum> = downloadChunkData[0];
-    const endDownloadChunkDatum: Readonly<DownloadChunkDatum> = downloadChunkData[downloadChunkData.length - 1];
 
     const sliceStart: number = startByte - startDownloadChunkDatum.startByte;
-    const sliceLength: number = endByte - startByte + 1;
+    const sliceLength: number = sliceStart + endByte - startByte + 1;
 
     const finalArrayBuffer: ArrayBuffer = almostFinalArrayBuffer.slice(sliceStart, sliceLength);
 
