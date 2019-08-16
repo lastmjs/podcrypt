@@ -5,7 +5,7 @@ import '../node_modules/ethers/dist/ethers.min.js';
 import { del } from 'idb-keyval';
 
 export const podcryptProxy = 'https://proxy.podcrypt.app/';
-// export const podcryptProxy = 'https://localhost:4000/';
+// export const podcryptProxy = 'http://localhost:4000/';
 export const podcryptDownloadURL = 'https://download.podcrypt.app/';
 
 export const cryptonatorAPIEndpoint: CryptonatorETHPriceAPIEndpoint = `https://api.cryptonator.com/api/ticker/eth-usd`;

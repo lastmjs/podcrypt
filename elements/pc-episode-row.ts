@@ -421,79 +421,94 @@ StorePromise.then((Store) => {
     }
 
 
-    // TODO add in not going straight to the podcrypt proxy
     async function fetchAndSaveAudioFileArrayBuffer(
         episode: Readonly<Episode>,
-        index: number=0,
+        attempt: number=0,
         rangeStart: number=0,
-        rangeEnd: number=5242879,
-        arrayBuffer: ArrayBuffer=new ArrayBuffer(0)
-    ): Promise<ArrayBuffer> {
+        rangeEnd: number=5242879
+    ): Promise<void> {
                 
-        const audioFileResponse = await fetch(`${podcryptProxy}${episode.src}`, {
-            headers: {
-                'Range': `bytes=${rangeStart}-${rangeEnd}`
+        try {
+            const audioFileResponse = await fetch(`${attempt === 0 ? '' : podcryptProxy}${episode.src}`, {
+                headers: {
+                    'Range': `bytes=${rangeStart}-${rangeEnd}`
+                }
+            });
+    
+            if (
+                audioFileResponse.ok === false
+                // TODO I am not sure if checking the ok property or the status code will be best here
+                // response.status.toString().startsWith('4') ||
+                // response.status.toString().startsWith('5')
+            ) {
+                // if (attempt === 0) {
+                //     return await fetchAndSaveAudioFileArrayBuffer(episode, attempt + 1);
+                // }
+                // else {
+                    // TODO perhaps make a very easy way for people to get in contact with the Podcrypt team
+                    await deleteDownloadedEpisode(Store, episode);
+                    throw new Error(`The file could not be downloaded. The response status was ${audioFileResponse.status}`);
+                // }
             }
-        });
-
-        if (
-            audioFileResponse.ok === false
-            // TODO I am not sure if checking the ok property or the status code will be best here
-            // response.status.toString().startsWith('4') ||
-            // response.status.toString().startsWith('5')
-        ) {
-            // TODO perhaps make a very easy way for people to get in contact with the Podcrypt team
-            throw new Error(`The file could not be downloaded. The response status was ${audioFileResponse.status}`);
-        }
-
-        const audioFileBlob = await audioFileResponse.blob();
-
-        const contentRangeHeaderValue = audioFileResponse.headers.get('Content-Range');
-
-        const responseContentLength: string | null = audioFileResponse.headers.get('Content-Length');
-
-        if (
-            responseContentLength === null
-        ) {
-            throw new Error('The file could not be downloaded. The Content-Length header was not set');
-        }
-
-        const { 
-            start,
-            end,
-            total
-        } = getStartAndEndAndTotalFromContentRangeHeader(contentRangeHeaderValue, parseInt(responseContentLength));
-
-        const idbKey = `${episode.guid}-${start}-${end}`;
-
-        // TODO well, iOS only just started in 12.4 to allow blobs to be saved in IndexedDB...should I just store as arraybuffers and do the conversion in the service worker?
-        await set(idbKey, audioFileBlob);
-
-        Store.dispatch({
-            type: 'ADD_DOWNLOAD_CHUNK_DATUM_TO_EPISODE',
-            episodeGuid: episode.guid,
-            downloadChunkDatum: {
-                startByte: start,
-                endByte: end,
-                key: idbKey
+    
+            const audioFileBlob = await audioFileResponse.blob();
+    
+            const contentRangeHeaderValue = audioFileResponse.headers.get('Content-Range');
+    
+            const responseContentLength: string | null = audioFileResponse.headers.get('Content-Length');
+    
+            if (
+                responseContentLength === null
+            ) {
+                throw new Error('The file could not be downloaded. The Content-Length header was not set');
             }
-        });
+    
+            const { 
+                start,
+                end,
+                total
+            } = getStartAndEndAndTotalFromContentRangeHeader(contentRangeHeaderValue, parseInt(responseContentLength));
+    
+            const idbKey = `${episode.guid}-${start}-${end}`;
+    
+            // TODO well, iOS only just started in 12.4 to allow blobs to be saved in IndexedDB...should I just store as arraybuffers and do the conversion in the service worker?
+            await set(idbKey, audioFileBlob);
+    
+            Store.dispatch({
+                type: 'ADD_DOWNLOAD_CHUNK_DATUM_TO_EPISODE',
+                episodeGuid: episode.guid,
+                downloadChunkDatum: {
+                    startByte: start,
+                    endByte: end,
+                    key: idbKey
+                }
+            });
+    
+            const downloadProgressPercentage: number = Math.ceil((end / total) * 100);
+    
+            Store.dispatch({
+                type: 'SET_DOWNLOAD_PROGRESS_PERCENTAGE_FOR_EPISODE',
+                episodeGuid: episode.guid,
+                downloadProgressPercentage
+            })
+    
+            if (
+                parseInt(responseContentLength) < 5242880
+            ) {
+                return;
+            }
+    
+            await fetchAndSaveAudioFileArrayBuffer(episode, attempt, rangeStart + 5242879, rangeEnd + 5242879);
 
-        const downloadProgressPercentage: number = Math.ceil((end / total) * 100);
-
-        Store.dispatch({
-            type: 'SET_DOWNLOAD_PROGRESS_PERCENTAGE_FOR_EPISODE',
-            episodeGuid: episode.guid,
-            downloadProgressPercentage
-        })
-
-        if (
-            parseInt(responseContentLength) < 5242880
-        ) {
-            return arrayBuffer;
         }
-
-        return await fetchAndSaveAudioFileArrayBuffer(episode, index + 1, rangeStart + 5242879, rangeEnd + 5242879, arrayBuffer);
+        catch(error) {
+            if (attempt === 0) {
+                await fetchAndSaveAudioFileArrayBuffer(episode, attempt + 1);
+            }
+            else {
+                throw new Error(error);
+            }
+        }
     }
 
     function getStartAndEndAndTotalFromContentRangeHeader(
