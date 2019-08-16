@@ -12,6 +12,7 @@ export function migrateFrom36To37(state36: Readonly<State>): Readonly<State> {
             }
 
             return {
+                ...result,
                 [episodeKey]: newEpisode
             };
         }, {})
