@@ -133,10 +133,10 @@ type State = {
     readonly playlist: ReadonlyArray<EpisodeGuid>;
     readonly currentPlaylistIndex: number;
     readonly podcasts: {
-        [key: string]: Readonly<Podcast> | undefined;
+        [key: string]: Readonly<Podcast>;
     };
     readonly episodes: {
-        [key: string]: Readonly<Episode> | undefined;
+        [key: string]: Readonly<Episode>;
     };
     readonly payoutTargetInUSDCents: USDCents;
     readonly payoutIntervalInDays: Days;
