@@ -16,9 +16,9 @@ import {
 import { 
     navigate,
     addEpisodeToPlaylist,
-    getAudioFileResponse,
     copyTextToClipboard,
-    podcryptProxy
+    podcryptProxy,
+    deleteDownloadedEpisode
 } from '../services/utilities';
 import { 
     set,
@@ -375,29 +375,7 @@ StorePromise.then((Store) => {
 
         if (value === 'Delete') {
             try {
-                for (let i=0; i < episode.downloadChunkData.length; i++) {
-                    const downloadChunkDatum: Readonly<DownloadChunkDatum> = episode.downloadChunkData[i];
-
-                    await del(downloadChunkDatum.key);
-                }
-
-                Store.dispatch({
-                    type: 'SET_EPISODE_DOWNLOAD_CHUNK_DATA',
-                    episodeGuid: episode.guid,
-                    downloadChunkData: []
-                });
-
-                Store.dispatch({
-                    type: 'SET_EPISODE_DOWNLOAD_STATE',
-                    episodeGuid: episode.guid,
-                    downloadState: 'NOT_DOWNLOADED'
-                });
-
-                Store.dispatch({
-                    type: 'SET_DOWNLOAD_PROGRESS_PERCENTAGE_FOR_EPISODE',
-                    episodeGuid: episode.guid,
-                    downloadProgressPercentage: 0
-                });
+                await deleteDownloadedEpisode(Store, episode);
             }
             catch(error) {
                 alert(error);

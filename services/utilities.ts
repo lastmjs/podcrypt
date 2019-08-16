@@ -2,6 +2,7 @@ import '../node_modules/rss-parser/dist/rss-parser.min.js';
 import BigNumber from 'bignumber.js';
 import { ethersProvider } from './ethers-provider';
 import '../node_modules/ethers/dist/ethers.min.js';
+import { del } from 'idb-keyval';
 
 export const podcryptProxy = 'https://proxy.podcrypt.app/';
 // export const podcryptProxy = 'https://localhost:4000/';
@@ -279,4 +280,30 @@ export function copyTextToClipboard(text: string): void {
     window.document.execCommand('copy');
 
     window.document.body.removeChild(textarea);
+}
+
+export async function deleteDownloadedEpisode(Store: any, episode: Readonly<Episode>): Promise<void> {
+    for (let i=0; i < episode.downloadChunkData.length; i++) {
+        const downloadChunkDatum: Readonly<DownloadChunkDatum> = episode.downloadChunkData[i];
+
+        await del(downloadChunkDatum.key);
+    }
+
+    Store.dispatch({
+        type: 'SET_EPISODE_DOWNLOAD_CHUNK_DATA',
+        episodeGuid: episode.guid,
+        downloadChunkData: []
+    });
+
+    Store.dispatch({
+        type: 'SET_EPISODE_DOWNLOAD_STATE',
+        episodeGuid: episode.guid,
+        downloadState: 'NOT_DOWNLOADED'
+    });
+
+    Store.dispatch({
+        type: 'SET_DOWNLOAD_PROGRESS_PERCENTAGE_FOR_EPISODE',
+        episodeGuid: episode.guid,
+        downloadProgressPercentage: 0
+    });
 }

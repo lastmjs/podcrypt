@@ -15,7 +15,8 @@ import {
     createPodcast,
     getFeed,
     addEpisodeToPlaylist,
-    copyTextToClipboard
+    copyTextToClipboard,
+    deleteDownloadedEpisode
 } from '../services/utilities';
 import BigNumber from "../node_modules/bignumber.js/bignumber";
 
@@ -258,6 +259,14 @@ StorePromise.then((Store) => {
             const confirmation = confirm('Are you sure you want to delete this podcast and all of its data?');
 
             if (confirmation === true) {
+
+                for (let i=0; i < podcast.episodeGuids.length; i++) {
+                    const episodeGuid: EpisodeGuid = podcast.episodeGuids[i];
+                    const episode: Readonly<Episode> = Store.getState().episodes[episodeGuid];
+
+                    await deleteDownloadedEpisode(Store, episode);
+                }
+
                 Store.dispatch({
                     type: 'DELETE_PODCAST',
                     podcast
