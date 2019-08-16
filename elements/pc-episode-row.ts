@@ -353,45 +353,7 @@ StorePromise.then((Store) => {
                         downloadState: 'DOWNLOADING'
                     });
 
-                    // TODO sometime we may want to chunk up the download again, but for now we are doing straight downloads
-                    // TODO the problem might come with doing multiple downloads at once. If we chunk, we might be able to handle
-                    // TODO many more downloads concurrently. Might though, I am not sure on the mechanics of how the browser
-                    // TODO is going to handle multiple download requests versus many chunked requests. http2 might help us here
-                    // const resourceLengthInBytes: number = await fetchResourceLengthInBytes(`${corsAnywhereProxy}${episode.src}`);
-                    // console.log('resourceLengthInBytes', resourceLengthInBytes);
-                    // const audioFileBlob: Blob = await fetchFileBlob(resourceURL, resourceLengthInBytes);
-                    // const audioFileBlob: Blob = await fetchFileBlob(`https://yacdn.org/proxy/${episode.src}`);
-                    
-                    // const resourceURL: string = `${podcryptProxy}${episode.src}`;
-                    // const response = await window.fetch(resourceURL);
-
-                    // const response = await getAudioFileResponse(episode.src);
-                    
-                    // if (
-                    //     response.ok === false
-                    //     // TODO I am not sure if checking the ok property or the status code will be best here
-                    //     // response.status.toString().startsWith('4') ||
-                    //     // response.status.toString().startsWith('5')
-                    // ) {
-                    //     // TODO perhaps make a very easy way for people to get in contact with the Podcrypt team
-                    //     throw new Error(`The file could not be downloaded. The response status was ${response.status}`);
-                    // }
-
-                    // const audioFileArrayBuffer = await response.arrayBuffer();
-
                     await fetchAndSaveAudioFileArrayBuffer(episode);
-
-                    // TODO somewhere in this process iOS Safari fails with a null exception, and I believe it is while saving to indexedDB
-                    // TODO I believe iOS indexeddb does not support storing blobs. try an arraybuffer instead
-                    // await set(`${episode.guid}-audio-file-array-buffer`, audioFileArrayBuffer);
-
-                    // const audioFileResponse = await fetch(`${podcryptProxy}${episode.src}`);
-
-                    // console.log('audioFileResponse', audioFileResponse);
-
-                    // const cache = await window.caches.open('EPISODE_AUDIO_CACHE');
-
-                    // await cache.put(`${podcryptProxy}${episode.src}`, audioFileResponse);
 
                     Store.dispatch({
                         type: 'SET_EPISODE_DOWNLOAD_STATE',
@@ -399,10 +361,11 @@ StorePromise.then((Store) => {
                         downloadState: 'DOWNLOADED'
                     });
 
-                    // Store.dispatch({
-                    //     type: 'SET_PREVIOUS_EPISODE_GUID',
-                    //     previousEpisodeGuid: 'NOT_SET'
-                    // });
+                    // TODO this is so that when switching between episodes, the episode will play
+                    // TODO this could probably be in a more elegant way
+                    Store.dispatch({
+                        type: 'RENDER'
+                    });
                 }
             }
             catch(error) {
@@ -479,13 +442,6 @@ StorePromise.then((Store) => {
         });
     }
 
-    // async function fetchResourceLengthInBytes(url: string): Promise<number> {
-    //     const audioFileHeadResponse = await fetch(url, {
-    //         method: 'HEAD'
-    //     });
-
-    //     return audioFileHeadResponse.headers.get('Content-Length');
-    // }
 
     // TODO add in not going straight to the podcrypt proxy
     async function fetchAndSaveAudioFileArrayBuffer(
@@ -514,19 +470,7 @@ StorePromise.then((Store) => {
 
         const audioFileBlob = await audioFileResponse.blob();
 
-        console.log(audioFileResponse.headers.get('Content-Range'));
-
         const contentRangeHeaderValue = audioFileResponse.headers.get('Content-Range');
-
-        // const bytes = contentRangeHeaderValue.match(/bytes ((\d*)-(\d*)|\*)\/(\d*\*?)/);
-
-        // console.log(bytes);
-
-        // TODO we might have to deal with bytes=1- or */ or something weird like that, make sure to handle everything
-        // const bytes = contentRangeHeaderValue.replace('bytes=', '').split('-');
-
-        // const start = parseInt(bytes[0]);
-        // const end = parseInt(bytes[1]);
 
         const responseContentLength: string | null = audioFileResponse.headers.get('Content-Length');
 
@@ -536,9 +480,6 @@ StorePromise.then((Store) => {
             throw new Error('The file could not be downloaded. The Content-Length header was not set');
         }
 
-        console.log(`audioFileResponse.headers.get('Content-Length')`, audioFileResponse.headers.get('Content-Length'));
-
-        // TODO add a property for download progress
         const { 
             start,
             end,
