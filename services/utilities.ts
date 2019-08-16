@@ -233,6 +233,7 @@ export function createEpisodeFromPodcastAndItem(podcast: Readonly<Podcast>, item
         progress: '0',
         isoDate: item.isoDate,
         downloadState: 'NOT_DOWNLOADED',
+        downloadProgressPercentage: 0,
         description: item.content,
         downloadChunkData: []
     };
