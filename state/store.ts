@@ -19,12 +19,15 @@ import {
 import {
     migrateFrom36To37
 } from './migrations/migrate-from-36-to-37';
+import {
+    migrateFrom37To38
+} from './migrations/migrate-from-37-to-38';
 
 export const StorePromise: Promise<Readonly<Store<Readonly<State>, Readonly<PodcryptAction>>>> = prepareStore();
 
 async function prepareStore(): Promise<Readonly<Store<Readonly<State>, Readonly<PodcryptAction>>>> {
     const persistedState: Readonly<State> = await get('state');
-    const version: number = 37;
+    const version: number = 38;
 
     const InitialState: Readonly<State> = getInitialState(persistedState, version);
     
@@ -302,7 +305,11 @@ function runMigrations(persistedState: Readonly<State>, version: number): Readon
 
     if (persistedState.version === 36) {
         const newPersistedState: Readonly<State> = migrateFrom36To37(persistedState);
+        return runMigrations(newPersistedState, version);
+    }
 
+    if (persistedState.version === 37) {
+        const newPersistedState: Readonly<State> = migrateFrom37To38(persistedState);
         return runMigrations(newPersistedState, version);
     }
 

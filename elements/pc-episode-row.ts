@@ -277,7 +277,7 @@ StorePromise.then((Store) => {
                                                     done
                                                 </i>
                                             ` :
-                                            html`<div>Downloading...</div>`
+                                            html`<div>Downloading...${Store.getState().episodes[episode.guid].downloadProgressPercentage}%</div>`
                                         }
                                     </div>
                                 ` :
@@ -412,14 +412,28 @@ StorePromise.then((Store) => {
 
         if (value === 'Delete') {
             try {
-                const cache = await window.caches.open('EPISODE_AUDIO_CACHE');
+                for (let i=0; i < episode.downloadChunkData.length; i++) {
+                    const downloadChunkDatum: Readonly<DownloadChunkDatum> = episode.downloadChunkData[i];
 
-                await cache.delete(`${podcryptProxy}${episode.src}`);
+                    await del(downloadChunkDatum.key);
+                }
+
+                Store.dispatch({
+                    type: 'SET_EPISODE_DOWNLOAD_CHUNK_DATA',
+                    episodeGuid: episode.guid,
+                    downloadChunkData: []
+                });
 
                 Store.dispatch({
                     type: 'SET_EPISODE_DOWNLOAD_STATE',
                     episodeGuid: episode.guid,
                     downloadState: 'NOT_DOWNLOADED'
+                });
+
+                Store.dispatch({
+                    type: 'SET_DOWNLOAD_PROGRESS_PERCENTAGE_FOR_EPISODE',
+                    episodeGuid: episode.guid,
+                    downloadProgressPercentage: 0
                 });
             }
             catch(error) {
@@ -545,6 +559,14 @@ StorePromise.then((Store) => {
                 key: idbKey
             }
         });
+
+        const downloadProgressPercentage: number = Math.ceil((end / total) * 100);
+
+        Store.dispatch({
+            type: 'SET_DOWNLOAD_PROGRESS_PERCENTAGE_FOR_EPISODE',
+            episodeGuid: episode.guid,
+            downloadProgressPercentage
+        })
 
         if (
             parseInt(responseContentLength) < 5242880

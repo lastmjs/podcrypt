@@ -73,6 +73,7 @@ type Episode = {
     readonly downloadState: EpisodeDownloadState;
     readonly description: string;
     readonly downloadChunkData: ReadonlyArray<DownloadChunkDatum>;
+    readonly downloadProgressPercentage: number; // TODO we need to unify strings and numbers...I have a Percent type but it's a string, which I think is unnecessary potentially?? Maybe it is necessary for decimal percentages...doh!
 }
 
 type DownloadChunkDatum = {
@@ -279,6 +280,18 @@ type ADD_DOWNLOAD_CHUNK_DATUM_TO_EPISODE = {
     readonly type: 'ADD_DOWNLOAD_CHUNK_DATUM_TO_EPISODE';
     readonly episodeGuid: EpisodeGuid;
     readonly downloadChunkDatum: Readonly<DownloadChunkDatum>;
+}
+
+type SET_DOWNLOAD_PROGRESS_PERCENTAGE_FOR_EPISODE = {
+    readonly type: 'SET_DOWNLOAD_PROGRESS_PERCENTAGE_FOR_EPISODE';
+    readonly episodeGuid: EpisodeGuid;
+    readonly downloadProgressPercentage: number;
+}
+
+type SET_EPISODE_DOWNLOAD_CHUNK_DATA = {
+    readonly type: 'SET_EPISODE_DOWNLOAD_CHUNK_DATA';
+    readonly episodeGuid: EpisodeGuid;
+    readonly downloadChunkData: ReadonlyArray<DownloadChunkDatum>;
 }
 
 // Payout actions
@@ -550,7 +563,9 @@ type PodcryptAction =
     SetAudio2SrcAction |
     SetCurrentEpisodeDownloadIndexAction |
     SetCurrentEpisodeChangedManuallyAction | 
-    ADD_DOWNLOAD_CHUNK_DATUM_TO_EPISODE;
+    ADD_DOWNLOAD_CHUNK_DATUM_TO_EPISODE |
+    SET_DOWNLOAD_PROGRESS_PERCENTAGE_FOR_EPISODE |
+    SET_EPISODE_DOWNLOAD_CHUNK_DATA;
 
 type AudioSources = {
     readonly audio1Src: string | 'NOT_SET';

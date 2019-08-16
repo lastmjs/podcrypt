@@ -19,7 +19,9 @@ export function DefaultReducer(
         DeletePodcastAction |
         SetNonceAction |
         WindowResizeEventAction |
-        ADD_DOWNLOAD_CHUNK_DATUM_TO_EPISODE
+        ADD_DOWNLOAD_CHUNK_DATUM_TO_EPISODE |
+        SET_DOWNLOAD_PROGRESS_PERCENTAGE_FOR_EPISODE |
+        SET_EPISODE_DOWNLOAD_CHUNK_DATA
 ): Readonly<State> {
 
     if (action.type === 'WINDOW_RESIZE_EVENT') {
@@ -197,6 +199,37 @@ export function DefaultReducer(
                 [episode.guid]: {
                     ...episode,
                     downloadChunkData: [...episode.downloadChunkData, action.downloadChunkDatum]
+                }
+            }
+        };
+    }
+
+    if (action.type === 'SET_DOWNLOAD_PROGRESS_PERCENTAGE_FOR_EPISODE') {
+
+        const episode = state.episodes[action.episodeGuid];
+
+        return {
+            ...state,
+            episodes: {
+                ...state.episodes,
+                [episode.guid]: {
+                    ...episode,
+                    downloadProgressPercentage: action.downloadProgressPercentage
+                }
+            }
+        };
+    }
+
+    if (action.type === 'SET_EPISODE_DOWNLOAD_CHUNK_DATA') {
+        const episode = state.episodes[action.episodeGuid];
+
+        return {
+            ...state,
+            episodes: {
+                ...state.episodes,
+                [episode.guid]: {
+                    ...episode,
+                    downloadChunkData: action.downloadChunkData
                 }
             }
         };
