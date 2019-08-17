@@ -34,11 +34,13 @@ StorePromise.then((Store) => {
                 return;
             }
 
-            const jsonFileContents: string = `data:text/json;charset=utf-8,${JSON.stringify(Store.getState(), null, 2)}`;
+            // TODO think about revoking urls...it probably won't be an issue
+            const blob = new Blob([JSON.stringify(Store.getState(), null, 2)]);
+            const blobURL = window.URL.createObjectURL(blob);
 
             let link: HTMLAnchorElement = document.createElement('a');
 
-            link.setAttribute('href', jsonFileContents);
+            link.setAttribute('href', blobURL);
             link.setAttribute('download', `podcrypt-podcast-backup-${new Date().toLocaleDateString()}.json`);
 
             document.body.appendChild(link);
