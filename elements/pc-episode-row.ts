@@ -368,7 +368,12 @@ StorePromise.then((Store) => {
                 }
             }
             catch(error) {
-                alert(error);
+                if (error.toString().includes('QuotaExceededError')) {
+                    alert(`You have run out of storage space. Go to podcrypt.app/downloads for more information`);
+                }
+                else {
+                    alert(error);
+                }
             }
         }
 
