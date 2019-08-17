@@ -307,3 +307,8 @@ export async function deleteDownloadedEpisode(Store: any, episode: Readonly<Epis
         downloadProgressPercentage: 0
     });
 }
+
+export function bytesToMegabytes(bytes: number | string): number {
+    // TODO I would rather use parseInt(), but the types are messed up
+    return Math.floor(+bytes / (1024 ** 2));
+}
