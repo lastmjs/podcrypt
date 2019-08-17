@@ -161,6 +161,18 @@ StorePromise.then((Store) => {
                 </div>
 
                 <div 
+                    class="pc-main-menu-item${state.currentRoute.pathname === '/downloads' ? ' pc-main-menu-item-selected' : ''}"
+                    @click=${() => menuItemClick(Store, '/downloads')}
+                >
+                    <i 
+                        class="material-icons pc-main-menu-item-icon"
+                    >
+                        cloud_download
+                    </i>
+                    <span class="pc-main-menu-item-text">${desktopAndMenuClosed ? '' : 'Downloads'}</span>
+                </div>
+
+                <div 
                     class="pc-main-menu-item${state.currentRoute.pathname === '/backup-and-restore' ? ' pc-main-menu-item-selected' : ''}"
                     @click=${() => menuItemClick(Store, '/backup-and-restore')}
                 >

@@ -7,8 +7,12 @@ import { StorePromise } from '../state/store';
 import './pc-episode-row';
 import { 
     pcContainerStyles,
-    standardTextContainer
+    standardTextContainer,
+    titleTextXLarge
 } from '../services/css';
+import {
+    bytesToMegabytes
+} from '../services/utilities'
 
 StorePromise.then((Store) => {
 
@@ -38,25 +42,37 @@ StorePromise.then((Store) => {
                 usage: 'NOT_SUPPORTED'
             };
 
+            const storageUsed: number | 'NOT_SUPPORTED' = usage === 'NOT_SUPPORTED' || usage === undefined ? 'NOT_SUPPORTED' : bytesToMegabytes(usage);
+            const storageAvailable: number | 'NOT_SUPPORTED' = quota === 'NOT_SUPPORTED' || quota === undefined ? 'NOT_SUPPORTED' : bytesToMegabytes(quota);
+
             return html`
                 <style>
                     .pc-downloads-container {
                         ${pcContainerStyles}
                     }
 
-                    .quota-text {
+                    .pc-downloads-title {
+                        ${titleTextXLarge}
+                    }
+
+                    .pc-downloads-quota-text {
                         ${standardTextContainer}
                     }
                 </style>
 
                 <div class="pc-downloads-container">
+                    <div class="pc-downloads-title">Downloads</div>
+                    
+                    <br>
+
                     ${
-                        quota !== 'NOT_SUPPORTED' && usage !== 'NOT_SUPPORTED' ? html`
-                            <div class="quota-text">
-                                <div>Storage used: ${usage}</div>
+                        storageUsed !== 'NOT_SUPPORTED' && storageAvailable !== 'NOT_SUPPORTED' ? html`
+                            <div class="pc-downloads-quota-text">
+                                <div>Storage used: ${storageUsed} MB</div>
                                 <br>
-                                <div>Storage available: ${quota}</div>
+                                <div>Storage available: ${storageAvailable} MB</div>
                             </div>
+                            <br>
                         ` : ''
                     }
 
@@ -71,6 +87,7 @@ StorePromise.then((Store) => {
                                 .play=${true}
                                 .date=${true}
                                 .options=${true}
+                                .podcastTitle=${true}
                             ></pc-episode-row>
                         `;
                     })}
