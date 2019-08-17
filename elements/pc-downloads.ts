@@ -76,6 +76,8 @@ StorePromise.then((Store) => {
                         ` : ''
                     }
 
+                    ${downloadedEpisodes.length === 0 ? '<div style="display: flex; align-items: center; justify-content: center; margin-top: 25%; font-size: calc(20px + 1vmin); color: grey">No downloaded episodes</div>' : ''}
+
                     ${downloadedEpisodes.map((episode: Readonly<Episode>) => {
                         // TODO why do we have to pass the podcast into the pc-episode-row?
                         // TODO shouldn't it be able to grab the podcast automatically?
