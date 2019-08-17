@@ -130,7 +130,6 @@ StorePromise.then((Store) => {
                     position: absolute;
                     top: 5px;
                     right: 5px;
-                    z-index: ${one};
                 }
 
                 .pc-episode-row-downloaded-container {
