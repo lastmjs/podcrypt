@@ -53,6 +53,7 @@ customElement('pc-loading', ({
                 ${hidden ? 'transition: background-color 1s linear;' : ''}
                 pointer-events: none;
                 text-align: center;
+                pointer-events: none;
             }
 
             .${prename}loading-spinner {
