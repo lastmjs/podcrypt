@@ -48,7 +48,8 @@ StorePromise.then((Store) => {
         }
 
         const state: Readonly<State> = Store.getState();
-    
+        const currentEpisode: Readonly<Episode> | 'NOT_FOUND' = state.episodes[state.currentEpisodeGuid] || 'NOT_FOUND';
+
         return html`
             <style>
                 html {
@@ -76,10 +77,6 @@ StorePromise.then((Store) => {
                     box-sizing: border-box;
                     display: flex;
                     align-items: center;
-                    padding-top: ${pxSmall};
-                    padding-left: ${pxSmall};
-                    padding-right: ${pxSmall};
-                    padding-bottom: ${pxSmall};
                     width: ${state.screenType === 'DESKTOP' ? '50vw' : '100vw'};
                     box-shadow: ${normalShadow};
                     z-index: ${two};
@@ -89,16 +86,39 @@ StorePromise.then((Store) => {
                 .pc-app-menu-icon {
                     font-size: ${pxLarge};
                     cursor: pointer;
+                    background-color: white;
+                    z-index: ${one};
+                    padding-top: ${pxSmall};
+                    padding-left: ${pxSmall};
+                    padding-bottom: ${pxSmall};
                 }
 
                 .pc-app-payout-problem-icon-container {
-                    margin-left: auto;
+                    padding-right: ${pxSmall};
+                    z-index: ${one};
+                    background-color: white;
                 }
 
                 .pc-app-payout-problem-icon {
                     color: red;
                     font-size: ${pxXLarge};
                     cursor: pointer;
+                }
+
+                .pc-app-scrolling-title {
+                    white-space: nowrap;
+                    font-weight: bold;
+                    animation: marquee 30s linear infinite;
+                }
+
+                @keyframes marquee {
+                    0% {
+                        transform: translateX(100%);
+                    }
+
+                    100% {
+                        transform: translateX(-100%);
+                    }
                 }
 
                 a:link {
@@ -120,6 +140,12 @@ StorePromise.then((Store) => {
                     >
                         menu
                     </i>
+
+                    ${currentEpisode !== 'NOT_FOUND' ? html`
+                        <div style="overflow: hidden; width: 100%">
+                            <div class="pc-app-scrolling-title">${currentEpisode.title}</div>
+                        </div>
+                    ` : ''}
 
                     <div
                         ?hidden=${Store.getState().payoutProblem === 'NO_PROBLEM'}
