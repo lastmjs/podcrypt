@@ -4,6 +4,7 @@ import { ethersProvider } from './ethers-provider';
 import '../node_modules/ethers/dist/ethers.min.js';
 import { del } from 'idb-keyval';
 
+export const fiveMegabytesInBytes: number = 5242880;
 export const podcryptProxy = 'https://proxy.podcrypt.app/';
 // export const podcryptProxy = 'http://localhost:4000/';
 export const podcryptDownloadURL = 'https://download.podcrypt.app/';
