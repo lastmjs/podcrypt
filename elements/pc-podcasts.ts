@@ -11,6 +11,8 @@ import {
 } from '../services/utilities';
 import './pc-loading';
 import './pc-podcast-row';
+import '@vaadin/vaadin-tabs';
+import './pc-podcast-search-results';
 
 StorePromise.then((Store) => {
     customElement('pc-podcasts', ({ 
@@ -18,23 +20,30 @@ StorePromise.then((Store) => {
         connecting, 
         element, 
         update, 
-        loaded
+        loaded,
+        tabIndex,
+        searchTerm
     }) => {
 
         if (constructing) {
             Store.subscribe(update);
             return {
-                loaded: false
+                loaded: false,
+                tabIndex: 'NOT_SET',
+                searchTerm: ''
             };
         }
 
         if (connecting) {
             setTimeout(() => {
                 update({
-                    loaded: true
+                    loaded: true,
+                    tabIndex: Object.values(Store.getState().podcasts).length === 0 ? 1 : 0
                 });
             });
         }
+
+        console.log('tabIndex', tabIndex);
     
         return html`
             <style>
@@ -73,33 +82,56 @@ StorePromise.then((Store) => {
                     class="pc-podcasts-search-input"
                     type="text"
                     placeholder="Search by term or feed URL"
-                    @keydown=${(e: any) => searchInputKeyDown(e, element)}
+                    @keydown=${(e: any) => searchInputKeyDown(e, element, update)}
                 >
-    
-                ${
-                    Object.values(Store.getState().podcasts).length === 0 ? 
-                        html`<div class="pc-podcasts-empty-text">Search for podcasts above</div>` :
-                        html`
-                            ${Object.values(Store.getState().podcasts).map((podcast) => {
-                                return html`
-                                    <pc-podcast-row
-                                        .podcast=${podcast}
-                                        .verification=${true}
-                                        .options=${true}
-                                    ></pc-podcast-row>
-                                `;
-                            })}
-                    `
-                }
+
+                <vaadin-tabs .selected=${tabIndex}>
+                    <vaadin-tab @click=${() => update({ tabIndex: 0 })}>My Podcasts</vaadin-tab>
+                    <vaadin-tab @click=${() => update({ tabIndex: 1 })}>Crypto</vaadin-tab>
+                    <vaadin-tab @click=${() => update({ tabIndex: 2 })}>Business</vaadin-tab>
+                    <vaadin-tab @click=${() => update({ tabIndex: 3 })}>Technology</vaadin-tab>
+                    <vaadin-tab @click=${() => update({ tabIndex: 4 })}>Travel</vaadin-tab>
+                    <vaadin-tab @click=${() => update({ tabIndex: 5 })}>Health</vaadin-tab>
+                    <vaadin-tab @click=${() => update({ tabIndex: 6 })}>Search Results</vaadin-tab>
+                </vaadin-tabs>
+
+                <div ?hidden=${tabIndex !== 0}>
+                    ${
+                        Object.values(Store.getState().podcasts).length === 0 ? 
+                            html`<div class="pc-podcasts-empty-text">Search for podcasts above</div>` :
+                            html`
+                                ${Object.values(Store.getState().podcasts).map((podcast) => {
+                                    return html`
+                                        <pc-podcast-row
+                                            .podcast=${podcast}
+                                            .verification=${true}
+                                            .options=${true}
+                                        ></pc-podcast-row>
+                                    `;
+                                })}
+                        `
+                    }
+                </div>
+
+                <pc-podcast-search-results .term=${'crypto'} ?hidden=${tabIndex !== 1}></pc-podcast-search-results>
+                <pc-podcast-search-results .term=${'business'} ?hidden=${tabIndex !== 2}></pc-podcast-search-results>
+                <pc-podcast-search-results .term=${'technology'} ?hidden=${tabIndex !== 3}></pc-podcast-search-results>
+                <pc-podcast-search-results .term=${'travel'} ?hidden=${tabIndex !== 4}></pc-podcast-search-results>
+                <pc-podcast-search-results .term=${'health'} ?hidden=${tabIndex !== 5}></pc-podcast-search-results>
+                <pc-podcast-search-results .term=${searchTerm} ?hidden=${tabIndex !== 6}></pc-podcast-search-results>                
+
             </div>
         `;
     });
     
-    function searchInputKeyDown(e: any, element: any) {
+    function searchInputKeyDown(e: any, element: any, update) {
         if (e.keyCode === 13) {
             const searchInput = element.querySelector('#search-input');
             const term = searchInput.value.split(' ').join('+');
-            navigate(Store, `/podcast-search-results?term=${term}`);
+            update({
+                searchTerm: term
+            });
+            // navigate(Store, `/podcast-search-results?term=${term}`);
         }
     }
 });
