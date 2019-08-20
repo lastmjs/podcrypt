@@ -56,9 +56,10 @@ self.addEventListener('fetch', async (event: any) => {
     
                 const totalByteLength: number = episode.downloadChunkData[episode.downloadChunkData.length - 1].endByte + 1;
     
+                const fiveMegabytesInBytes: number = 5242880;
                 const bytes = rangeHeader.replace('bytes=', '').split('-');
                 const startByte: number = parseInt(bytes[0]);
-                const endByte: number = parseInt(bytes[1]) || totalByteLength - 1;
+                const endByte: number = parseInt(bytes[1]) || (startByte + fiveMegabytesInBytes - 1 < totalByteLength - 1) ? startByte + fiveMegabytesInBytes - 1 : totalByteLength - 1;
         
                 const finalArrayBuffer: ArrayBuffer = await getFinalArrayBuffer(
                     episode,

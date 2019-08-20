@@ -18,7 +18,8 @@ import {
     addEpisodeToPlaylist,
     copyTextToClipboard,
     podcryptProxy,
-    deleteDownloadedEpisode
+    deleteDownloadedEpisode,
+    fiveMegabytesInBytes
 } from '../services/utilities';
 import { 
     set,
@@ -429,7 +430,7 @@ StorePromise.then((Store) => {
         episode: Readonly<Episode>,
         attempt: number=0,
         rangeStart: number=0,
-        rangeEnd: number=5242879
+        rangeEnd: number=fiveMegabytesInBytes - 1
     ): Promise<void> {
                 
         try {
@@ -497,12 +498,12 @@ StorePromise.then((Store) => {
             })
     
             if (
-                parseInt(responseContentLength) < 5242880
+                parseInt(responseContentLength) < fiveMegabytesInBytes
             ) {
                 return;
             }
     
-            await fetchAndSaveAudioFileArrayBuffer(episode, attempt, rangeStart + 5242879, rangeEnd + 5242879);
+            await fetchAndSaveAudioFileArrayBuffer(episode, attempt, rangeStart + fiveMegabytesInBytes - 1, rangeEnd + fiveMegabytesInBytes - 1);
 
         }
         catch(error) {
