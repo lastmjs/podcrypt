@@ -129,7 +129,8 @@ StorePromise.then((Store) => {
             const searchInput = element.querySelector('#search-input');
             const term = searchInput.value.split(' ').join('+');
             update({
-                searchTerm: term
+                searchTerm: term,
+                tabIndex: 6
             });
             // navigate(Store, `/podcast-search-results?term=${term}`);
         }
