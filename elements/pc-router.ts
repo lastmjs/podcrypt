@@ -6,7 +6,6 @@ import './pc-playlist';
 import './pc-wallet';
 import './pc-podcast-overview';
 import './pc-episode-overview';
-import './pc-podcast-search-results';
 import './pc-credits';
 import './pc-privacy';
 import './pc-contact';
@@ -107,7 +106,6 @@ StorePromise.then((Store) => {
         const feedUrl: FeedUrl | undefined = new URLSearchParams(Store.getState().currentRoute.search).get('feedUrl') || undefined;
         const episodeGuid: EpisodeGuid | undefined = new URLSearchParams(Store.getState().currentRoute.search).get('episodeGuid') || undefined;
         
-        const term: string | null = new URLSearchParams(Store.getState().currentRoute.search).get('term');
         const podcastEmail: string | null = new URLSearchParams(Store.getState().currentRoute.search).get('podcastEmail');
 
         return html`
@@ -131,10 +129,6 @@ StorePromise.then((Store) => {
                 .feedUrl=${feedUrl}
                 .episodeGuid=${episodeGuid}
             ></pc-episode-overview>
-            <pc-podcast-search-results
-                ?hidden=${currentRoute.pathname !== '/podcast-search-results'}
-                .term=${term}
-            ></pc-podcast-search-results>
             <pc-credits
                 ?hidden=${currentRoute.pathname !== '/credit'}
             ></pc-credits>
