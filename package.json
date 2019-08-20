@@ -8,7 +8,7 @@
   "scripts": {
     "start": "zwitterion",
     "generate-attribution": "generate-attribution",
-    "build": "zwitterion --build-static --exclude node_modules,podcrypt-button.js --include functional-element,redux/es,@vaadin",
+    "build": "zwitterion --build-static --exclude node_modules,podcrypt-button.js --include functional-element,redux/es,@vaadin,@webcomponents",
     "test": ""
   },
   "repository": {
