@@ -38,18 +38,14 @@ StorePromise.then((Store) => {
         return html`
             <style>
                 .pc-podcast-search-results {
-                    ${pcContainerStyles}
+                    position: relative;
                 }    
-
-                .pc-podcast-search-results-title {
-                    ${titleTextLarge}
-                }
             </style>
 
             <div class="pc-podcast-search-results">
                 <pc-loading
                     .hidden=${loaded}
-                    .prename=${"pc-podcast-search-results-"}
+                    .prename=${"pc-podcast-search-results-${term}"}
                 ></pc-loading>
                 ${searchResultsUI}
             </div>
@@ -115,7 +111,6 @@ StorePromise.then((Store) => {
                 loaded: true,
                 previousTerm: term,
                 searchResultsUI: html`
-                    <div class="pc-podcast-search-results-title">Search results</div>
                     ${podcastFeedResults}
                 `
             });
