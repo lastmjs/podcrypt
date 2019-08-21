@@ -58,6 +58,8 @@ self.addEventListener('fetch', async (event: any) => {
     
                 // I mostly chose an arbitrary number here...1024 seemed to be too small, Chrome was initiating MANY little requests...5 megabytes seems like a sweet spot
                 // TODO grabbing the next five megabytes for a bytes=0- instead of the whole file breaks iOS...but we need to avoid returning the whole file!
+                // TODO figure out what safari's requests look like, I do not understand why it fails
+                // TODO ask some browser engineers how I can avoid these issues, I am not sure what to do for very large files
                 // const fiveMegabytesInBytes: number = 5242880;
                 const bytes = rangeHeader.replace('bytes=', '').split('-');
                 const startByte: number = parseInt(bytes[0]);
@@ -121,7 +123,7 @@ async function getFinalArrayBuffer(
 
     const downloadChunkData: ReadonlyArray<DownloadChunkDatum> = episode.downloadChunkData.filter((downloadChunkDatum: Readonly<DownloadChunkDatum>) => {
         return (
-            startByte < downloadChunkDatum.endByte &&
+            startByte <= downloadChunkDatum.endByte &&
             endByte >= downloadChunkDatum.startByte
         );
     });
