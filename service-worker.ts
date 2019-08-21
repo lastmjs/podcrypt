@@ -56,10 +56,13 @@ self.addEventListener('fetch', async (event: any) => {
     
                 const totalByteLength: number = episode.downloadChunkData[episode.downloadChunkData.length - 1].endByte + 1;
     
-                const fiveMegabytesInBytes: number = 5242880;
+                // I mostly chose an arbitrary number here...1024 seemed to be too small, Chrome was initiating MANY little requests...5 megabytes seems like a sweet spot
+                // TODO grabbing the next five megabytes for a bytes=0- instead of the whole file breaks iOS...but we need to avoid returning the whole file!
+                // const fiveMegabytesInBytes: number = 5242880;
                 const bytes = rangeHeader.replace('bytes=', '').split('-');
                 const startByte: number = parseInt(bytes[0]);
-                const endByte: number = parseInt(bytes[1]) || (startByte + fiveMegabytesInBytes - 1 < totalByteLength - 1) ? startByte + fiveMegabytesInBytes - 1 : totalByteLength - 1;
+                // const endByte: number = parseInt(bytes[1]) || (startByte + fiveMegabytesInBytes - 1 < totalByteLength - 1) ? startByte + fiveMegabytesInBytes - 1 : totalByteLength - 1;
+                const endByte: number = parseInt(bytes[1]) || totalByteLength - 1;
         
                 const finalArrayBuffer: ArrayBuffer = await getFinalArrayBuffer(
                     episode,
