@@ -503,7 +503,7 @@ StorePromise.then((Store) => {
                 return;
             }
     
-            await fetchAndSaveAudioFileArrayBuffer(episode, attempt, rangeStart + fiveMegabytesInBytes - 1, rangeEnd + fiveMegabytesInBytes - 1);
+            await fetchAndSaveAudioFileArrayBuffer(episode, attempt, rangeStart + fiveMegabytesInBytes, rangeEnd + fiveMegabytesInBytes - 1);
 
         }
         catch(error) {
