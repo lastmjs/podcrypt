@@ -41,7 +41,7 @@ StorePromise.then((Store) => {
             let link: HTMLAnchorElement = document.createElement('a');
 
             link.setAttribute('href', blobURL);
-            link.setAttribute('download', `podcrypt-podcast-backup-${new Date().toLocaleDateString()}.json`);
+            link.setAttribute('download', `podcrypt-podcast-backup-${new Date()}.json`);
 
             document.body.appendChild(link);
 
