@@ -36,7 +36,7 @@ StorePromise.then((Store) => {
 
             // TODO think about revoking urls...it probably won't be an issue
             const blob = new Blob([JSON.stringify(Store.getState(), null, 2)], {
-                type: 'text/json'
+                type: 'application/json'
             });
             const blobURL = window.URL.createObjectURL(blob);
 
