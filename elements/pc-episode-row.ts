@@ -429,9 +429,11 @@ StorePromise.then((Store) => {
     }
 
 
+    // TODO Whether or not to proceed without a Content-Range header in the response is the question...
+    // TODO Sometimes a non-proxy is not returning a Content-Range header
     async function fetchAndSaveAudioFileArrayBuffer(
         episode: Readonly<Episode>,
-        attempt: number=0,
+        attempt: number=1, // TODO I am disabling anything but the proxy for now, to simplify things
         rangeStart: number=0,
         rangeEnd: number=fiveMegabytesInBytes - 1
     ): Promise<void> {
@@ -461,6 +463,7 @@ StorePromise.then((Store) => {
     
             const audioFileBlob = await audioFileResponse.blob();
     
+            // TODO we might just want to throw here, we really need the content-range header...
             const contentRangeHeaderValue = audioFileResponse.headers.get('Content-Range');
     
             const responseContentLength: string | null = audioFileResponse.headers.get('Content-Length');
