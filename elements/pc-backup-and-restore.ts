@@ -45,11 +45,15 @@ StorePromise.then((Store) => {
             link.setAttribute('href', blobURL);
             link.setAttribute('download', `podcrypt-podcast-backup-${new Date()}.json`);
 
-            document.body.appendChild(link);
+            const mouseEvent = new MouseEvent('click');
 
-            link.click();
+            link.dispatchEvent(mouseEvent);
 
-            document.body.removeChild(link);
+            // document.body.appendChild(link);
+
+            // link.click();
+
+            // document.body.removeChild(link);
         }
 
         restoreClick(e: any) {
