@@ -429,11 +429,9 @@ StorePromise.then((Store) => {
     }
 
 
-    // TODO Whether or not to proceed without a Content-Range header in the response is the question...
-    // TODO Sometimes a non-proxy is not returning a Content-Range header
     async function fetchAndSaveAudioFileArrayBuffer(
         episode: Readonly<Episode>,
-        attempt: number=1, // TODO I am disabling anything but the proxy for now, to simplify things
+        attempt: number=0,
         rangeStart: number=0,
         rangeEnd: number=fiveMegabytesInBytes - 1
     ): Promise<void> {
@@ -463,22 +461,27 @@ StorePromise.then((Store) => {
     
             const audioFileBlob = await audioFileResponse.blob();
     
-            // TODO we might just want to throw here, we really need the content-range header...
-            const contentRangeHeaderValue = audioFileResponse.headers.get('Content-Range');
+            const contentRangeHeaderValue: string | null = audioFileResponse.headers.get('Content-Range');
     
-            const responseContentLength: string | null = audioFileResponse.headers.get('Content-Length');
+            if (contentRangeHeaderValue === null) {
+                console.log('No Content-Range header');
+                throw new Error('The file could not be downloaded. No Content-Range header');
+            }
+
+            const contentLengthHeaderValue: string | null = audioFileResponse.headers.get('Content-Length');
     
             if (
-                responseContentLength === null
+                contentLengthHeaderValue === null
             ) {
-                throw new Error('The file could not be downloaded. The Content-Length header was not set');
+                console.log('The file could not be downloaded. No Content-Length header');
+                throw new Error('The file could not be downloaded. No Content-Length header');
             }
     
             const { 
                 start,
                 end,
                 total
-            } = getStartAndEndAndTotalFromContentRangeHeader(contentRangeHeaderValue, parseInt(responseContentLength));
+            } = getStartAndEndAndTotalFromContentRangeHeader(contentRangeHeaderValue);
     
             console.log('start', start);
             console.log('end', end);
@@ -510,7 +513,7 @@ StorePromise.then((Store) => {
             })
     
             if (
-                parseInt(responseContentLength) < fiveMegabytesInBytes
+                parseInt(contentLengthHeaderValue) < fiveMegabytesInBytes
             ) {
                 return;
             }
@@ -529,39 +532,28 @@ StorePromise.then((Store) => {
     }
 
     function getStartAndEndAndTotalFromContentRangeHeader(
-        contentRangeHeader: string | null,
-        contentLength: number
+        contentRangeHeader: string
     ): { start: number; end: number; total: number } {
 
-        if (contentRangeHeader === null) {
+        const bytes: Readonly<RegExpMatchArray> | null = contentRangeHeader.match(/bytes ((\d*)-(\d*)|\*)\/(\d*\*?)/);
+            
+        if (bytes === null) {
+            throw new Error('The file could not be downloaded. Faulty mach on Content-Range header');
+        }
+
+        if (bytes[1] === '*') {
             return {
                 start: 0,
-                end: contentLength - 1,
-                total: contentLength
+                end: parseInt(bytes[4]),
+                total: parseInt(bytes[4])
             };
         }
         else {
-            const bytes: Readonly<RegExpMatchArray> | null = contentRangeHeader.match(/bytes ((\d*)-(\d*)|\*)\/(\d*\*?)/);
-            
-            if (bytes === null) {
-                throw new Error('The file could not be downloaded. Faulty mach on Content-Range header');
-            }
-    
-            if (bytes[1] === '*') {
-                return {
-                    start: 0,
-                    end: parseInt(bytes[4]),
-                    total: parseInt(bytes[4])
-                };
-            }
-            else {
-                return {
-                    start: parseInt(bytes[2]),
-                    end: parseInt(bytes[3]),
-                    total: parseInt(bytes[4])
-                }
+            return {
+                start: parseInt(bytes[2]),
+                end: parseInt(bytes[3]),
+                total: parseInt(bytes[4])
             }
         }
-
     }
 });
