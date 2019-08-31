@@ -35,11 +35,11 @@ self.addEventListener('fetch', async (event: any) => {
     // TODO and here: https://stackoverflow.com/questions/54138601/cant-access-arraybuffer-on-rangerequest
     // TODO I am not sure if it's enough to apply the MIT license, but we'll see
     if (
-        event.request.url.startsWith('https://download.podcrypt.app/')
+        event.request.url.startsWith('https://proxy.podcrypt.app/downloaded/')
     ) {
         event.respondWith(new Promise(async (resolve) => {
                 const state: Readonly<State> = await idbGet('state');
-                const episodeGuid: EpisodeGuid = event.request.url.replace('https://download.podcrypt.app/', '');
+                const episodeGuid: EpisodeGuid = event.request.url.replace('https://proxy.podcrypt.app/downloaded/', '');
                 const episode: Readonly<Episode> | undefined = Object.values(state.episodes).find((episode: Readonly<Episode>) => {
                     return episode.src === episodeGuid;
                 });
