@@ -338,38 +338,34 @@ StorePromise.then((Store) => {
 
         if (value === 'Download') {
             try {
-                const confirmed = !['iPad', 'iPhone', 'iPod', 'iPad Simulator', 'iPhone Simulator', 'iPod Simulator'].includes(navigator.platform) || confirm('Downloads are experimental. Do you want to go for it anyway?');
-    
-                if (confirmed) {
-                    Store.dispatch({
-                        type: 'ADD_OR_UPDATE_EPISODE',
-                        podcast,
-                        episode
-                    });
+                Store.dispatch({
+                    type: 'ADD_OR_UPDATE_EPISODE',
+                    podcast,
+                    episode
+                });
 
-                    // this is to ensure we have a clean slate before overwriting the data
-                    await deleteDownloadedEpisode(Store, episode);
+                // this is to ensure we have a clean slate before overwriting the data
+                await deleteDownloadedEpisode(Store, episode);
 
-                    Store.dispatch({
-                        type: 'SET_EPISODE_DOWNLOAD_STATE',
-                        episodeGuid: episode.guid,
-                        downloadState: 'DOWNLOADING'
-                    });
+                Store.dispatch({
+                    type: 'SET_EPISODE_DOWNLOAD_STATE',
+                    episodeGuid: episode.guid,
+                    downloadState: 'DOWNLOADING'
+                });
 
-                    await fetchAndSaveAudioFileArrayBuffer(episode);
+                await fetchAndSaveAudioFileArrayBuffer(episode);
 
-                    Store.dispatch({
-                        type: 'SET_EPISODE_DOWNLOAD_STATE',
-                        episodeGuid: episode.guid,
-                        downloadState: 'DOWNLOADED'
-                    });
+                Store.dispatch({
+                    type: 'SET_EPISODE_DOWNLOAD_STATE',
+                    episodeGuid: episode.guid,
+                    downloadState: 'DOWNLOADED'
+                });
 
-                    // TODO this is so that when switching between episodes, the episode will play
-                    // TODO this could probably be in a more elegant way
-                    Store.dispatch({
-                        type: 'RENDER'
-                    });
-                }
+                // TODO this is so that when switching between episodes, the episode will play
+                // TODO this could probably be in a more elegant way
+                Store.dispatch({
+                    type: 'RENDER'
+                });
             }
             catch(error) {
                 if (error.toString().includes('QuotaExceededError')) {
