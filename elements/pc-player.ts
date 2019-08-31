@@ -20,6 +20,9 @@ StorePromise.then((Store) => {
 
     class PCPlayer extends HTMLElement {
 
+        // TODO evil mutation
+        counter = 0;
+
         constructor() {
             super();
             Store.subscribe(() => litRender(this.render(Store.getState()), this));
@@ -93,11 +96,18 @@ StorePromise.then((Store) => {
             audioElement.currentTime = newCurrentTime;
         }
 
-        // TODO I think we need to use the lock mechanism on anything that is updating the buffer...so this funciton and currentTimeChanged, because these events are messing with that sometimes
         async timeUpdated(
             currentEpisode: Readonly<Episode>,
             audioElement: HTMLAudioElement
         ) {
+            this.counter = this.counter + 1;
+
+            if (this.counter < 4) {
+                return;
+            }
+
+            this.counter = 0;
+
             const progress = audioElement.currentTime;
     
             if (progress === 0) {
