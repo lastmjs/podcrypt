@@ -205,6 +205,7 @@ async function payPodcast(Store: Readonly<Store>, podcast: Readonly<Podcast>, re
     }    
 }
 
+// TODO this is wrong, I need to calculate the gas limit with the gas price here
 export async function getPayoutInfoForPodcast(state: Readonly<State>, podcast: Readonly<Podcast>): Promise<{
     readonly value: WEI;
     readonly gasPriceInWEI: WEI;
