@@ -22,10 +22,7 @@ StorePromise.then((Store) => {
 
         constructor() {
             super();
-
-            Store.subscribe(async () => {
-                litRender(await this.render(Store.getState()), this);
-            });
+            Store.subscribe(() => litRender(this.render(Store.getState()), this));
         }
 
         async connectedCallback() {
@@ -147,11 +144,9 @@ StorePromise.then((Store) => {
                 }
             }
             catch(error) {
-
                 // TODO I do not like having to do this, but for now it works
                 // TODO switching between streaming episodes does not remember the current time without this, there is an exception thrown every time for some reason
                 audioElement.currentTime = parseFloat(currentEpisode.progress);
-                this.playOrPause(currentEpisode, audioElement);
 
                 console.log(error);
             }
@@ -214,7 +209,7 @@ StorePromise.then((Store) => {
             }
         }
 
-        async render(state: Readonly<State>): Promise<Readonly<TemplateResult>> {
+        render(state: Readonly<State>): Readonly<TemplateResult> {
                         
             const audioElement: HTMLAudioElement | null = this.querySelector('audio');
             const currentEpisode: Readonly<Episode> | undefined | null = state.episodes[state.currentEpisodeGuid];
@@ -250,7 +245,7 @@ StorePromise.then((Store) => {
                 currentEpisode &&
                 audioElement
             ) {
-                await this.playOrPause(currentEpisode, audioElement);
+                this.playOrPause(currentEpisode, audioElement);
             }
 
             return html`

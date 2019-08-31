@@ -42,8 +42,6 @@ StorePromise.then((Store) => {
                 });
             });
         }
-
-        console.log('tabIndex', tabIndex);
     
         return html`
             <style>
