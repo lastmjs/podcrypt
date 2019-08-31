@@ -151,6 +151,7 @@ StorePromise.then((Store) => {
                 // TODO I do not like having to do this, but for now it works
                 // TODO switching between streaming episodes does not remember the current time without this, there is an exception thrown every time for some reason
                 audioElement.currentTime = parseFloat(currentEpisode.progress);
+                this.playOrPause(currentEpisode, audioElement);
 
                 console.log(error);
             }

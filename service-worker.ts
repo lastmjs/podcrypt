@@ -79,7 +79,7 @@ self.addEventListener('fetch', async (event: any) => {
                     // headers: response.headers
                     headers: [
                         // ['Content-Type', response.headers.get('Content-Type')],
-                        ['Content-Type', 'audio/mpeg'], // TODO this might not be generalizable to all audio files
+                        // ['Content-Type', 'audio/mpeg'], // TODO this might not be generalizable to all audio files
                         ['Content-Range', `bytes ${startByte}-${endByte}/${totalByteLength}`],
                         // ['Content-Length', `${slicedBuffer.byteLength}`]
                     ]
