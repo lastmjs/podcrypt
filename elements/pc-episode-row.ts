@@ -428,7 +428,7 @@ StorePromise.then((Store) => {
         });
     }
 
-
+    // TODO we might want to store blobs directly later on
     async function fetchAndSaveAudioFileArrayBuffer(
         episode: Readonly<Episode>,
         attempt: number=0,
@@ -459,7 +459,9 @@ StorePromise.then((Store) => {
                 // }
             }
     
-            const audioFileBlob = await audioFileResponse.blob();
+            // TODO once iOS 13 has been out for a while and we are sure that IndexedDB can store blobs, then store blobs...maybe?
+            // const audioFileBlob = await audioFileResponse.blob();
+            const audioFileArrayBuffer = await audioFileResponse.arrayBuffer();
     
             const contentRangeHeaderValue: string | null = audioFileResponse.headers.get('Content-Range');
     
@@ -491,8 +493,7 @@ StorePromise.then((Store) => {
     
             console.log('idbKey', idbKey);
 
-            // TODO well, iOS only just started in 12.4 to allow blobs to be saved in IndexedDB...should I just store as arraybuffers and do the conversion in the service worker?
-            await set(idbKey, audioFileBlob);
+            await set(idbKey, audioFileArrayBuffer);
     
             Store.dispatch({
                 type: 'ADD_DOWNLOAD_CHUNK_DATUM_TO_EPISODE',
