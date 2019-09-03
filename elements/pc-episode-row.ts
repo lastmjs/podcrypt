@@ -445,7 +445,7 @@ StorePromise.then((Store) => {
                 // response.status.toString().startsWith('5')
             ) {
                 // if (attempt === 0) {
-                //     return await fetchAndSaveAudioFileArrayBuffer(episode, attempt + 1);
+                //     return await fetchAndSaveAudioFile(episode, attempt + 1);
                 // }
                 // else {
                     // TODO perhaps make a very easy way for people to get in contact with the Podcrypt team
