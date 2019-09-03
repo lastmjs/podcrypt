@@ -368,6 +368,8 @@ StorePromise.then((Store) => {
                 });
             }
             catch(error) {
+                await deleteDownloadedEpisode(Store, episode);
+                
                 if (error.toString().includes('QuotaExceededError')) {
                     alert(`You have run out of storage space. Go to podcrypt.app/downloads for more information`);
                 }
@@ -449,7 +451,6 @@ StorePromise.then((Store) => {
                 // }
                 // else {
                     // TODO perhaps make a very easy way for people to get in contact with the Podcrypt team
-                    await deleteDownloadedEpisode(Store, episode);
                     throw new Error(`The file could not be downloaded. The response status was ${audioFileResponse.status}`);
                 // }
             }
