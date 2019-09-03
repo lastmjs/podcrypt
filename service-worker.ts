@@ -127,7 +127,6 @@ async function getFinalArrayBuffer(
         );
     });
 
-    // TODO once we know that iOS 13 supports blobs in IndexedDB, and enough people use indexedDB...we might want to just store blobs in IndexedDB
     const downloadChunkBlobs: Array<Blob> = await Promise.all(downloadChunkData.map(async (downloadChunkDatum) => {
         return await idbGet(downloadChunkDatum.key);
     }));
@@ -145,35 +144,3 @@ async function getFinalArrayBuffer(
 
     return finalArrayBuffer;
 }
-
-// TODO this way uses blobs natively...this is what we want to do once we know that blobs in IndexedDB are for sure enabled on iOS 13, and that a sufficient number of people use iOS 13
-// async function getFinalArrayBuffer(
-//     episode: Readonly<Episode>,
-//     startByte: number,
-//     endByte: number
-// ): Promise<ArrayBuffer> {
-
-//     const downloadChunkData: ReadonlyArray<DownloadChunkDatum> = episode.downloadChunkData.filter((downloadChunkDatum: Readonly<DownloadChunkDatum>) => {
-//         return (
-//             startByte <= downloadChunkDatum.endByte &&
-//             endByte >= downloadChunkDatum.startByte
-//         );
-//     });
-
-//     const downloadChunkBlobs: Array<Blob> = await Promise.all(downloadChunkData.map(async (downloadChunkDatum) => {
-//         return await idbGet(downloadChunkDatum.key);
-//     }));
-
-//     const masterBlob: Blob = new Blob(downloadChunkBlobs);
-
-//     const almostFinalArrayBuffer: ArrayBuffer = await new Response(masterBlob).arrayBuffer();
-
-//     const startDownloadChunkDatum: Readonly<DownloadChunkDatum> = downloadChunkData[0];
-
-//     const sliceStart: number = startByte - startDownloadChunkDatum.startByte;
-//     const sliceLength: number = sliceStart + endByte - startByte + 1;
-
-//     const finalArrayBuffer: ArrayBuffer = almostFinalArrayBuffer.slice(sliceStart, sliceLength);
-
-//     return finalArrayBuffer;
-// }
