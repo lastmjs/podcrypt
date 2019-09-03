@@ -128,11 +128,11 @@ async function getFinalArrayBuffer(
     });
 
     // TODO once we know that iOS 13 supports blobs in IndexedDB, and enough people use indexedDB...we might want to just store blobs in IndexedDB
-    const downloadChunkArrayBuffers: Array<Blob> = await Promise.all(downloadChunkData.map(async (downloadChunkDatum) => {
+    const downloadChunkBlobs: Array<Blob> = await Promise.all(downloadChunkData.map(async (downloadChunkDatum) => {
         return await idbGet(downloadChunkDatum.key);
     }));
 
-    const masterBlob: Blob = new Blob(downloadChunkArrayBuffers);
+    const masterBlob: Blob = new Blob(downloadChunkBlobs);
 
     const almostFinalArrayBuffer: ArrayBuffer = await new Response(masterBlob).arrayBuffer();
 
