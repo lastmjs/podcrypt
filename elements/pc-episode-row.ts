@@ -353,7 +353,7 @@ StorePromise.then((Store) => {
                     downloadState: 'DOWNLOADING'
                 });
 
-                await fetchAndSaveAudioFileArrayBuffer(episode);
+                await fetchAndSaveAudioFile(episode);
 
                 Store.dispatch({
                     type: 'SET_EPISODE_DOWNLOAD_STATE',
@@ -424,8 +424,7 @@ StorePromise.then((Store) => {
         });
     }
 
-    // TODO we might want to store blobs directly later on
-    async function fetchAndSaveAudioFileArrayBuffer(
+    async function fetchAndSaveAudioFile(
         episode: Readonly<Episode>,
         attempt: number=0,
         rangeStart: number=0,
@@ -446,7 +445,7 @@ StorePromise.then((Store) => {
                 // response.status.toString().startsWith('5')
             ) {
                 // if (attempt === 0) {
-                //     return await fetchAndSaveAudioFileArrayBuffer(episode, attempt + 1);
+                //     return await fetchAndSaveAudioFile(episode, attempt + 1);
                 // }
                 // else {
                     // TODO perhaps make a very easy way for people to get in contact with the Podcrypt team
@@ -455,9 +454,7 @@ StorePromise.then((Store) => {
                 // }
             }
     
-            // TODO once iOS 13 has been out for a while and we are sure that IndexedDB can store blobs, then store blobs...maybe?
-            // const audioFileBlob = await audioFileResponse.blob();
-            const audioFileArrayBuffer = await audioFileResponse.arrayBuffer();
+            const audioFileBlob = await audioFileResponse.blob();
     
             const contentRangeHeaderValue: string | null = audioFileResponse.headers.get('Content-Range');
     
@@ -489,7 +486,7 @@ StorePromise.then((Store) => {
     
             console.log('idbKey', idbKey);
 
-            await set(idbKey, audioFileArrayBuffer);
+            await set(idbKey, audioFileBlob);
     
             Store.dispatch({
                 type: 'ADD_DOWNLOAD_CHUNK_DATUM_TO_EPISODE',
@@ -515,12 +512,12 @@ StorePromise.then((Store) => {
                 return;
             }
     
-            await fetchAndSaveAudioFileArrayBuffer(episode, attempt, rangeStart + fiveMegabytesInBytes, rangeEnd + fiveMegabytesInBytes);
+            await fetchAndSaveAudioFile(episode, attempt, rangeStart + fiveMegabytesInBytes, rangeEnd + fiveMegabytesInBytes);
 
         }
         catch(error) {
             if (attempt === 0) {
-                await fetchAndSaveAudioFileArrayBuffer(episode, attempt + 1);
+                await fetchAndSaveAudioFile(episode, attempt + 1);
             }
             else {
                 throw new Error(error);
