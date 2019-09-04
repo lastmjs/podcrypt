@@ -7,10 +7,12 @@ import { StorePromise } from '../state/store';
 import {
     pcContainerStyles,
     titleTextLarge,
-    titleTextXLarge,
-    standardTextContainer
+    titleTextXLarge
 } from '../services/css';
-import { pcAlert } from './pc-modal';
+import { 
+    pcAlert,
+    pcConfirm
+} from './pc-modal';
 
 StorePromise.then((Store) => {
     class PCBackupAndRestore extends HTMLElement {
@@ -28,8 +30,12 @@ StorePromise.then((Store) => {
             });
         }
 
-        backup() {
-            const confirmation = confirm(`This will generate a backup file with all of your Podcrypt data, excluding downloaded audio and your wallet's private information. Do you want to continue?`);
+        async backup() {
+            const confirmation = await pcConfirm(html`
+                <div>This will generate a backup file with all of your Podcrypt data, excluding downloaded audio and your wallet's private information.</div>
+                <br>
+                <div>Do you want to continue?</div>
+            `, Store.getState().screenType);
 
             if (confirmation === false) {
                 return;
@@ -57,11 +63,21 @@ StorePromise.then((Store) => {
             // document.body.removeChild(link);
         }
 
-        restoreClick(e: any) {
-            const confirmation = confirm(`This will completely erase your Podcrypt data and restore everything to the state of the uploaded backup file, excluding downloaded audio and your wallet's private information. Do you want to continue?`);
-        
-            if (confirmation === false) {
+        async restoreClick(e: any) {
+
+            // is trusted means it came from the user
+            if (e.isTrusted) {
                 e.preventDefault();
+    
+                const confirmation = await pcConfirm(html`
+                    <div>This will completely erase your Podcrypt data and restore everything to the state of the uploaded backup file, excluding downloaded audio and your wallet's private information.</div>
+                    <br>
+                    <div>Do you want to continue?</div>
+                `, Store.getState().screenType);
+            
+                if (confirmation === true) {
+                    this.querySelector('input').dispatchEvent(new MouseEvent('click'));
+                }
             }
         }
 

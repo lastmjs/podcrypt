@@ -19,7 +19,10 @@ import {
     deleteDownloadedEpisode
 } from '../services/utilities';
 import BigNumber from "../node_modules/bignumber.js/bignumber";
-import { pcAlert } from './pc-modal';
+import { 
+    pcAlert,
+    pcConfirm
+} from './pc-modal';
 
 StorePromise.then((Store) => {
     customElement('pc-podcast-row', ({ 
@@ -259,7 +262,9 @@ StorePromise.then((Store) => {
         // TODO constantize each of the options in the dropdown
 
         if (e.target.value === 'Delete') {
-            const confirmation = confirm('Are you sure you want to delete this podcast and all of its data?');
+            const confirmation = await pcConfirm(html`
+                <div>Are you sure you want to delete this podcast and all of its data?</div>
+            `, Store.getState().screenType);
 
             if (confirmation === true) {
 

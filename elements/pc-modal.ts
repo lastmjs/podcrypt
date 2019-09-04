@@ -6,12 +6,26 @@ import {
 
 class PCModal extends HTMLElement {
 
-    closeClick() {
-        // this.dispatchEvent(new CustomEvent('close'));
+    okayClick() {
+        this.dispatchEvent(new CustomEvent('okay'));
         document.body.removeChild(this);
     }
 
-    render(templateResult: Readonly<TemplateResult>, screenType: ScreenType) {
+    cancelClick() {
+        this.dispatchEvent(new CustomEvent('cancel'));
+        document.body.removeChild(this);
+    }
+
+    closeClick() {
+        this.dispatchEvent(new CustomEvent('close'));
+        document.body.removeChild(this);
+    }
+
+    render(
+        templateResult: Readonly<TemplateResult>, 
+        screenType: ScreenType,
+        modalType: ModalType
+    ) {
         litRender(html`
             <style>
                 .pc-modal-main-container {
@@ -41,27 +55,57 @@ class PCModal extends HTMLElement {
                     background-color: rgba(0, 0, 0, .5);
                 }
 
-                .pc-modal-close-button {
+                .pc-modal-button-container {
                     position: absolute;
                     bottom: calc(10px + 1vmin);
                     right: calc(10px + 1vmin);
-                    border: none;
-                    background-color: white;
-                    cursor: pointer;
+                }
+
+                .pc-modal-button {
                     padding-left: calc(15px + 1vmin);
                     padding-right: calc(15px + 1vmin);
                     padding-top: calc(5px + 1vmin);
                     padding-bottom: calc(5px + 1vmin);
-                    color: white;
-                    background-color: grey;
+                    cursor: pointer;
                     font-weight: bold;
                     border-radius: calc(1vmin);
+                    border: none;
+                }
+
+                .pc-modal-close-button {
+                    color: white;
+                    background-color: grey;
+                }
+
+                .pc-modal-okay-button {
+                    color: white;
+                    background-color: grey;
+                }
+
+                .pc-modal-cancel-button {
+                    color: black;
+                    background-color: white;
                 }
             </style>
 
             <div class="pc-modal-main-container">
                 ${templateResult}
-                <button class="pc-modal-close-button" @click=${() => this.closeClick()}>Close</button>
+
+                <div 
+                    ?hidden=${modalType !== 'CONFIRM'}
+                    class="pc-modal-button-container"
+                >
+                    <button class="pc-modal-button pc-modal-cancel-button" @click=${() => this.cancelClick()}>Cancel</button>
+                    <button class="pc-modal-button pc-modal-okay-button" @click=${() => this.okayClick()}>Okay</button>
+                </div>
+
+                <div 
+                    ?hidden=${modalType !== 'ALERT'}
+                    class="pc-modal-button-container"
+                >
+                    <button class="pc-modal-button pc-modal-close-button" @click=${() => this.closeClick()}>Close</button>
+                </div>
+
             </div>
 
             <div class="pc-modal-background"></div>
@@ -72,21 +116,27 @@ class PCModal extends HTMLElement {
 window.customElements.define('pc-modal', PCModal);
 
 export function pcAlert(templateResult: Readonly<TemplateResult>, screenType: ScreenType) {
-    const pcModal = document.createElement('pc-modal');
+    const pcModal: Readonly<PCModal> = document.createElement('pc-modal') as Readonly<PCModal>;
 
-    pcModal.render(templateResult, screenType);
+    pcModal.render(templateResult, screenType, 'ALERT');
 
     document.body.appendChild(pcModal);
 }
 
 export function pcConfirm(templateResult: Readonly<TemplateResult>, screenType: ScreenType) {
     return new Promise((resolve) => {
-        const pcModal = document.createElement('pc-modal');
+        const pcModal: Readonly<PCModal> = document.createElement('pc-modal') as Readonly<PCModal>;
 
-        pcModal.render(templateResult, screenType);
+        pcModal.render(templateResult, screenType, 'CONFIRM');
 
         document.body.appendChild(pcModal);
 
-        // pcModal.addEventListener('')
+        pcModal.addEventListener('okay', () => {
+            resolve(true);
+        });
+
+        pcModal.addEventListener('cancel', () => {
+            resolve(false);
+        });
     });
 }

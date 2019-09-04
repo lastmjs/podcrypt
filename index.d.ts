@@ -4,6 +4,7 @@ declare var ethers: any;
 declare module 'dompurify';
 
 type ScreenType = 'DESKTOP' | 'MOBILE';
+type ModalType = 'ALERT' | 'CONFIRM' | 'CUSTOM';
 
 type ItunesSearchResult = {
     artistName: string;

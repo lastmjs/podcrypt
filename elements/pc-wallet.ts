@@ -36,7 +36,10 @@ import './pc-loading';
 import { get } from 'idb-keyval';
 import './pc-button';
 import './pc-podcast-row';
-import { pcAlert } from './pc-modal';
+import { 
+    pcAlert,
+    pcConfirm
+} from './pc-modal';
 
 StorePromise.then((Store) => {
     customElement('pc-wallet', ({ constructing, connecting, update, loaded }) => {
@@ -384,8 +387,10 @@ StorePromise.then((Store) => {
         `;
     }
 
-    function payNowClick() {
-        const result = confirm('Are you sure you want to pay out now?');
+    async function payNowClick() {
+        const result = await pcConfirm(html`
+            <div>Are you sure you want to pay out now?</div>
+        `, Store.getState().screenType);
 
         if (result === true) {
             payout(Store, 500);

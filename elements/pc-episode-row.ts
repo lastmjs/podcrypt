@@ -27,7 +27,9 @@ import {
     keys
 } from 'idb-keyval';
 import './pc-loading';
-import { pcAlert } from './pc-modal';
+import { 
+    pcAlert
+} from './pc-modal';
 
 StorePromise.then((Store) => {
     customElement('pc-episode-row', ({ 
