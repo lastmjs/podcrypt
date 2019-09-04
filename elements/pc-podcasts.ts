@@ -111,12 +111,12 @@ StorePromise.then((Store) => {
                     }
                 </div>
 
-                <pc-podcast-search-results .term=${'crypto'} ?hidden=${tabIndex !== 1}></pc-podcast-search-results>
-                <pc-podcast-search-results .term=${'business'} ?hidden=${tabIndex !== 2}></pc-podcast-search-results>
-                <pc-podcast-search-results .term=${'technology'} ?hidden=${tabIndex !== 3}></pc-podcast-search-results>
-                <pc-podcast-search-results .term=${'travel'} ?hidden=${tabIndex !== 4}></pc-podcast-search-results>
-                <pc-podcast-search-results .term=${'health'} ?hidden=${tabIndex !== 5}></pc-podcast-search-results>
-                <pc-podcast-search-results .term=${searchTerm} ?hidden=${tabIndex !== 6}></pc-podcast-search-results>                
+                <pc-podcast-search-results .term=${'crypto'} .limit=${10} ?hidden=${tabIndex !== 1}></pc-podcast-search-results>
+                <pc-podcast-search-results .term=${'business'} .limit=${10} ?hidden=${tabIndex !== 2}></pc-podcast-search-results>
+                <pc-podcast-search-results .term=${'technology'} .limit=${10} ?hidden=${tabIndex !== 3}></pc-podcast-search-results>
+                <pc-podcast-search-results .term=${'travel'} .limit=${10} ?hidden=${tabIndex !== 4}></pc-podcast-search-results>
+                <pc-podcast-search-results .term=${'health'} .limit=${10} ?hidden=${tabIndex !== 5}></pc-podcast-search-results>
+                <pc-podcast-search-results .term=${searchTerm} .limit=${50} ?hidden=${tabIndex !== 6}></pc-podcast-search-results>                
 
             </div>
         `;

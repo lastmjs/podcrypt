@@ -14,12 +14,14 @@ StorePromise.then((Store) => {
         term,
         previousTerm,
         loaded,
-        searchResultsUI
+        searchResultsUI,
+        limit
     }) => {
 
         if (constructing) {
             return {
                 term: null,
+                limit: 50,
                 previousTerm: null,
                 loaded: false,
                 searchResultsUI: ''
@@ -33,7 +35,7 @@ StorePromise.then((Store) => {
             });
         }
 
-        searchForPodcasts(update, term, loaded);
+        searchForPodcasts(update, term, limit, loaded);
 
         return html`
             <style>
@@ -52,7 +54,7 @@ StorePromise.then((Store) => {
         `;
     });
 
-    async function searchForPodcasts(update: any, term: any, loaded: any) {
+    async function searchForPodcasts(update: any, term: any, limit: number, loaded: any) {
 
         if (
             term === null ||
@@ -62,7 +64,7 @@ StorePromise.then((Store) => {
             return;
         }
 
-        const responseJSON = await getResponseJSON(term);
+        const responseJSON = await getResponseJSON(term, limit);
 
         if (responseJSON.results.length === 0) {
             update({
@@ -117,7 +119,7 @@ StorePromise.then((Store) => {
         }
     }
 
-    async function getResponseJSON(term: string) {
+    async function getResponseJSON(term: string, limit: number) {
         if (
             term.startsWith('https://') ||
             term.startsWith('http://')
@@ -129,7 +131,7 @@ StorePromise.then((Store) => {
             };
         }
         else {
-            const response = await window.fetch(`https://itunes.apple.com/search?country=US&media=podcast&term=${term}`);
+            const response = await window.fetch(`https://itunes.apple.com/search?country=US&media=podcast&term=${term}&limit=${limit}`);
             const responseJSON = await response.json();
             return responseJSON;
         }
