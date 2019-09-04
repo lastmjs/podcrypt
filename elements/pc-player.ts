@@ -11,10 +11,10 @@ import {
     pxXLarge
 } from '../services/css';
 import BigNumber from 'bignumber.js';
-import { get } from 'idb-keyval';
 import {
     podcryptDownloadURL
 } from '../services/utilities';
+import { pcAlert } from './pc-modal';
 
 StorePromise.then((Store) => {
 
@@ -58,7 +58,9 @@ StorePromise.then((Store) => {
                 e.target === undefined
             ) {
                 const message: string = 'Could not set the playback rate';
-                alert(message);
+                pcAlert(html`
+                    <div>${message}</div>
+                `, Store.getState().screenType);
                 throw new Error(message);
             }
 

@@ -10,6 +10,7 @@ import {
     titleTextXLarge,
     standardTextContainer
 } from '../services/css';
+import { pcAlert } from './pc-modal';
 
 StorePromise.then((Store) => {
     class PCBackupAndRestore extends HTMLElement {
@@ -75,7 +76,9 @@ StorePromise.then((Store) => {
                     state: newState
                 });
 
-                alert('Restore complete');
+                pcAlert(html`
+                    <div>Restore complete</div>
+                `, Store.getState().screenType);
             };
 
             reader.readAsText(e.target.files[0]);

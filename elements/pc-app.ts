@@ -37,6 +37,7 @@ import {
     color2Full
 } from '../services/css';
 import '../services/listeners';
+import { pcAlert } from './pc-modal';
 
 // TODO I do not like how we have to do this to get the store...top level await would be really nice
 StorePromise.then((Store) => {
@@ -153,7 +154,9 @@ StorePromise.then((Store) => {
                     >
                         <i 
                             class="material-icons pc-app-payout-problem-icon"
-                            @click=${() => alert(getPayoutProblemMessage(Store.getState().payoutProblem))}
+                            @click=${() => {
+                                pcAlert(getPayoutProblemMessage(Store.getState().payoutProblem), state.screenType);
+                            }}
                         >
                             error_outline
                         </i>  
@@ -178,15 +181,29 @@ StorePromise.then((Store) => {
 
     function getPayoutProblemMessage(payoutProblem: PayoutProblem) {
         if (payoutProblem === 'BALANCE_0') {
-            return `There is a problem with your next payout: You have a balance of 0`;
+            return html`
+                <div>There is a problem with your next payout:</div>
+                <br>
+                <div>You have a balance of 0</div>
+            `;
         }
 
         if (payoutProblem === 'PAYOUT_TARGET_0') {
-            return `There is a problem with your next payout: Your payout target is $0`;
+            return html`
+                <div>There is a problem with your next payout:</div>
+                <br>
+                <div>Your payout target is $0</div>
+            `;
         }
 
         if (payoutProblem === 'BALANCE_LESS_THAN_PAYOUT_TARGET') {
-            return `There is a problem with your next payout: Your balance is less than your payout target`;
+            return html`
+                <div>There is a problem with your next payout:</div>
+                <br>
+                <div>Your balance is less than your payout target</div>
+            `;
         }
+
+        return html`<div>There is no problem with your next payout</div>`;
     }
 });
