@@ -147,7 +147,9 @@ StorePromise.then((Store) => {
                         <div style="overflow: hidden; width: 100%">
                             <div class="pc-app-scrolling-title">${currentEpisode.title}</div>
                         </div>
-                    ` : ''}
+                    ` : html`
+                        <div style="color: grey; font-weight: bold; margin-left: auto; margin-right: calc(10px + 1vmin); font-size: calc(15px + 1vmin)">Podcrypt Alpha</div>
+                    `}
 
                     <div
                         ?hidden=${Store.getState().payoutProblem === 'NO_PROBLEM'}
@@ -170,8 +172,8 @@ StorePromise.then((Store) => {
             </div>
     
         `;
-    });    
-
+    });   
+    
     function mainMenuToggle(e: any) {
         e.stopPropagation();
     
