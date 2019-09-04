@@ -11,7 +11,8 @@ import {
     pxXSmall,
     pxXXXSmall,
     colorBlackMedium,
-    pxSmall
+    pxSmall,
+    alertPadding
  } from '../services/css';
 import { StorePromise } from '../state/store';
 import {
@@ -220,7 +221,7 @@ StorePromise.then((Store) => {
 
             <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: center">
                 <div style="display: flex; justify-content: center; align-items: center; margin: calc(5px + 1vmin)">
-                    <pc-button @click=${() => pcAlert(html`<div>Coming soon to most US states:</div><br><div>Buy ETH with your debit card</div>`, Store.getState().screenType)} .text=${'Buy ETH'}></pc-button>
+                    <pc-button @click=${() => pcAlert(html`<div style="${alertPadding}"><div>Coming soon to most US states:</div><br><div>Buy ETH with your debit card</div></div>`, Store.getState().screenType)} .text=${'Buy ETH'}></pc-button>
                 </div>
                 <div style="display: flex; justify-content: center; align-items: center; margin: calc(5px + 1vmin)">
                     <pc-button @click=${() => navigate(Store, '/receive-eth')} .text=${'Receive ETH'}></pc-button>
@@ -389,7 +390,7 @@ StorePromise.then((Store) => {
 
     async function payNowClick() {
         const result = await pcConfirm(html`
-            <div>Are you sure you want to pay out now?</div>
+            <div style="${alertPadding}">Are you sure you want to pay out now?</div>
         `, Store.getState().screenType);
 
         if (result === true) {
@@ -411,7 +412,7 @@ StorePromise.then((Store) => {
 
         if (!warningsAccepted) {
             pcAlert(html`
-                <div>Silly you, you must understand</div>
+                <div style="${alertPadding}">Silly you, you must understand</div>
             `, Store.getState().screenType);
         }
         else {
@@ -474,7 +475,7 @@ StorePromise.then((Store) => {
 
         if (!mnemonicPhraseWarningAccepted) {
             pcAlert(html`
-                <div>Do you want to lose all of your money?</div>
+                <div style="${alertPadding}">Do you want to lose all of your money?</div>
             `, Store.getState().screenType);
         }
         else {

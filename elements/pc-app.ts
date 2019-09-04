@@ -34,7 +34,8 @@ import {
     pxLarge,
     pxXLarge,
     color1Full,
-    color2Full
+    color2Full,
+    alertPadding
 } from '../services/css';
 import '../services/listeners';
 import { pcAlert } from './pc-modal';
@@ -182,28 +183,34 @@ StorePromise.then((Store) => {
     function getPayoutProblemMessage(payoutProblem: PayoutProblem) {
         if (payoutProblem === 'BALANCE_0') {
             return html`
-                <div>There is a problem with your next payout:</div>
-                <br>
-                <div>You have a balance of 0</div>
+                <div style="${alertPadding}">
+                    <div>There is a problem with your next payout:</div>
+                    <br>
+                    <div>You have a balance of 0</div>
+                </div>
             `;
         }
 
         if (payoutProblem === 'PAYOUT_TARGET_0') {
             return html`
-                <div>There is a problem with your next payout:</div>
-                <br>
-                <div>Your payout target is $0</div>
+                <div style="${alertPadding}">
+                    <div>There is a problem with your next payout:</div>
+                    <br>
+                    <div>Your payout target is $0</div>
+                </div>
             `;
         }
 
         if (payoutProblem === 'BALANCE_LESS_THAN_PAYOUT_TARGET') {
             return html`
-                <div>There is a problem with your next payout:</div>
-                <br>
-                <div>Your balance is less than your payout target</div>
+                <div style="${alertPadding}">
+                    <div>There is a problem with your next payout:</div>
+                    <br>
+                    <div>Your balance is less than your payout target</div>
+                </div>
             `;
         }
 
-        return html`<div>There is no problem with your next payout</div>`;
+        return html`<div style="${alertPadding}">There is no problem with your next payout</div>`;
     }
 });

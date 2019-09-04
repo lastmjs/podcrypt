@@ -6,7 +6,7 @@ import {
     TemplateResult
 } from 'lit-html';
 
-class PCModal extends HTMLElement {
+export class PCModal extends HTMLElement {
 
     okayClick() {
         this.dispatchEvent(new CustomEvent('okay'));
@@ -40,7 +40,7 @@ class PCModal extends HTMLElement {
                     left: 0;
                     right: 0;
                     top: 10vh;
-                    padding: calc(50px + 1vmin);
+                    /* padding: calc(50px + 1vmin); */
                     padding-bottom: calc(75px + 1vmin);
                     z-index: 1000;
                     border-radius: calc(1vmin);

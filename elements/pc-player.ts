@@ -8,12 +8,10 @@ import {
 import { StorePromise } from '../state/store';
 import {
     pxXXLarge,
-    pxXLarge
+    pxXLarge,
+    alertPadding
 } from '../services/css';
 import BigNumber from 'bignumber.js';
-import {
-    podcryptDownloadURL
-} from '../services/utilities';
 import { pcAlert } from './pc-modal';
 
 StorePromise.then((Store) => {
@@ -59,7 +57,7 @@ StorePromise.then((Store) => {
             ) {
                 const message: string = 'Could not set the playback rate';
                 pcAlert(html`
-                    <div>${message}</div>
+                    <div style="${alertPadding}">${message}</div>
                 `, Store.getState().screenType);
                 throw new Error(message);
             }

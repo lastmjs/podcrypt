@@ -90,3 +90,5 @@ export const mediumTextContainer = `
     color: ${colorBlackMedium};
     overflow-wrap: break-word;
 `;
+
+export const alertPadding = `padding: calc(50px + 1vmin) calc(50px + 1vmin) 0px calc(50px + 1vmin)`;

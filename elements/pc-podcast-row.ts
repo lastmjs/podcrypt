@@ -8,7 +8,8 @@ import {
     colorBlackMedium,
     color1Full,
     pxXXSmall,
-    pxXLarge
+    pxXLarge,
+    alertPadding
  } from '../services/css';
 import { 
     navigate,
@@ -124,9 +125,12 @@ StorePromise.then((Store) => {
                 .pc-podcast-row-options-item {
                     font-weight: bold;
                     cursor: pointer;
-                    padding: calc(10px + 1vmin);
+                    padding: calc(15px + 1vmin);
                     border-bottom: 1px solid grey;
-                    text-align: center;                    
+                    text-align: center; 
+                    font-size: calc(15px + 1vmin);  
+                    width: 100%;   
+                    box-sizing: border-box;              
                 }
             </style>
 
@@ -168,7 +172,7 @@ StorePromise.then((Store) => {
                                                         html`<button style="color: red; border: none; padding: 5px; margin: 5px; cursor: pointer;" @click=${(e: any) => notVerifiedHelpClick(e, podcast)}>Not verified - click to help</button>` :
                                                         podcast.ethereumAddress === 'MALFORMED' ?
                                                 html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${(e: any) => notVerifiedHelpClick(e, podcast)}>Not verified - click to help</button>` :
-                                                            html`<button style="color: green; border: none; padding: 5px; margin: 5px; cursor: pointer;" @click=${(e: any) => { e.stopPropagation(); pcAlert(html`<div>This podcast's Ethereum address:</div><br><div style="word-wrap: break-word">${podcast.ethereumAddress}</div>`, Store.getState().screenType)} }>Verified</button>` }
+                                                            html`<button style="color: green; border: none; padding: 5px; margin: 5px; cursor: pointer;" @click=${(e: any) => { e.stopPropagation(); pcAlert(html`<div style="${alertPadding}"><div>This podcast's Ethereum address:</div><br><div style="word-wrap: break-word">${podcast.ethereumAddress}</div></div>`, Store.getState().screenType)} }>Verified</button>` }
                                             </div>
                                         ` : html``
                                 }
@@ -285,7 +289,7 @@ StorePromise.then((Store) => {
 
         if (podcast === null) {
             pcAlert(html`
-                <div>Could not subscribe to podcast</div>
+                <div style="${alertPadding}">Could not subscribe to podcast</div>
             `, Store.getState().screenType);
             return;
         }
@@ -304,7 +308,7 @@ StorePromise.then((Store) => {
 
     async function deleteOption(podcast: Readonly<Podcast>) {
         const confirmation = await pcConfirm(html`
-                <div>Are you sure you want to delete this podcast and all of its data?</div>
+                <div style="${alertPadding}">Are you sure you want to delete this podcast and all of its data?</div>
             `, Store.getState().screenType);
 
             if (confirmation === true) {
@@ -343,7 +347,7 @@ StorePromise.then((Store) => {
         const feed: Readonly<Feed> | null = await getFeed(podcast.feedUrl);
 
             if (feed === null) {
-                pcAlert(html`The feed could not be loaded`, Store.getState().screenType);
+                pcAlert(html`<div style="${alertPadding}">The feed could not be loaded</div>`, Store.getState().screenType);
                 return;
             }
 
@@ -360,7 +364,7 @@ StorePromise.then((Store) => {
         const feed: Readonly<Feed> | null = await getFeed(podcast.feedUrl);
 
         if (feed === null) {
-            pcAlert(html`The feed could not be loaded`, Store.getState().screenType);
+            pcAlert(html`<div style="${alertPadding}">The feed could not be loaded</div>`, Store.getState().screenType);
             return;
         }
 

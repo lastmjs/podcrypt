@@ -7,7 +7,8 @@ import { StorePromise } from '../state/store';
 import {
     pcContainerStyles,
     titleTextLarge,
-    titleTextXLarge
+    titleTextXLarge,
+    alertPadding
 } from '../services/css';
 import { 
     pcAlert,
@@ -32,9 +33,11 @@ StorePromise.then((Store) => {
 
         async backup() {
             const confirmation = await pcConfirm(html`
-                <div>This will generate a backup file with all of your Podcrypt data, excluding downloaded audio and your wallet's private information.</div>
-                <br>
-                <div>Do you want to continue?</div>
+                <div style="${alertPadding}">
+                    <div>This will generate a backup file with all of your Podcrypt data, excluding downloaded audio and your wallet's private information.</div>
+                    <br>
+                    <div>Do you want to continue?</div>
+                </div>
             `, Store.getState().screenType);
 
             if (confirmation === false) {
@@ -70,9 +73,11 @@ StorePromise.then((Store) => {
                 e.preventDefault();
     
                 const confirmation = await pcConfirm(html`
-                    <div>This will completely erase your Podcrypt data and restore everything to the state of the uploaded backup file, excluding downloaded audio and your wallet's private information.</div>
-                    <br>
-                    <div>Do you want to continue?</div>
+                    <div style="${alertPadding}">
+                        <div>This will completely erase your Podcrypt data and restore everything to the state of the uploaded backup file, excluding downloaded audio and your wallet's private information.</div>
+                        <br>
+                        <div>Do you want to continue?</div>
+                    </div>
                 `, Store.getState().screenType);
             
                 if (confirmation === true) {
@@ -93,7 +98,7 @@ StorePromise.then((Store) => {
                 });
 
                 pcAlert(html`
-                    <div>Restore complete</div>
+                    <div style="${alertPadding}">Restore complete</div>
                 `, Store.getState().screenType);
             };
 
