@@ -1,6 +1,9 @@
 import { customElement, html } from 'functional-element';
 import { StorePromise } from '../state/store';
-import { pcContainerStyles } from '../services/css';
+import { 
+    pcContainerStyles,
+    alertPadding
+} from '../services/css';
 import { createWallet } from '../services/balance-calculations';
 import { navigate } from '../services/utilities';
 import { pcAlert } from './pc-modal';
@@ -37,7 +40,7 @@ StorePromise.then((Store) => {
 
         if (mnemonicPhrase.split(' ').length !== 12) {
             pcAlert(html`
-                <div>Your secret phrase must have exactly 12 words</div>
+                <div style="${alertPadding}">Your secret phrase must have exactly 12 words</div>
             `, Store.getState().screenType);
             return;
         }

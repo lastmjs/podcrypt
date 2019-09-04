@@ -11,7 +11,8 @@ import {
     pxXXLarge,
     colorBlackVeryLight,
     zero,
-    one
+    one,
+    alertPadding
  } from '../services/css';
 import { 
     navigate,
@@ -375,14 +376,16 @@ StorePromise.then((Store) => {
                 
                 if (error.toString().includes('QuotaExceededError')) {
                     pcAlert(html`
-                        <div>You have run out of storage space.</div>
-                        <br>
-                        <div>Go to podcrypt.app/downloads for more information</div>
+                        <div style="${alertPadding}">
+                            <div>You have run out of storage space.</div>
+                            <br>
+                            <div>Go to podcrypt.app/downloads for more information</div>
+                        </div>
                     `, Store.getState().screenType);
                 }
                 else {
                     pcAlert(html`
-                        <div>${error}</div>
+                        <div style="${alertPadding}">${error}</div>
                     `, Store.getState().screenType);
                 }
             }
@@ -394,7 +397,7 @@ StorePromise.then((Store) => {
             }
             catch(error) {
                 pcAlert(html`
-                    <div>${error}</div>
+                    <div style="${alertPadding}">${error}</div>
                 `, Store.getState().screenType);
             }
         }
