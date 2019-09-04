@@ -29,7 +29,8 @@ import {
 } from 'idb-keyval';
 import './pc-loading';
 import { 
-    pcAlert
+    pcAlert,
+    PCModal
 } from './pc-modal';
 
 StorePromise.then((Store) => {
@@ -252,18 +253,69 @@ StorePromise.then((Store) => {
                             ${
                                 options ?
                                 html`
-                                    <select
-                                        @change=${(e: any) => optionsChange(e, podcast, episode)}
-                                        class="pc-episode-row-options-select"
+                                    <i
+                                        class="material-icons pc-podcast-row-options-icon"
+                                        @click=${() => pcAlert(html`
+                                            <div style="display: flex; flex-direction: column; align-items: center">
+                                                <div 
+                                                    class="pc-podcast-row-options-item"
+                                                    @click=${() => {
+                                                        copyEpisodeURLOption(podcast, episode);
+                                                        (document.querySelector('pc-modal') as Readonly<PCModal>).closeClick();
+                                                    }}
+                                                >
+                                                    Copy episode URL
+                                                </div>
+                                                <div
+                                                    class="pc-podcast-row-options-item"
+                                                    @click=${() => {
+                                                        downloadOption(podcast, episode);
+                                                        (document.querySelector('pc-modal') as Readonly<PCModal>).closeClick();
+                                                    }}
+                                                >
+                                                    Download
+                                                </div>
+                                                <div 
+                                                    class="pc-podcast-row-options-item"
+                                                    @click=${() => {
+                                                        markListenedOption(podcast, episode);
+                                                        (document.querySelector('pc-modal') as Readonly<PCModal>).closeClick();
+                                                    }}
+                                                >
+                                                    Mark listened
+                                                </div>
+                                                <div 
+                                                    class="pc-podcast-row-options-item"
+                                                    @click=${() => {
+                                                        markUnlistenedOption(podcast, episode);
+                                                        (document.querySelector('pc-modal') as Readonly<PCModal>).closeClick();
+                                                    }}
+                                                >
+                                                    Mark unlistened
+                                                </div>
+                                                <div 
+                                                    class="pc-podcast-row-options-item"
+                                                    @click=${() => {
+                                                        removeFromPlaylistOption(episode);
+                                                        (document.querySelector('pc-modal') as Readonly<PCModal>).closeClick();
+                                                    }}
+                                                >
+                                                    Remove from playlist
+                                                </div>
+                                                <div 
+                                                    class="pc-podcast-row-options-item"
+                                                    @click=${() => {
+                                                        deleteOption(episode);
+                                                        (document.querySelector('pc-modal') as Readonly<PCModal>).closeClick();
+                                                    }}
+                                                >
+                                                    Delete
+                                                </div>
+                                            </div>
+                                        `, Store.getState().screenType)}
                                     >
-                                        <option>...</option>
-                                        <option>Copy episode URL</option>
-                                        <option>Download</option>
-                                        <option>Mark listened</option>
-                                        <option>Mark unlistened</option>
-                                        <option>Remove from playlist</option>
-                                        <option>Delete</option>
-                                    </select>
+                                        more_horiz
+                                    </i>
                                 ` :
                                 html``
                             }
@@ -328,108 +380,99 @@ StorePromise.then((Store) => {
         });
     }
 
-    async function optionsChange(e: any, podcast: Readonly<Podcast>, episode: Readonly<Episode>) {
+    function copyEpisodeURLOption(podcast: Readonly<Podcast>, episode: Readonly<Episode>) {
+        copyTextToClipboard(`${window.location.origin}/episode-overview?feedUrl=${podcast.feedUrl}&episodeGuid=${episode.guid}`);
+    }
 
-        // TODO constantize each of the options in the dropdown
+    async function downloadOption(podcast: Readonly<Podcast>, episode: Readonly<Episode>) {
+        try {
+            Store.dispatch({
+                type: 'ADD_OR_UPDATE_EPISODE',
+                podcast,
+                episode
+            });
 
-        const value = e.target.value;
+            // this is to ensure we have a clean slate before overwriting the data
+            await deleteDownloadedEpisode(Store, episode);
 
-        e.target.value = '...';
+            Store.dispatch({
+                type: 'SET_EPISODE_DOWNLOAD_STATE',
+                episodeGuid: episode.guid,
+                downloadState: 'DOWNLOADING'
+            });
 
-        if (value === 'Remove from playlist') {
-            removeEpisodeFromPlaylist(episode.guid);
+            await fetchAndSaveAudioFile(episode);
+
+            Store.dispatch({
+                type: 'SET_EPISODE_DOWNLOAD_STATE',
+                episodeGuid: episode.guid,
+                downloadState: 'DOWNLOADED'
+            });
+
+            // TODO this is so that when switching between episodes, the episode will play
+            // TODO this could probably be in a more elegant way
+            Store.dispatch({
+                type: 'RENDER'
+            });
         }
-
-        if (value === 'Download') {
-            try {
-                Store.dispatch({
-                    type: 'ADD_OR_UPDATE_EPISODE',
-                    podcast,
-                    episode
-                });
-
-                // this is to ensure we have a clean slate before overwriting the data
-                await deleteDownloadedEpisode(Store, episode);
-
-                Store.dispatch({
-                    type: 'SET_EPISODE_DOWNLOAD_STATE',
-                    episodeGuid: episode.guid,
-                    downloadState: 'DOWNLOADING'
-                });
-
-                await fetchAndSaveAudioFile(episode);
-
-                Store.dispatch({
-                    type: 'SET_EPISODE_DOWNLOAD_STATE',
-                    episodeGuid: episode.guid,
-                    downloadState: 'DOWNLOADED'
-                });
-
-                // TODO this is so that when switching between episodes, the episode will play
-                // TODO this could probably be in a more elegant way
-                Store.dispatch({
-                    type: 'RENDER'
-                });
+        catch(error) {
+            await deleteDownloadedEpisode(Store, episode);
+            
+            if (error.toString().includes('QuotaExceededError')) {
+                pcAlert(html`
+                    <div style="${alertPadding}">
+                        <div>You have run out of storage space.</div>
+                        <br>
+                        <div>Go to podcrypt.app/downloads for more information</div>
+                    </div>
+                `, Store.getState().screenType);
             }
-            catch(error) {
-                await deleteDownloadedEpisode(Store, episode);
-                
-                if (error.toString().includes('QuotaExceededError')) {
-                    pcAlert(html`
-                        <div style="${alertPadding}">
-                            <div>You have run out of storage space.</div>
-                            <br>
-                            <div>Go to podcrypt.app/downloads for more information</div>
-                        </div>
-                    `, Store.getState().screenType);
-                }
-                else {
-                    pcAlert(html`
-                        <div style="${alertPadding}">${error}</div>
-                    `, Store.getState().screenType);
-                }
-            }
-        }
-
-        if (value === 'Delete') {
-            try {
-                await deleteDownloadedEpisode(Store, episode);
-            }
-            catch(error) {
+            else {
                 pcAlert(html`
                     <div style="${alertPadding}">${error}</div>
                 `, Store.getState().screenType);
             }
         }
+    }
 
-        if (value === 'Mark listened') {
-            Store.dispatch({
-                type: 'ADD_OR_UPDATE_EPISODE',
-                podcast,
-                episode
-            });
+    async function markListenedOption(podcast: Readonly<Podcast>, episode: Readonly<Episode>) {
+        Store.dispatch({
+            type: 'ADD_OR_UPDATE_EPISODE',
+            podcast,
+            episode
+        });
 
-            Store.dispatch({
-                type: 'MARK_EPISODE_LISTENED',
-                episodeGuid: episode.guid
-            })
+        Store.dispatch({
+            type: 'MARK_EPISODE_LISTENED',
+            episodeGuid: episode.guid
+        });
+    }
+
+    async function markUnlistenedOption(podcast: Readonly<Podcast>, episode: Readonly<Episode>) {
+        Store.dispatch({
+            type: 'ADD_OR_UPDATE_EPISODE',
+            podcast,
+            episode
+        });
+
+        Store.dispatch({
+            type: 'MARK_EPISODE_UNLISTENED',
+            episodeGuid: episode.guid
+        });
+    }
+
+    async function removeFromPlaylistOption(episode: Readonly<Episode>) {
+        removeEpisodeFromPlaylist(episode.guid);
+    }
+
+    async function deleteOption(episode: Readonly<Episode>) {
+        try {
+            await deleteDownloadedEpisode(Store, episode);
         }
-
-        if (value === 'Mark unlistened') {
-            Store.dispatch({
-                type: 'ADD_OR_UPDATE_EPISODE',
-                podcast,
-                episode
-            });
-
-            Store.dispatch({
-                type: 'MARK_EPISODE_UNLISTENED',
-                episodeGuid: episode.guid
-            })
-        }
-
-        if (value === 'Copy episode URL') {
-            copyTextToClipboard(`${window.location.origin}/episode-overview?feedUrl=${podcast.feedUrl}&episodeGuid=${episode.guid}`);
+        catch(error) {
+            pcAlert(html`
+                <div style="${alertPadding}">${error}</div>
+            `, Store.getState().screenType);
         }
     }
 

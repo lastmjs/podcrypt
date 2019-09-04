@@ -6,7 +6,7 @@ import {
     TemplateResult
 } from 'lit-html';
 
-class PCModal extends HTMLElement {
+export class PCModal extends HTMLElement {
 
     okayClick() {
         this.dispatchEvent(new CustomEvent('okay'));
