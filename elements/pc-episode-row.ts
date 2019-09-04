@@ -27,6 +27,7 @@ import {
     keys
 } from 'idb-keyval';
 import './pc-loading';
+import { pcAlert } from './pc-modal';
 
 StorePromise.then((Store) => {
     customElement('pc-episode-row', ({ 
@@ -373,10 +374,16 @@ StorePromise.then((Store) => {
             }
             catch(error) {
                 if (error.toString().includes('QuotaExceededError')) {
-                    alert(`You have run out of storage space. Go to podcrypt.app/downloads for more information`);
+                    pcAlert(html`
+                        <div>You have run out of storage space.</div>
+                        <br>
+                        <div>Go to podcrypt.app/downloads for more information</div>
+                    `, Store.getState().screenType);
                 }
                 else {
-                    alert(error);
+                    pcAlert(html`
+                        <div>${error}</div>
+                    `, Store.getState().screenType);
                 }
             }
         }
@@ -386,7 +393,9 @@ StorePromise.then((Store) => {
                 await deleteDownloadedEpisode(Store, episode);
             }
             catch(error) {
-                alert(error);
+                pcAlert(html`
+                    <div>${error}</div>
+                `, Store.getState().screenType);
             }
         }
 

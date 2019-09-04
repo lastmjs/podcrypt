@@ -19,6 +19,7 @@ import {
     deleteDownloadedEpisode
 } from '../services/utilities';
 import BigNumber from "../node_modules/bignumber.js/bignumber";
+import { pcAlert } from './pc-modal';
 
 StorePromise.then((Store) => {
     customElement('pc-podcast-row', ({ 
@@ -162,7 +163,7 @@ StorePromise.then((Store) => {
                                                         html`<button style="color: red; border: none; padding: 5px; margin: 5px; cursor: pointer;" @click=${(e: any) => notVerifiedHelpClick(e, podcast)}>Not verified - click to help</button>` :
                                                         podcast.ethereumAddress === 'MALFORMED' ?
                                                 html`<button style="color: red; border: none; padding: 5px; margin: 5px" @click=${(e: any) => notVerifiedHelpClick(e, podcast)}>Not verified - click to help</button>` :
-                                                            html`<button style="color: green; border: none; padding: 5px; margin: 5px; cursor: pointer;" @click=${(e: any) => { e.stopPropagation(); alert(`This podcast's Ethereum address: ${podcast.ethereumAddress}`)} }>Verified</button>` }
+                                                            html`<button style="color: green; border: none; padding: 5px; margin: 5px; cursor: pointer;" @click=${(e: any) => { e.stopPropagation(); pcAlert(html`<div>This podcast's Ethereum address:</div><br><div style="word-wrap: break-word">${podcast.ethereumAddress}</div>`, Store.getState().screenType)} }>Verified</button>` }
                                             </div>
                                         ` : html``
                                 }
@@ -235,7 +236,9 @@ StorePromise.then((Store) => {
         const podcast: Readonly<Podcast> | null = await createPodcast(feedUrl);
 
         if (podcast === null) {
-            alert('Could not subscribe to podcast');
+            pcAlert(html`
+                <div>Could not subscribe to podcast</div>
+            `, Store.getState().screenType);
             return;
         }
 
@@ -295,7 +298,7 @@ StorePromise.then((Store) => {
             const feed: Readonly<Feed> | null = await getFeed(podcast.feedUrl);
 
             if (feed === null) {
-                alert('The feed could not be loaded');
+                pcAlert(html`The feed could not be loaded`, Store.getState().screenType);
                 return;
             }
 
@@ -312,7 +315,7 @@ StorePromise.then((Store) => {
             const feed: Readonly<Feed> | null = await getFeed(podcast.feedUrl);
 
             if (feed === null) {
-                alert('The feed could not be loaded');
+                pcAlert(html`The feed could not be loaded`, Store.getState().screenType);
                 return;
             }
 

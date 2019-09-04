@@ -3,6 +3,7 @@ import { StorePromise } from '../state/store';
 import { pcContainerStyles } from '../services/css';
 import { createWallet } from '../services/balance-calculations';
 import { navigate } from '../services/utilities';
+import { pcAlert } from './pc-modal';
 
 StorePromise.then((Store) => {
     customElement('pc-restore-with-phrase', ({ element }) => {
@@ -35,7 +36,9 @@ StorePromise.then((Store) => {
         const mnemonicPhrase: string = pcRestoreWithPhraseInput.value;
 
         if (mnemonicPhrase.split(' ').length !== 12) {
-            alert('Your secret phrase must have exactly 12 words');
+            pcAlert(html`
+                <div>Your secret phrase must have exactly 12 words</div>
+            `, Store.getState().screenType);
             return;
         }
 
