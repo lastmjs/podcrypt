@@ -447,7 +447,7 @@ StorePromise.then((Store) => {
         }
 
         if (currentEpisode.downloadState === 'DOWNLOADED') {
-            return `${podcryptDownloadURL}${currentEpisode.src}`;
+            return `https://proxy.podcrypt.app/downloaded/${currentEpisode.src}`;
         }
         else {
             return currentEpisode.src;
