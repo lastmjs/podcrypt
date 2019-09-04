@@ -28,8 +28,7 @@ import {
 } from 'idb-keyval';
 import './pc-loading';
 import { 
-    pcAlert,
-    pcConfirm
+    pcAlert
 } from './pc-modal';
 
 StorePromise.then((Store) => {
