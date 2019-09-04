@@ -116,16 +116,18 @@ StorePromise.then((Store) => {
                     margin-top: ${pxXXSmall};
                 }
 
-                .pc-podcast-row-options-select {
-                    border: none;
-                    background-color: transparent;
-                    width: 35px;
+
+                .pc-podcast-row-options-icon {
                     cursor: pointer;
-                    position: absolute;
-                    top: 5px;
-                    right: 5px;
                 }
 
+                .pc-podcast-row-options-item {
+                    font-weight: bold;
+                    cursor: pointer;
+                    padding: calc(10px + 1vmin);
+                    border-bottom: 1px solid grey;
+                    text-align: center;                    
+                }
             </style>
 
             <div class="pc-podcast-row-main-container">
@@ -213,17 +215,60 @@ StorePromise.then((Store) => {
                 ${
                     options ?
                     html`
-                        <select
-                            @change=${(e: any) => optionsChange(e, podcast)}
-                            class="pc-podcast-row-options-select"
+                        <i
+                            class="material-icons pc-podcast-row-options-icon"
+                            @click=${() => pcAlert(html`
+                                <div style="display: flex; flex-direction: column; align-items: center">
+                                    <div 
+                                        class="pc-podcast-row-options-item"
+                                        @click=${() => {
+                                            copyPodcastURLOption(podcast);
+                                            document.querySelector('pc-modal').closeClick();
+                                        }}
+                                    >
+                                        Copy podcast URL
+                                    </div>
+                                    <div
+                                        class="pc-podcast-row-options-item"
+                                        @click=${() => {
+                                            podcast.paymentsEnabled === true ? disablePaymentsOption(podcast) : enablePaymentsOption(podcast);
+                                            document.querySelector('pc-modal').closeClick();
+                                        }}
+                                    >
+                                        ${podcast.paymentsEnabled === true ? 'Disable' : 'Enable'} payments
+                                    </div>
+                                    <div 
+                                        class="pc-podcast-row-options-item"
+                                        @click=${() => {
+                                            addAllEpisodesOldestToNewestOption(podcast);
+                                            document.querySelector('pc-modal').closeClick();
+                                        }}
+                                    >
+                                        Add all episodes to playlist: oldest -> newest
+                                    </div>
+                                    <div 
+                                        class="pc-podcast-row-options-item"
+                                        @click=${() => {
+                                            addAllEpisodesNewestToOldestOption(podcast);
+                                            document.querySelector('pc-modal').closeClick();
+                                        }}
+                                    >
+                                        Add all episodes to playlist: newest -> oldest
+                                    </div>
+                                    <div 
+                                        class="pc-podcast-row-options-item"
+                                        @click=${() => {
+                                            deleteOption(podcast);
+                                            document.querySelector('pc-modal').closeClick();
+                                        }}
+                                    >
+                                        Delete
+                                    </div>
+                                </div>
+                            `, Store.getState().screenType)}
                         >
-                            <option>...</option>
-                            <option>Copy podcast URL</option>
-                            <option>${podcast.paymentsEnabled === true ? 'Disable' : 'Enable'} payments</option>
-                            <option>Add all episodes to playlist: oldest -> newest</option>
-                            <option>Add all episodes to playlist: newest -> oldest</option>
-                            <option>Delete</option>
-                        </select>
+                            more_horiz
+                        </i>
                     ` :
                     html``
                 }
@@ -257,12 +302,8 @@ StorePromise.then((Store) => {
         navigate(Store, `/not-verified-help?feedUrl=${podcast.feedUrl}&podcastEmail=${podcast.email}`);
     }
 
-    async function optionsChange(e: any, podcast: Readonly<Podcast>) {
-
-        // TODO constantize each of the options in the dropdown
-
-        if (e.target.value === 'Delete') {
-            const confirmation = await pcConfirm(html`
+    async function deleteOption(podcast: Readonly<Podcast>) {
+        const confirmation = await pcConfirm(html`
                 <div>Are you sure you want to delete this podcast and all of its data?</div>
             `, Store.getState().screenType);
 
@@ -280,27 +321,26 @@ StorePromise.then((Store) => {
                     podcast
                 });
             }
-        }
+    }
 
-        if (e.target.value === 'Enable payments') {
-            Store.dispatch({
-                type: 'SET_PODCAST_PAYMENTS_ENABLED',
-                feedUrl: podcast.feedUrl,
-                paymentsEnabled: true
-            });
-        }
+    async function enablePaymentsOption(podcast: Readonly<Podcast>) {
+        Store.dispatch({
+            type: 'SET_PODCAST_PAYMENTS_ENABLED',
+            feedUrl: podcast.feedUrl,
+            paymentsEnabled: true
+        });
+    }
 
-        if (e.target.value === 'Disable payments') {
-            Store.dispatch({
-                type: 'SET_PODCAST_PAYMENTS_ENABLED',
-                feedUrl: podcast.feedUrl,
-                paymentsEnabled: false
-            });
-        }
+    async function disablePaymentsOption(podcast: Readonly<Podcast>) {
+        Store.dispatch({
+            type: 'SET_PODCAST_PAYMENTS_ENABLED',
+            feedUrl: podcast.feedUrl,
+            paymentsEnabled: false
+        });
+    }
 
-
-        if (e.target.value === 'Add all episodes to playlist: oldest -> newest') {
-            const feed: Readonly<Feed> | null = await getFeed(podcast.feedUrl);
+    async function addAllEpisodesOldestToNewestOption(podcast: Readonly<Podcast>) {
+        const feed: Readonly<Feed> | null = await getFeed(podcast.feedUrl);
 
             if (feed === null) {
                 pcAlert(html`The feed could not be loaded`, Store.getState().screenType);
@@ -314,25 +354,23 @@ StorePromise.then((Store) => {
             sortedItems.forEach((item: any) => {
                 addEpisodeToPlaylist(Store, podcast, item);
             });
-        }
-
-        if (e.target.value === 'Add all episodes to playlist: newest -> oldest') {
-            const feed: Readonly<Feed> | null = await getFeed(podcast.feedUrl);
-
-            if (feed === null) {
-                pcAlert(html`The feed could not be loaded`, Store.getState().screenType);
-                return;
-            }
-
-            feed.items.forEach((item: any) => {
-                addEpisodeToPlaylist(Store, podcast, item);
-            });
-        }
-
-        if (e.target.value === 'Copy podcast URL') {
-            copyTextToClipboard(`${window.location.origin}/podcast-overview?feedUrl=${podcast.feedUrl}`);
-        }
-
-        e.target.value = '...';
     }
+
+    async function addAllEpisodesNewestToOldestOption(podcast: Readonly<Podcast>) {
+        const feed: Readonly<Feed> | null = await getFeed(podcast.feedUrl);
+
+        if (feed === null) {
+            pcAlert(html`The feed could not be loaded`, Store.getState().screenType);
+            return;
+        }
+
+        feed.items.forEach((item: any) => {
+            addEpisodeToPlaylist(Store, podcast, item);
+        });
+    }
+
+    function copyPodcastURLOption(podcast: Readonly<Podcast>) {
+        copyTextToClipboard(`${window.location.origin}/podcast-overview?feedUrl=${podcast.feedUrl}`);
+    }
+
 });

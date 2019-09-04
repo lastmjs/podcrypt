@@ -1,3 +1,5 @@
+// TODO the padding and stuff should probably be controlled from the outside
+
 import { 
     html,
     render as litRender,
@@ -37,7 +39,7 @@ class PCModal extends HTMLElement {
                     margin-right: auto;
                     left: 0;
                     right: 0;
-                    top: 25vh;
+                    top: 10vh;
                     padding: calc(50px + 1vmin);
                     padding-bottom: calc(75px + 1vmin);
                     z-index: 1000;
