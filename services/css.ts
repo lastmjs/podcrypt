@@ -91,4 +91,4 @@ export const mediumTextContainer = `
     overflow-wrap: break-word;
 `;
 
-export const alertPadding = `padding: calc(50px + 1vmin) calc(50px + 1vmin) 0px calc(50px + 1vmin)`;
+export const alertPadding = `padding: calc(25px + 1vmin)`;

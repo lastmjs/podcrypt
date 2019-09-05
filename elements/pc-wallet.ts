@@ -41,6 +41,8 @@ import {
     pcAlert,
     pcConfirm
 } from './pc-modal';
+import './pc-wallet-warnings';
+import './pc-show-mnemonic-phrase';
 
 StorePromise.then((Store) => {
     customElement('pc-wallet', ({ constructing, connecting, update, loaded }) => {
@@ -124,13 +126,7 @@ StorePromise.then((Store) => {
                 ></pc-loading>
 
                 ${
-                    Store.getState().walletCreationState === 'CREATED' ? 
-                        walletUI() :
-                        Store.getState().walletCreationState === 'CREATING' ?
-                            html`<div>Creating wallet...</div>` :
-                            Store.getState().walletCreationState === 'SHOW_MNEMONIC_PHRASE' ?
-                                until(mnemonicPhraseUI(), 'Loading...') :
-                                warningsUI(update)
+                    walletUI()
                 }
             </div>
         `;
@@ -221,10 +217,10 @@ StorePromise.then((Store) => {
 
             <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: center">
                 <div style="display: flex; justify-content: center; align-items: center; margin: calc(5px + 1vmin)">
-                    <pc-button @click=${() => pcAlert(html`<div style="${alertPadding}"><div>Coming soon to most US states:</div><br><div>Buy ETH with your debit card</div></div>`, Store.getState().screenType)} .text=${'Buy ETH'}></pc-button>
+                    <pc-button @click=${buyETHClick} .text=${'Buy ETH'}></pc-button>
                 </div>
                 <div style="display: flex; justify-content: center; align-items: center; margin: calc(5px + 1vmin)">
-                    <pc-button @click=${() => navigate(Store, '/receive-eth')} .text=${'Receive ETH'}></pc-button>
+                    <pc-button @click=${receiveETHClick} .text=${'Receive ETH'}></pc-button>
                 </div>
                 <div style="display: flex; justify-content: center; align-items: center; margin: calc(5px + 1vmin)">
                     <pc-button @click=${payNowClick} .text=${'Pay now'}></pc-button>
@@ -282,113 +278,131 @@ StorePromise.then((Store) => {
         `;
     }
 
-    function warningsUI(update: any) {
-        return html`
-            <div>
-                <div class="pc-wallet-secondary-text">I understand the following:</div>
-                <br>
-                <div class="pc-wallet-secondary-text">
-                    <input 
-                        type="checkbox"
-                        @change=${checkbox1InputChanged}
-                        .checked=${Store.getState().warningCheckbox1Checked}
-                    >
-                    Podcrypt is offered to me under the terms of the <a href="https://opensource.org/licenses/MIT" target="_blank">MIT license</a>, which essentially means I have a license to do whatever I like with Podcrypt, but there is no warranty as far as possible
+    async function buyETHClick() {
+        
+        const state: Readonly<State> = Store.getState();
+
+        if (
+            state.warningCheckbox1Checked === false ||
+            state.warningCheckbox2Checked === false ||
+            state.warningCheckbox3Checked === false ||
+            state.warningCheckbox4Checked === false ||
+            state.warningCheckbox5Checked === false
+        ) {
+            const confirmation = await pcConfirm(html`
+                <div style="padding: calc(5px + 1vmin)">
+                    <pc-wallet-warnings></pc-wallet-warnings>
                 </div>
+            `, state.screenType);
+            
+            if (confirmation === true) {
+                buyETHClick();
+            }
+            
+            return;
+        }
 
-                <br>
-
-                <div class="pc-wallet-secondary-text">
-                    <input
-                        type="checkbox"
-                        @change=${checkbox2InputChanged}
-                        .checked=${Store.getState().warningCheckbox2Checked}
-                    >
-                    This is alpha software
+        if (
+            state.mnemonicPhraseWarningCheckboxChecked === false
+        ) {
+            const confirmation = await pcConfirm(html`
+                <div style="padding: calc(5px + 1vmin)">
+                    <pc-show-mnemonic-phrase></pc-show-mnemonic-phrase>
                 </div>
-
-                <br>
-
-                <div class="pc-wallet-secondary-text">
-                    <input
-                        type="checkbox"
-                        @change=${checkbox3InputChanged}
-                        .checked=${Store.getState().warningCheckbox3Checked}
-                    >
-                    Anything could go wrong
-                </div>
-
-                <br>
-
-                <div class="pc-wallet-secondary-text">
-                    <input
-                        type="checkbox"
-                        @change=${checkbox4InputChanged}
-                        .checked=${Store.getState().warningCheckbox4Checked}
-                    >
-                    I am responsible for using Podcrypt legally, including determining taxes and other potential legal implications
-                </div>
-
-                <br>
-
-                <div class="pc-wallet-secondary-text">
-                    <input
-                        type="checkbox"
-                        @change=${checkbox5InputChanged}
-                        .checked=${Store.getState().warningCheckbox5Checked}
-                    >
-                    Podcrypt Alpha uses the Ethereum network for payments. I should only send ETH to Podcrypt Alpha.
-                </div>
-
-                <br>
-
-                <pc-button
-                    .text=${'Create Wallet'}
-                    @click=${() => createWalletClick(update)}
-                ></pc-button>
-
-            </div>
-
-        `;
+            `, state.screenType);
+            
+            if (confirmation === true) {
+                buyETHClick();
+            }
+            
+            return;
+        }
+        
+        pcAlert(html`<div style="${alertPadding}"><div>Coming soon to most US states:</div><br><div>Buy ETH with your debit card</div></div>`, Store.getState().screenType)
     }
 
-    async function mnemonicPhraseUI() {
-        const mnemonicPhrase = await get('ethereumMnemonicPhrase');
+    async function receiveETHClick() {
+        const state: Readonly<State> = Store.getState();
 
-        return html`
-            <div>
-                <br>
-                <div class="pc-wallet-secondary-text-without-container">Your secret 12 word phrase:</div>
-
-                <br>
-
-                <div class="pc-wallet-secondary-text">${mnemonicPhrase}</div>
-                
-                <br>
-                
-                <div class="pc-wallet-secondary-text-without-container">You should immediately store this phrase somewhere safe. If something terrible happens to your Podcrypt wallet, you may be able to use this phrase to restore it.</div>
-                
-                <br>
-
-                <div class="pc-wallet-secondary-text-without-container">If you do not immediately store this phrase somewhere safe, you are more likely to lose any money that you send to Podcrypt.</div>
-                
-                <br>
-
-                <div class="pc-wallet-secondary-text">
-                    <input 
-                        type="checkbox"
-                        @change=${mnemonicPhraseWarningInputChanged}
-                        .checked=${Store.getState().mnemonicPhraseWarningCheckboxChecked}
-                    >
-                    I understand
+        if (
+            state.warningCheckbox1Checked === false ||
+            state.warningCheckbox2Checked === false ||
+            state.warningCheckbox3Checked === false ||
+            state.warningCheckbox4Checked === false ||
+            state.warningCheckbox5Checked === false
+        ) {
+            const confirmation = await pcConfirm(html`
+                <div style="padding: calc(5px + 1vmin)">
+                    <pc-wallet-warnings></pc-wallet-warnings>
                 </div>
-                <br>
-                <pc-button @click=${goToMyWalletClick} .text=${'Go to My Wallet'}></pc-button>
-            </div>
-        `;
+            `, state.screenType);
+            
+            if (confirmation === true) {
+                receiveETHClick();
+            }
+            
+            return;
+        }
+
+        if (
+            state.mnemonicPhraseWarningCheckboxChecked === false
+        ) {
+            const confirmation = await pcConfirm(html`
+                <div style="padding: calc(5px + 1vmin)">
+                    <pc-show-mnemonic-phrase></pc-show-mnemonic-phrase>
+                </div>
+            `, state.screenType);
+            
+            if (confirmation === true) {
+                receiveETHClick();
+            }
+            
+            return;
+        }
+
+        navigate(Store, '/receive-eth');        
     }
 
     async function payNowClick() {
+
+        const state: Readonly<State> = Store.getState();
+
+        if (
+            state.warningCheckbox1Checked === false ||
+            state.warningCheckbox2Checked === false ||
+            state.warningCheckbox3Checked === false ||
+            state.warningCheckbox4Checked === false ||
+            state.warningCheckbox5Checked === false
+        ) {
+            const confirmation = await pcConfirm(html`
+                <div style="padding: calc(5px + 1vmin)">
+                    <pc-wallet-warnings></pc-wallet-warnings>
+                </div>
+            `, state.screenType);
+            
+            if (confirmation === true) {
+                payNowClick();
+            }
+            
+            return;
+        }
+
+        if (
+            state.mnemonicPhraseWarningCheckboxChecked === false
+        ) {
+            const confirmation = await pcConfirm(html`
+                <div style="padding: calc(5px + 1vmin)">
+                    <pc-show-mnemonic-phrase></pc-show-mnemonic-phrase>
+                </div>
+            `, state.screenType);
+            
+            if (confirmation === true) {
+                payNowClick();
+            }
+            
+            return;
+        }
+
         const result = await pcConfirm(html`
             <div style="${alertPadding}">Are you sure you want to pay out now?</div>
         `, Store.getState().screenType);
@@ -400,90 +414,6 @@ StorePromise.then((Store) => {
 
     function restoreWithPhrase() {
         navigate(Store, '/restore-with-phrase');
-    }
-
-    async function createWalletClick(update: any) {
-        const warningsAccepted = 
-            Store.getState().warningCheckbox1Checked &&
-            Store.getState().warningCheckbox2Checked &&
-            Store.getState().warningCheckbox3Checked &&
-            Store.getState().warningCheckbox4Checked &&
-            Store.getState().warningCheckbox5Checked;
-
-        if (!warningsAccepted) {
-            pcAlert(html`
-                <div style="${alertPadding}">Silly you, you must understand</div>
-            `, Store.getState().screenType);
-        }
-        else {
-            update({
-                loaded: false
-            });
-
-            await createWallet(Store);
-
-            update({
-                loaded: true
-            });
-        }
-    }
-
-    function checkbox1InputChanged(e: any) {
-        Store.dispatch({
-            type: 'SET_WARNING_CHECKBOX_1_CHECKED',
-            checked: e.target.checked
-        });
-    }
-
-    function checkbox2InputChanged(e: any) {
-        Store.dispatch({
-            type: 'SET_WARNING_CHECKBOX_2_CHECKED',
-            checked: e.target.checked
-        });
-    }
-
-    function checkbox3InputChanged(e: any) {
-        Store.dispatch({
-            type: 'SET_WARNING_CHECKBOX_3_CHECKED',
-            checked: e.target.checked
-        });
-    }
-
-    function checkbox4InputChanged(e: any) {
-        Store.dispatch({
-            type: 'SET_WARNING_CHECKBOX_4_CHECKED',
-            checked: e.target.checked
-        });
-    }
-
-    function checkbox5InputChanged(e: any) {
-        Store.dispatch({
-            type: 'SET_WARNING_CHECKBOX_5_CHECKED',
-            checked: e.target.checked
-        });
-    }
-
-    function mnemonicPhraseWarningInputChanged(e: any) {
-        Store.dispatch({
-            type: 'SET_MNEMONIC_PHRASE_WARNING_CHECKBOX_CHECKED',
-            checked: e.target.checked
-        });
-    }
-
-    function goToMyWalletClick() {
-        const mnemonicPhraseWarningAccepted: boolean = Store.getState().mnemonicPhraseWarningCheckboxChecked;
-
-        if (!mnemonicPhraseWarningAccepted) {
-            pcAlert(html`
-                <div style="${alertPadding}">Do you want to lose all of your money?</div>
-            `, Store.getState().screenType);
-        }
-        else {
-            Store.dispatch({
-                type: 'SET_WALLET_CREATION_STATE',
-                walletCreationState: 'CREATED'
-            });
-        }
     }
 
     function payoutIntervalInDaysInputChanged(e: any) {
