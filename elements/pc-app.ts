@@ -39,6 +39,7 @@ import {
 } from '../services/css';
 import '../services/listeners';
 import { pcAlert } from './pc-modal';
+import { createWallet } from '../services/balance-calculations';
 
 // TODO I do not like how we have to do this to get the store...top level await would be really nice
 StorePromise.then((Store) => {
@@ -47,6 +48,10 @@ StorePromise.then((Store) => {
 
         if (constructing) {
             Store.subscribe(update);
+
+            if (Store.getState().walletCreationState === 'NOT_CREATED') {
+                createWallet(Store);
+            }
         }
 
         const state: Readonly<State> = Store.getState();

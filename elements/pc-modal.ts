@@ -1,5 +1,3 @@
-// TODO the padding and stuff should probably be controlled from the outside
-
 import { 
     html,
     render as litRender,
@@ -40,11 +38,14 @@ export class PCModal extends HTMLElement {
                     left: 0;
                     right: 0;
                     top: 10vh;
-                    /* padding: calc(50px + 1vmin); */
-                    padding-bottom: calc(75px + 1vmin);
                     z-index: 1000;
                     border-radius: calc(1vmin);
                     box-sizing: border-box;
+                    max-height: 80vh;
+                    overflow-y: scroll;
+                }
+
+                .pc-modal-content-container {
                 }
 
                 .pc-modal-background {
@@ -58,9 +59,8 @@ export class PCModal extends HTMLElement {
                 }
 
                 .pc-modal-button-container {
-                    position: absolute;
-                    bottom: calc(10px + 1vmin);
-                    right: calc(10px + 1vmin);
+                    padding: calc(10px + 1vmin);
+                    display: flex;
                 }
 
                 .pc-modal-button {
@@ -77,6 +77,7 @@ export class PCModal extends HTMLElement {
                 .pc-modal-close-button {
                     color: white;
                     background-color: grey;
+                    margin-left: auto;
                 }
 
                 .pc-modal-okay-button {
@@ -87,27 +88,31 @@ export class PCModal extends HTMLElement {
                 .pc-modal-cancel-button {
                     color: black;
                     background-color: white;
+                    margin-left: auto;
                 }
             </style>
 
             <div class="pc-modal-main-container">
-                ${templateResult}
+                <div class="pc-modal-content-container">
+                    ${templateResult}
+                </div>
 
                 <div 
                     ?hidden=${modalType !== 'CONFIRM'}
-                    class="pc-modal-button-container"
                 >
-                    <button class="pc-modal-button pc-modal-cancel-button" @click=${() => this.cancelClick()}>Cancel</button>
-                    <button class="pc-modal-button pc-modal-okay-button" @click=${() => this.okayClick()}>Okay</button>
+                    <div class="pc-modal-button-container">
+                        <button class="pc-modal-button pc-modal-cancel-button" @click=${() => this.cancelClick()}>Cancel</button>
+                        <button class="pc-modal-button pc-modal-okay-button" @click=${() => this.okayClick()}>Okay</button>
+                    </div>
                 </div>
 
                 <div 
                     ?hidden=${modalType !== 'ALERT'}
-                    class="pc-modal-button-container"
                 >
-                    <button class="pc-modal-button pc-modal-close-button" @click=${() => this.closeClick()}>Close</button>
+                    <div class="pc-modal-button-container">
+                        <button class="pc-modal-button pc-modal-close-button" @click=${() => this.closeClick()}>Close</button>
+                    </div>
                 </div>
-
             </div>
 
             <div class="pc-modal-background"></div>
