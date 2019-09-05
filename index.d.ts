@@ -572,3 +572,22 @@ type AudioSources = {
     readonly audio1Src: string | 'NOT_SET';
     readonly audio2Src: string | 'NOT_SET';
 }
+
+type EthereumTransactionDatum = {
+    readonly id: string;
+    readonly to: EthereumAddress;
+    readonly value: WEI;
+    readonly gasLimit: number;
+    readonly gasPrice: WEI;
+    readonly data: HexString;
+}
+
+// TODO make sure the types are good here...hex strings might be used a lot
+type EthereumTransaction = {
+    readonly to: EthereumAddress;
+    readonly value: WEI;
+    readonly gasLimit: number;
+    readonly gasPrice: WEI;
+    readonly nonce: number;
+    readonly data: HexString;
+}
