@@ -51,12 +51,18 @@ export function getPayoutTargetInWEI(state: Readonly<State>): string | 'Loading.
     return state.currentETHPriceInUSDCents === 'UNKNOWN' ? 'Loading...' : payoutTargetInWEI;
 }
 
-export async function payout(Store: Readonly<Store<Readonly<State>, Readonly<PodcryptAction>>>, retryDelayInMilliseconds: Milliseconds): Promise<void> {
+// TODO I have removed most of the retry stuff...put it back in
+// TODO Why not persist the latest EthereumTransactionData in the redux store, then if anything happens the payout process continues from there?
+export async function payout(
+    Store: Readonly<Store<Readonly<State>, Readonly<PodcryptAction>>>,
+    retryDelayInMilliseconds: Milliseconds
+): Promise<void> {
         
     await loadCurrentETHPriceInUSDCents(Store);
     await loadEthereumAccountBalance(Store);
 
     if (Store.getState().payoutProblem !== 'NO_PROBLEM') {
+        // TODO should we not tell the user about this?
         return;
     }
 
@@ -72,63 +78,55 @@ export async function payout(Store: Readonly<Store<Readonly<State>, Readonly<Pod
         return;
     }
 
-    const podcasts: ReadonlyArray<Podcast> = Object.values(Store.getState().podcasts);
+    const podcastEthereumTransactionData: ReadonlyArray<EthereumTransactionDatum> = await getPodcastEthereumTransactionData(Store);
+    const podcryptEthereumTransactionDatumResult: Readonly<EthereumTransactionDatum> | 'ALREADY_PAID_FOR_INTERVAL' | 'NET_VALUE_TOO_SMALL' = await getPodcryptEthereumTransactionDatum(Store.getState());
 
-    for (let i=0; i < podcasts.length; i++) {
-        const podcast: Readonly<Podcast> = podcasts[i];
+    console.log('podcastEthereumTransactionData', podcastEthereumTransactionData);
+    console.log('podcryptEthereumTransactionDatumResult', podcryptEthereumTransactionDatumResult);
 
-        const podcastTransactionResult = await payPodcast(Store, podcast, retryDelayInMilliseconds);
+    for (let i=0; i < podcastEthereumTransactionData.length; i++) {
+        const podcastEthereumTransactionDatum: Readonly<EthereumTransactionDatum> = podcastEthereumTransactionData[i];
 
-        if (
-            // TODO I think we should distinguish ALREADY_PAID_FOR_INTERVAL and nothing to pay for interval. Right now these two return types are indistinguishable
-            podcastTransactionResult === 'ALREADY_PAID_FOR_INTERVAL' ||
-            podcastTransactionResult === 'FEED_NOT_FOUND' ||
-            podcastTransactionResult === 'PODCAST_ETHEREUM_ADDRESS_MALFORMED' ||
-            podcastTransactionResult === 'PODCAST_ETHEREUM_ADDRESS_NOT_FOUND' ||
-            podcastTransactionResult === 'PAYMENTS_DISABLED'
-        ) {
-            continue;
-        }
+        const podcastTransaction = await prepareAndSendTransaction(Store, podcastEthereumTransactionDatum);
 
-        Store.dispatch({
-            type: 'SET_PODCAST_LATEST_TRANSACTION_HASH',
-            feedUrl: podcast.feedUrl,
-            latestTransactionHash: podcastTransactionResult.hash
-        });
+        console.log('podcastTransaction', podcastTransaction);
 
         Store.dispatch({
             type: 'SET_PODCAST_PREVIOUS_PAYOUT_DATE',
-            feedUrl: podcast.feedUrl,
+            feedUrl: podcastEthereumTransactionDatum.id,
             previousPayoutDate: new Date().getTime()
+        });
+
+        Store.dispatch({
+            type: 'SET_PODCAST_LATEST_TRANSACTION_HASH',
+            feedUrl: podcastEthereumTransactionDatum.id,
+            latestTransactionHash: podcastTransaction.hash
+        });
+
+        Store.dispatch({
+            type: 'RESET_PODCAST_TIME_LISTENED_SINCE_PREVIOUS_PAYOUT',
+            feedUrl: podcastEthereumTransactionDatum.id
         });
     }
 
-    const podcryptTransactionResult = await payPodcrypt(Store, Store.getState(), retryDelayInMilliseconds);
-
     if (
-        podcryptTransactionResult !== 'ALREADY_PAID_FOR_INTERVAL' &&
-        podcryptTransactionResult !== 'FEED_NOT_FOUND' &&
-        podcryptTransactionResult !== 'PODCAST_ETHEREUM_ADDRESS_MALFORMED' &&
-        podcryptTransactionResult !== 'PODCAST_ETHEREUM_ADDRESS_NOT_FOUND' &&
-        podcryptTransactionResult !== 'PAYMENTS_DISABLED'
+        podcryptEthereumTransactionDatumResult !== 'ALREADY_PAID_FOR_INTERVAL' &&
+        podcryptEthereumTransactionDatumResult !== 'NET_VALUE_TOO_SMALL'
     ) {
-        Store.dispatch({
-            type: 'SET_PODCRYPT_LATEST_TRANSACTION_HASH',
-            podcryptLatestTransactionHash: podcryptTransactionResult.hash
-        });
+        const podcryptTransaction = await prepareAndSendTransaction(Store, podcryptEthereumTransactionDatumResult);
     
+        console.log('podcryptTransaction', podcryptTransaction);
+
         Store.dispatch({
             type: 'SET_PODCRYPT_PREVIOUS_PAYOUT_DATE',
             podcryptPreviousPayoutDate: new Date().getTime()
         });
-    }
 
-    podcasts.forEach((podcast: Readonly<Podcast>) => {
         Store.dispatch({
-            type: 'RESET_PODCAST_TIME_LISTENED_SINCE_PREVIOUS_PAYOUT',
-            feedUrl: podcast.feedUrl
-        });
-    });
+            type: 'SET_PODCRYPT_LATEST_TRANSACTION_HASH',
+            podcryptLatestTransactionHash: podcryptTransaction.hash
+        });    
+    }
 
     Store.dispatch({
         type: 'SET_PREVIOUS_PAYOUT_DATE',
@@ -142,6 +140,7 @@ export async function payout(Store: Readonly<Store<Readonly<State>, Readonly<Pod
         nextPayoutDate
     });
 
+    await loadCurrentETHPriceInUSDCents(Store);
     await loadEthereumAccountBalance(Store);
 
     Store.dispatch({
@@ -150,140 +149,115 @@ export async function payout(Store: Readonly<Store<Readonly<State>, Readonly<Pod
     });
 }
 
-async function payPodcast(Store: Readonly<Store>, podcast: Readonly<Podcast>, retryDelayInMilliseconds: Milliseconds): Promise<TransactionResult> {
-    try {
+// TODO it would be best to not pass the store into here...just make sure any store dispatches happen before here
+async function getPodcastEthereumTransactionData(Store: Readonly<Store<Readonly<State>, Readonly<PodcryptAction>>>): Promise<ReadonlyArray<EthereumTransactionDatum>> {
+    const podcasts: ReadonlyArray<Podcast> = Object.values(Store.getState().podcasts);
 
-        if (podcast.paymentsEnabled === false) {
-            return 'PAYMENTS_DISABLED';
-        }
+    const podcastEthereumTransactionData: ReadonlyArray<EthereumTransactionDatum> = await podcasts
+        .reduce(async (result: Promise<ReadonlyArray<EthereumTransactionDatum>>, podcast: Readonly<Podcast>) => {
 
-        const feed = await getRSSFeed(podcast.feedUrl);
+            if (podcast.paymentsEnabled === false) {
+                return result;
+            }
 
-        if (!feed) {
-            // TODO if this happens, we should somehow notify the user
-            // TODO add error states and ui stuff for each podcast so the user knows the state of everything
-            return 'FEED_NOT_FOUND';
-        }
-    
-        const podcastEthereumAddressInfo: Readonly<EthereumAddressInfo> = await getEthereumAddressFromPodcastDescription(feed.description);
-        const podcastEthereumAddress: EthereumAddress | 'NOT_FOUND' | 'MALFORMED' = podcastEthereumAddressInfo.ethereumAddress;
-    
-        Store.dispatch({
-            type: 'SET_PODCAST_ETHEREUM_ADDRESS',
-            feedUrl: podcast.feedUrl,
-            ethereumAddress: podcastEthereumAddress
-        });
+            if (
+                podcast.previousPayoutDate !== 'NEVER' &&
+                podcast.previousPayoutDate > Store.getState().nextPayoutDate
+            ) {
+                return result;
+            }
 
-        if (podcastEthereumAddress === 'NOT_FOUND') {
-            return 'PODCAST_ETHEREUM_ADDRESS_NOT_FOUND'
-        }
-    
-        if (podcastEthereumAddress === 'MALFORMED') {
-            return 'PODCAST_ETHEREUM_ADDRESS_MALFORMED';
-        }
-    
-        const to: EthereumAddress = podcastEthereumAddress;
-                    
-        const payoutInfoForPodcast: {
-            readonly value: WEI;
-            readonly gasPriceInWEI: WEI;
-        } = await getPayoutInfoForPodcast(Store.getState(), podcast);
-    
-        const dataHex: HexString = hexlifyData('podcrypt.app');
-        const gasLimit: number = await getGasLimit(dataHex, to, payoutInfoForPodcast.value);
-    
-        if (new BigNumber(payoutInfoForPodcast.value).lte(0)) {
-            return 'ALREADY_PAID_FOR_INTERVAL';
-        }
-    
-        return await sendTransaction(Store, to, payoutInfoForPodcast.value, gasLimit, payoutInfoForPodcast.gasPriceInWEI, dataHex);    
-    }
-    catch(error) {
-        const newRetryDelayInMilliseconds: number = new BigNumber(retryDelayInMilliseconds).multipliedBy(2).toNumber();
-        await wait(newRetryDelayInMilliseconds);
-        return await payPodcast(Store, podcast, newRetryDelayInMilliseconds); 
-    }    
-}
+            const feed = await getRSSFeed(podcast.feedUrl);
 
-// TODO this is wrong, I need to calculate the gas limit with the gas price here
-export async function getPayoutInfoForPodcast(state: Readonly<State>, podcast: Readonly<Podcast>): Promise<{
-    readonly value: WEI;
-    readonly gasPriceInWEI: WEI;
-}> {
-    const gasPriceInWEI: WEI = await getSafeLowGasPriceInWEI();    
-    const previousPayoutDate: Milliseconds | 'NEVER' = podcast.previousPayoutDate !== 'NEVER' && state.previousPayoutDate !== 'NEVER' && podcast.previousPayoutDate > state.previousPayoutDate ? podcast.previousPayoutDate : state.previousPayoutDate;
-    const valueInWEI: WEI = new BigNumber(calculatePayoutAmountForPodcastDuringIntervalInWEI(state, podcast, previousPayoutDate)).toFixed(0);
-    const valueLessGasPriceInWEI: BigNumber = new BigNumber(valueInWEI).minus(gasPriceInWEI);
-    const netValueInWEI: BigNumber = valueLessGasPriceInWEI.gt(0) ? valueLessGasPriceInWEI : new BigNumber(0);
+            if (!feed) {
+                // TODO if this happens, we should somehow notify the user
+                // TODO add error states and ui stuff for each podcast so the user knows the state of everything
+                return result;
+            }
 
-    return {
-        value: netValueInWEI.toFixed(0),
-        gasPriceInWEI
-    };
-}
-
-// TODO why are we passing in the state and the Store?
-async function payPodcrypt(Store: Readonly<Store>, state: Readonly<State>, retryDelayInMilliseconds: Milliseconds): Promise<TransactionResult> {
-    try {
-
-        if (state.podcryptPreviousPayoutDate > state.nextPayoutDate) {
-            return 'ALREADY_PAID_FOR_INTERVAL';
-        }
-
-        const to: EthereumAddress = state.podcryptEthereumAddress;
+            const podcastEthereumAddressInfo: Readonly<EthereumAddressInfo> = await getEthereumAddressFromPodcastDescription(feed.description);
+            const podcastEthereumAddress: EthereumAddress | 'NOT_FOUND' | 'MALFORMED' = podcastEthereumAddressInfo.ethereumAddress;
         
-        const payoutInfoForPodcrypt: {
-            readonly value: WEI;
-            readonly gasPriceInWEI: WEI;
-        } = await getPayoutInfoForPodcrypt(state);
+            Store.dispatch({
+                type: 'SET_PODCAST_ETHEREUM_ADDRESS',
+                feedUrl: podcast.feedUrl,
+                ethereumAddress: podcastEthereumAddress
+            });
     
-        const dataHex: HexString = hexlifyData('podcrypt.app');
-        const gasLimit: number = await getGasLimit(dataHex, to, payoutInfoForPodcrypt.value);
-    
-        if (new BigNumber(payoutInfoForPodcrypt.value).lte(0)) {
-            return 'ALREADY_PAID_FOR_INTERVAL';
-        }
-    
-        return await sendTransaction(Store, to, payoutInfoForPodcrypt.value, gasLimit, payoutInfoForPodcrypt.gasPriceInWEI, dataHex);
+            if (podcastEthereumAddress === 'NOT_FOUND') {
+                // TODO if this happens, we should somehow notify the user
+                // TODO add error states and ui stuff for each podcast so the user knows the state of everything
+                // return 'PODCAST_ETHEREUM_ADDRESS_NOT_FOUND'
+                return result;
+            }
+        
+            if (podcastEthereumAddress === 'MALFORMED') {
+                // TODO if this happens, we should somehow notify the user
+                // TODO add error states and ui stuff for each podcast so the user knows the state of everything
+                // return 'PODCAST_ETHEREUM_ADDRESS_MALFORMED';
+                return result;
+            }    
+
+            const to: EthereumAddress = podcastEthereumAddress;
+            const dataHex: HexString = hexlifyData('podcrypt.app');
+            const grossValue: WEI = await getGrossPayoutForPodcastInWEI(Store.getState(), podcast);    
+            const gasLimit: number = await getGasLimit(dataHex, to, grossValue);
+            const gasPrice: WEI = await getSafeLowGasPriceInWEI();
+            const netValue: WEI = new BigNumber(grossValue).minus(new BigNumber(gasPrice).multipliedBy(gasLimit)).toFixed(0);
+
+            if (new BigNumber(netValue).lte(0)) {
+                return result;
+            }
+
+            const ethereumTransactionDatum: Readonly<EthereumTransactionDatum> = {
+                id: podcast.feedUrl,
+                to,
+                value: netValue,
+                data: dataHex,
+                gasLimit,
+                gasPrice
+            };
+
+            const resolvedResult: ReadonlyArray<EthereumTransactionDatum> = await result;
+
+            return [...resolvedResult, ethereumTransactionDatum];
+        }, Promise.resolve([]));
+
+    return podcastEthereumTransactionData;
+}
+
+async function getPodcryptEthereumTransactionDatum(state: Readonly<State>): Promise<Readonly<EthereumTransactionDatum> | 'ALREADY_PAID_FOR_INTERVAL' | 'NET_VALUE_TOO_SMALL'> {
+    if (state.podcryptPreviousPayoutDate > state.nextPayoutDate) {
+        return 'ALREADY_PAID_FOR_INTERVAL';
     }
-    catch(error) {
-        const newRetryDelayInMilliseconds: number = new BigNumber(retryDelayInMilliseconds).multipliedBy(2).toNumber();
-        await wait(newRetryDelayInMilliseconds);
-        return await payPodcrypt(Store, state, newRetryDelayInMilliseconds); 
+
+    const to: EthereumAddress = state.podcryptEthereumAddress;
+    const dataHex: HexString = hexlifyData('podcrypt.app');
+    const grossValue: WEI = await getGrossPayoutForPodcryptInWEI(state);    
+    const gasLimit: number = await getGasLimit(dataHex, to, grossValue);
+    const gasPrice: WEI = await getSafeLowGasPriceInWEI();
+    const netValue: WEI = new BigNumber(grossValue).minus(new BigNumber(gasPrice).multipliedBy(gasLimit)).toFixed(0);
+
+    if (new BigNumber(netValue).lte(0)) {
+        return 'NET_VALUE_TOO_SMALL';
     }
-}
 
-export async function getPayoutInfoForPodcrypt(state: Readonly<State>): Promise<{
-    readonly value: WEI;
-    readonly gasPriceInWEI: WEI;
-}> {
-    const gasPriceInWEI: WEI = await getSafeLowGasPriceInWEI();    
-    const valueInWEI: WEI = new BigNumber(calculatePayoutAmountForPodcryptDuringIntervalInWEI(state)).toFixed(0);
-    const valueLessGasPriceInWEI: BigNumber = new BigNumber(valueInWEI).minus(gasPriceInWEI);
-    const netValueInWEI: BigNumber = valueLessGasPriceInWEI.gt(0) ? valueLessGasPriceInWEI : new BigNumber(0);
-
-    return {
-        value: netValueInWEI.toFixed(0),
-        gasPriceInWEI
-    };
-}
-
-function hexlifyData(dataUTF8: UTF8String): HexString {
-    const dataUTF8Bytes = ethers.utils.toUtf8Bytes(dataUTF8);
-    const dataHex: HexString = ethers.utils.hexlify(dataUTF8Bytes);
-
-    return dataHex;
-}
-
-async function getGasLimit(dataHex: HexString, to: EthereumAddress, value: WEI): Promise<number> {
-    return await ethersProvider.estimateGas({
+    const ethereumTransactionDatum: Readonly<EthereumTransactionDatum> = {
+        id: 'podcrypt',
         to,
-        value,
-        data: dataHex
-    });
+        value: netValue,
+        data: dataHex,
+        gasLimit,
+        gasPrice
+    };
+
+    return ethereumTransactionDatum;
 }
 
-async function sendTransaction(Store: Readonly<Store>, to: EthereumAddress, value: WEI, gasLimit: number, gasPrice: WEI, data: HexString) {
+async function prepareAndSendTransaction(
+    Store: Readonly<Store<Readonly<State>, Readonly<PodcryptAction>>>,
+    transactionDatum: Readonly<EthereumTransactionDatum>
+) {
     const wallet = new ethers.Wallet(await get('ethereumPrivateKey'), ethersProvider);
     
     const nonceFromNetwork: number = await ethersProvider.getTransactionCount(wallet.address);
@@ -311,13 +285,13 @@ async function sendTransaction(Store: Readonly<Store>, to: EthereumAddress, valu
         nonce: newNonce
     });
 
-    const preparedTransaction = {
-        to,
-        value: ethers.utils.bigNumberify(value),
-        gasLimit,
-        gasPrice: ethers.utils.bigNumberify(gasPrice),
+    const preparedTransaction: Readonly<EthereumTransaction> = {
+        to: transactionDatum.to,
+        value: ethers.utils.bigNumberify(transactionDatum.value),
+        gasLimit: transactionDatum.gasLimit,
+        gasPrice: ethers.utils.bigNumberify(transactionDatum.gasPrice),
         nonce,
-        data
+        data: transactionDatum.data
     };
 
     console.log('preparedTransaction', preparedTransaction);
@@ -327,4 +301,30 @@ async function sendTransaction(Store: Readonly<Store>, to: EthereumAddress, valu
     console.log('transaction', transaction);
 
     return transaction;
+}
+
+export async function getGrossPayoutForPodcastInWEI(state: Readonly<State>, podcast: Readonly<Podcast>): Promise<WEI> {
+    const previousPayoutDate: Milliseconds | 'NEVER' = podcast.previousPayoutDate !== 'NEVER' && state.previousPayoutDate !== 'NEVER' && podcast.previousPayoutDate > state.previousPayoutDate ? podcast.previousPayoutDate : state.previousPayoutDate;
+    const grossValueInWEI: WEI = new BigNumber(calculatePayoutAmountForPodcastDuringIntervalInWEI(state, podcast, previousPayoutDate)).toFixed(0);
+    return grossValueInWEI;
+}
+
+export async function getGrossPayoutForPodcryptInWEI(state: Readonly<State>): Promise<WEI> {
+    const grossValueInWEI: WEI = new BigNumber(calculatePayoutAmountForPodcryptDuringIntervalInWEI(state)).toFixed(0);
+    return grossValueInWEI;
+}
+
+function hexlifyData(dataUTF8: UTF8String): HexString {
+    const dataUTF8Bytes = ethers.utils.toUtf8Bytes(dataUTF8);
+    const dataHex: HexString = ethers.utils.hexlify(dataUTF8Bytes);
+
+    return dataHex;
+}
+
+async function getGasLimit(dataHex: HexString, to: EthereumAddress, value: WEI): Promise<number> {
+    return await ethersProvider.estimateGas({
+        to,
+        value,
+        data: dataHex
+    });
 }
