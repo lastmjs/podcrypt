@@ -32,7 +32,10 @@ import {
     getBalanceInUSD,
     getBalanceInETH
 } from '../services/balance-calculations';
-import { navigate } from '../services/utilities';
+import { 
+    navigate,
+    copyTextToClipboard
+} from '../services/utilities';
 import BigNumber from "../node_modules/bignumber.js/bignumber";
 import './pc-loading';
 import './pc-button';
@@ -360,7 +363,23 @@ StorePromise.then((Store) => {
             return;
         }
 
-        navigate(Store, '/receive-eth');        
+        pcAlert(html`
+            <div style="${alertPadding}">
+
+                <p>Send ETH to your Podcrypt Ethereum address:</p>
+
+                <p style="font-weight: bold; word-wrap: break-word">${Store.getState().ethereumAddress}</p>
+
+                <pc-button style="font-size: calc(5px + 1vmin)" .text=${'copy address'} @click=${() => copyTextToClipboard(Store.getState().ethereumAddress)}></pc-button>
+
+                <!-- <p>You can receive ETH in your Podcrypt wallet by sending it from another Ethereum wallet using the address above.</p>
+
+                <p>You may already have an Ethereum wallet with an exchange such as <a href="https://www.coinbase.com" target="_blank">Coinbase</a>, or perhaps you have a browser wallet like <a href="https://metamask.io" target="_blank">MetaMask</a>.</p>
+
+                <p>No matter your wallet, you can use your Podcrypt Ethereum address to receive ETH.</p> -->
+
+            </div>
+        `, Store.getState().screenType);
     }
 
     async function payNowClick() {
