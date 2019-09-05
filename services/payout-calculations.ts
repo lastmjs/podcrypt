@@ -20,6 +20,7 @@ import { getEthereumAddressFromPodcastDescription } from './utilities';
 import '../node_modules/ethers/dist/ethers.min.js';
 import { ethersProvider } from './ethers-provider';
 
+// TODO why do we need an explicit next payout date? We might want to just calculate the next payout date from the last payout date
 export function getNextPayoutDate(state: Readonly<State>): Milliseconds {
     const previousPayoutDate: Milliseconds | 'NEVER' = state.previousPayoutDate;
     const payoutIntervalInDays: Days = state.payoutIntervalInDays;
