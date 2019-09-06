@@ -2,6 +2,7 @@ declare var RSSParser: any;
 declare var MediaMetadata: any;
 declare var ethers: any;
 declare module 'dompurify';
+declare var Wyre: any;
 
 type ScreenType = 'DESKTOP' | 'MOBILE';
 type ModalType = 'ALERT' | 'CONFIRM' | 'CUSTOM';
@@ -87,7 +88,7 @@ type EpisodeDownloadState = 'NOT_DOWNLOADED' | 'DOWNLOADING' | 'DOWNLOADED';
 
 type PayoutProblem = 'BALANCE_0' | 'PAYOUT_TARGET_0' | 'BALANCE_LESS_THAN_PAYOUT_TARGET' | 'NO_PROBLEM';
 
-type EthereumNetworkName = 'homestead' | 'ropsten';
+type EthereumNetworkName = 'homestead' | 'kovan';
 type CryptonatorETHPriceAPIEndpoint = `https://api.cryptonator.com/api/ticker/eth-usd`;
 type EtherscanETHPriceAPIEndpoint = `https://api.etherscan.io/api?module=stats&action=ethprice`;
 type FeedUrl = string;

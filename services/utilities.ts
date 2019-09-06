@@ -2,7 +2,11 @@ import '../node_modules/rss-parser/dist/rss-parser.min.js';
 import BigNumber from 'bignumber.js';
 import { ethersProvider } from './ethers-provider';
 import '../node_modules/ethers/dist/ethers.min.js';
-import { del } from 'idb-keyval';
+import { 
+    del,
+    get,
+    set
+} from 'idb-keyval';
 
 export const fiveMegabytesInBytes: number = 5242880;
 export const podcryptProxy = 'https://proxy.podcrypt.app/';
@@ -336,4 +340,19 @@ export async function deleteDownloadedEpisode(Store: any, episode: Readonly<Epis
 export function bytesToMegabytes(bytes: number | string): number {
     // TODO I would rather use parseInt(), but the types are messed up
     return Math.floor(+bytes / (1024 ** 2));
+}
+
+export async function getAndSaveWyrePrivateKey() {
+    const wyrePrivateKey: string | null = await get('wyrePrivateKey');
+
+    if (wyrePrivateKey === undefined) {
+        // TODO I'm not sure how this will behave across multiple devices...we might want to derive the wyre private key from the ethereum private key...I'm not sure how to do that in a way that we don't leak the ethereum private key to wyre though...I'll have to study it
+        const emptyArray: Uint8Array = new Uint8Array(25);
+        window.crypto.getRandomValues(emptyArray);
+        const wyrePrivateKey: string = Array.from(emptyArray).map((int: number) => int.toString(16).padStart(2, '0')).join('');
+
+        await set('wyrePrivateKey', wyrePrivateKey);
+    }
+
+    return await get('wyrePrivateKey');
 }
