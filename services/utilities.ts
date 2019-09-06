@@ -295,7 +295,7 @@ export function copyTextToClipboard(text: string): void {
     // textarea.setSelectionRange(0, text.length);
     textarea.setSelectionRange(0, Number.MAX_SAFE_INTEGER);
 
-    textarea.select();
+    // textarea.select();
     
     window.document.execCommand('copy');
 
