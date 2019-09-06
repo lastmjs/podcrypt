@@ -276,7 +276,20 @@ export function copyTextToClipboard(text: string): void {
 
     window.document.body.appendChild(textarea);
 
-    // TODO testing this out for iOS
+    const range = document.createRange();
+    range.selectNodeContents(textarea);
+
+    const selection = window.getSelection();
+
+    if (selection === null) {
+        alert('Could not copy');
+        return;
+    }
+
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    // TODO testing a lot of this out for iOS
     textarea.setSelectionRange(0, text.length);
 
     textarea.select();
