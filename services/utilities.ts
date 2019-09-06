@@ -276,6 +276,9 @@ export function copyTextToClipboard(text: string): void {
 
     window.document.body.appendChild(textarea);
 
+    // TODO testing this out for iOS
+    textarea.setSelectionRange(0, text.length);
+
     textarea.select();
     
     window.document.execCommand('copy');
