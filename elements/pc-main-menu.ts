@@ -18,7 +18,8 @@ StorePromise.then((Store) => {
 
         const state: Readonly<State> = Store.getState();
 
-        const desktopAndMenuClosed: boolean = !state.showMainMenu && state.screenType === 'DESKTOP';
+        // TODO I made this kind of backwards so that the menu is open automatically for desktops...
+        const desktopAndMenuClosed: boolean = state.showMainMenu && state.screenType === 'DESKTOP';
 
         return html`
             <style>
@@ -194,6 +195,18 @@ StorePromise.then((Store) => {
                         backup
                     </i>
                     <span class="pc-main-menu-item-text">${desktopAndMenuClosed ? '' : 'Backup & Restore'}</span>
+                </div>
+
+                <div 
+                    class="pc-main-menu-item${state.currentRoute.pathname === '/blog' ? ' pc-main-menu-item-selected' : ''}"
+                    @click=${() => menuItemClick(Store, '/blog')}
+                >
+                    <i 
+                        class="material-icons pc-main-menu-item-icon"
+                    >
+                        book
+                    </i>
+                    <span class="pc-main-menu-item-text">${desktopAndMenuClosed ? '' : 'Blog'}</span>
                 </div>
 
                 <div
