@@ -153,7 +153,7 @@ StorePromise.then((Store) => {
                             <div class="pc-app-scrolling-title">${currentEpisode.title}</div>
                         </div>
                     ` : html`
-                        <div style="color: grey; font-weight: bold; margin-left: auto; margin-right: calc(10px + 1vmin); font-size: calc(15px + 1vmin)">Podcrypt Alpha</div>
+                        <div style="color: grey; font-weight: bold; margin-left: auto; margin-right: calc(10px + 1vmin); font-size: calc(15px + 1vmin)">Podcrypt Beta</div>
                     `}
 
                     <div

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'PODCRYPT_CACHE_V10';
+const CACHE_NAME = 'PODCRYPT_CACHE_V11';
 const urlsToCache = [
     '/index.html'
 ];

@@ -119,7 +119,7 @@ StorePromise.then((Store) => {
             <div class="pc-main-menu-container">
                 <div class="pc-main-menu-item">
                     <span class="pc-main-menu-logo">卩</span>
-                    <span class="pc-main-menu-item-text">${desktopAndMenuClosed ? '' : 'Podcrypt Alpha'}</span>
+                    <span class="pc-main-menu-item-text">${desktopAndMenuClosed ? '' : 'Podcrypt Beta'}</span>
                 </div>
                 
                 <hr class="pc-main-menu-divider">

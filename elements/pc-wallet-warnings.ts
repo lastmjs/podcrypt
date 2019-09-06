@@ -45,20 +45,6 @@ StorePromise.then((Store) => {
             });    
         }
 
-        checkbox4InputChanged(e: any) {
-            Store.dispatch({
-                type: 'SET_WARNING_CHECKBOX_4_CHECKED',
-                checked: e.target.checked
-            });    
-        }
-
-        checkbox5InputChanged(e: any) {
-            Store.dispatch({
-                type: 'SET_WARNING_CHECKBOX_5_CHECKED',
-                checked: e.target.checked
-            });    
-        }
-    
         render(state: Readonly<State>): Readonly<TemplateResult> {
             return html`
                 <style>
@@ -68,7 +54,7 @@ StorePromise.then((Store) => {
                 </style>
 
                 <div>
-                    <div class="pc-wallet-secondary-text">I understand the following:</div>
+                    <div class="pc-wallet-secondary-text">I understand and agree to the following:</div>
                     <br>
                     <div class="pc-wallet-secondary-text">
                         <input 
@@ -87,10 +73,8 @@ StorePromise.then((Store) => {
                             @change=${(e: any) => this.checkbox2InputChanged(e)}
                             .checked=${state.warningCheckbox2Checked}
                         >
-                        This is alpha software
+                        I am responsible for and agree to use Podcrypt legally, including determining taxes and other potential legal implications
                     </div>
-
-                    <br>
 
                     <div class="pc-wallet-secondary-text">
                         <input
@@ -98,32 +82,8 @@ StorePromise.then((Store) => {
                             @change=${(e: any) => this.checkbox3InputChanged(e)}
                             .checked=${state.warningCheckbox3Checked}
                         >
-                        Anything could go wrong
+                        This is beta software
                     </div>
-
-                    <br>
-
-                    <div class="pc-wallet-secondary-text">
-                        <input
-                            type="checkbox"
-                            @change=${(e: any) => this.checkbox4InputChanged(e)}
-                            .checked=${state.warningCheckbox4Checked}
-                        >
-                        I am responsible for using Podcrypt legally, including determining taxes and other potential legal implications
-                    </div>
-
-                    <br>
-
-                    <div class="pc-wallet-secondary-text">
-                        <input
-                            type="checkbox"
-                            @change=${(e: any) => this.checkbox5InputChanged(e)}
-                            .checked=${state.warningCheckbox5Checked}
-                        >
-                        Podcrypt Alpha uses the Ethereum network for payments. I should only send ETH to Podcrypt Alpha.
-                    </div>
-
-                    <br>
 
                 </div>
             `;

@@ -35,8 +35,7 @@ import {
 } from '../services/balance-calculations';
 import { 
     navigate,
-    copyTextToClipboard,
-    getAndSaveWyrePrivateKey
+    copyTextToClipboard
 } from '../services/utilities';
 import BigNumber from "../node_modules/bignumber.js/bignumber";
 import './pc-loading';
@@ -289,9 +288,7 @@ StorePromise.then((Store) => {
         if (
             state.warningCheckbox1Checked === false ||
             state.warningCheckbox2Checked === false ||
-            state.warningCheckbox3Checked === false ||
-            state.warningCheckbox4Checked === false ||
-            state.warningCheckbox5Checked === false
+            state.warningCheckbox3Checked === false
         ) {
             const confirmation = await pcConfirm(html`
                 <div style="padding: calc(5px + 1vmin)">
@@ -355,9 +352,7 @@ StorePromise.then((Store) => {
         if (
             state.warningCheckbox1Checked === false ||
             state.warningCheckbox2Checked === false ||
-            state.warningCheckbox3Checked === false ||
-            state.warningCheckbox4Checked === false ||
-            state.warningCheckbox5Checked === false
+            state.warningCheckbox3Checked === false
         ) {
             const confirmation = await pcConfirm(html`
                 <div style="padding: calc(5px + 1vmin)">
@@ -414,9 +409,7 @@ StorePromise.then((Store) => {
         if (
             state.warningCheckbox1Checked === false ||
             state.warningCheckbox2Checked === false ||
-            state.warningCheckbox3Checked === false ||
-            state.warningCheckbox4Checked === false ||
-            state.warningCheckbox5Checked === false
+            state.warningCheckbox3Checked === false
         ) {
             const confirmation = await pcConfirm(html`
                 <div style="padding: calc(5px + 1vmin)">
