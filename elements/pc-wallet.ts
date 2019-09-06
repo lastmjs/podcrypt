@@ -8,6 +8,7 @@ import {
     standardTextContainer,
     secondaryTextSmall,
     color1Medium,
+    color1Full,
     pxXXLarge,
     normalShadow,
     pxXSmall,
@@ -34,7 +35,8 @@ import {
 } from '../services/balance-calculations';
 import { 
     navigate,
-    copyTextToClipboard
+    copyTextToClipboard,
+    getAndSaveWyrePrivateKey
 } from '../services/utilities';
 import BigNumber from "../node_modules/bignumber.js/bignumber";
 import './pc-loading';
@@ -319,8 +321,32 @@ StorePromise.then((Store) => {
             
             return;
         }
+
+        pcAlert(html`
+            <div style="${alertPadding}">
+                This feature is pending and should be available in the US within a few days
+            </div>
+        `, Store.getState().screenType);
         
-        pcAlert(html`<div style="${alertPadding}"><div>Coming soon to most US states:</div><br><div>Buy ETH with your debit card</div></div>`, Store.getState().screenType)
+        // const widget = new Wyre.Widget({
+        //     env: process.env.NODE_ENV === 'production' ? 'prod' : 'test',
+        //     accountId: process.env.NODE_ENV === 'production' ? 'AC_LUQ6NQC4MQZ' : 'AC_RTQ46VYP4U3',
+        //     auth: {
+        //         type: 'secretKey',
+        //         secretKey: await getAndSaveWyrePrivateKey()
+        //     },
+        //     operation: {
+        //         type: 'debitcard',
+        //         dest: `ethereum:${Store.getState().ethereumAddress}`,
+        //         sourceCurrency: 'USD',
+        //         destCurrency: 'ETH'
+        //     },
+        //     style: {
+        //         primaryColor: color1Full
+        //     }
+        // });
+
+        // widget.open();
     }
 
     async function receiveETHClick() {

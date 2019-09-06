@@ -124,6 +124,18 @@ StorePromise.then((Store) => {
                 
                 <hr class="pc-main-menu-divider">
 
+                <div
+                    class="pc-main-menu-item${state.currentRoute.pathname === '/about' ? ' pc-main-menu-item-selected' : ''}"
+                    @click=${() => menuItemClick(Store, '/about')}
+                >
+                    <i 
+                        class="material-icons pc-main-menu-item-icon"
+                    >
+                        help
+                    </i>
+                    <span class="pc-main-menu-item-text">${desktopAndMenuClosed ? '' : 'About'}</span>
+                </div>
+
                 <div 
                     class="pc-main-menu-item${state.currentRoute.pathname === '/' || state.currentRoute.pathname === '/index.html' ? ' pc-main-menu-item-selected' : ''}"
                     @click=${() => menuItemClick(Store, '/')}
@@ -206,18 +218,6 @@ StorePromise.then((Store) => {
                         call
                     </i>
                     <span class="pc-main-menu-item-text">${desktopAndMenuClosed ? '' : 'Contact'}</span>
-                </div>
-
-                <div
-                    class="pc-main-menu-item${state.currentRoute.pathname === '/about' ? ' pc-main-menu-item-selected' : ''}"
-                    @click=${() => menuItemClick(Store, '/about')}
-                >
-                    <i 
-                        class="material-icons pc-main-menu-item-icon"
-                    >
-                        help
-                    </i>
-                    <span class="pc-main-menu-item-text">${desktopAndMenuClosed ? '' : 'About'}</span>
                 </div>
 
                 <div

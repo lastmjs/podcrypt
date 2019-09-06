@@ -86,11 +86,12 @@ StorePromise.then((Store) => {
                 <vaadin-tabs .selected=${tabIndex}>
                     <vaadin-tab @click=${() => update({ tabIndex: 0 })}>My Podcasts</vaadin-tab>
                     <vaadin-tab @click=${() => update({ tabIndex: 1 })}>Crypto</vaadin-tab>
-                    <vaadin-tab @click=${() => update({ tabIndex: 2 })}>Business</vaadin-tab>
-                    <vaadin-tab @click=${() => update({ tabIndex: 3 })}>Technology</vaadin-tab>
-                    <vaadin-tab @click=${() => update({ tabIndex: 4 })}>Travel</vaadin-tab>
-                    <vaadin-tab @click=${() => update({ tabIndex: 5 })}>Health</vaadin-tab>
-                    <vaadin-tab @click=${() => update({ tabIndex: 6 })}>Search Results</vaadin-tab>
+                    <vaadin-tab @click=${() => update({ tabIndex: 2 })}>Technology</vaadin-tab>
+                    <vaadin-tab @click=${() => update({ tabIndex: 3 })}>Science</vaadin-tab>
+                    <vaadin-tab @click=${() => update({ tabIndex: 4 })}>Business</vaadin-tab>
+                    <vaadin-tab @click=${() => update({ tabIndex: 5 })}>Travel</vaadin-tab>
+                    <vaadin-tab @click=${() => update({ tabIndex: 6 })}>Health</vaadin-tab>
+                    <vaadin-tab @click=${() => update({ tabIndex: 7 })}>Search Results</vaadin-tab>
                 </vaadin-tabs>
 
                 <div ?hidden=${tabIndex !== 0}>
@@ -112,11 +113,12 @@ StorePromise.then((Store) => {
                 </div>
 
                 <pc-podcast-search-results .term=${'crypto'} .limit=${10} ?hidden=${tabIndex !== 1}></pc-podcast-search-results>
-                <pc-podcast-search-results .term=${'business'} .limit=${10} ?hidden=${tabIndex !== 2}></pc-podcast-search-results>
-                <pc-podcast-search-results .term=${'technology'} .limit=${10} ?hidden=${tabIndex !== 3}></pc-podcast-search-results>
-                <pc-podcast-search-results .term=${'travel'} .limit=${10} ?hidden=${tabIndex !== 4}></pc-podcast-search-results>
-                <pc-podcast-search-results .term=${'health'} .limit=${10} ?hidden=${tabIndex !== 5}></pc-podcast-search-results>
-                <pc-podcast-search-results .term=${searchTerm} .limit=${50} ?hidden=${tabIndex !== 6}></pc-podcast-search-results>                
+                <pc-podcast-search-results .term=${'technology'} .limit=${10} ?hidden=${tabIndex !== 2}></pc-podcast-search-results>
+                <pc-podcast-search-results .term=${'science'} .limit=${10} ?hidden=${tabIndex !== 3}></pc-podcast-search-results>
+                <pc-podcast-search-results .term=${'business'} .limit=${10} ?hidden=${tabIndex !== 4}></pc-podcast-search-results>
+                <pc-podcast-search-results .term=${'travel'} .limit=${10} ?hidden=${tabIndex !== 5}></pc-podcast-search-results>
+                <pc-podcast-search-results .term=${'health'} .limit=${10} ?hidden=${tabIndex !== 6}></pc-podcast-search-results>
+                <pc-podcast-search-results .term=${searchTerm} .limit=${50} ?hidden=${tabIndex !== 7}></pc-podcast-search-results>                
 
             </div>
         `;
