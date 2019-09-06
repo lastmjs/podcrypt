@@ -273,7 +273,7 @@ export function copyTextToClipboard(text: string): void {
     textarea.value = text;
     // textarea.style.width = '0px';
     // textarea.style.height = '0px';
-    textarea.contentEditable = 'true';
+    textarea.contentEditable = true;
     textarea.readOnly = false;
 
     window.document.body.appendChild(textarea);
@@ -292,14 +292,15 @@ export function copyTextToClipboard(text: string): void {
     selection.addRange(range);
 
     // TODO testing a lot of this out for iOS
-    // textarea.setSelectionRange(0, text.length);
-    textarea.setSelectionRange(0, Number.MAX_SAFE_INTEGER);
+    textarea.setSelectionRange(0, text.length);
+    // textarea.setSelectionRange(0, Number.MAX_SAFE_INTEGER);
+    // textarea.setSelectionRange(0, Number.MAX_SAFE_INTEGER);
 
-    textarea.select();
+    // textarea.select();
     
     window.document.execCommand('copy');
 
-    window.document.body.removeChild(textarea);
+    // window.document.body.removeChild(textarea);
 }
 
 export async function deleteDownloadedEpisode(Store: any, episode: Readonly<Episode>): Promise<void> {
