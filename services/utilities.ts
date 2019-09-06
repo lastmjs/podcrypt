@@ -300,7 +300,7 @@ export function copyTextToClipboard(text: string): void {
     
     window.document.execCommand('copy');
 
-    // window.document.body.removeChild(textarea);
+    window.document.body.removeChild(textarea);
 }
 
 export async function deleteDownloadedEpisode(Store: any, episode: Readonly<Episode>): Promise<void> {
