@@ -273,6 +273,7 @@ export function copyTextToClipboard(text: string): void {
     textarea.value = text;
     textarea.style.width = '0px';
     textarea.style.height = '0px';
+    textarea.contentEditable = 'true';
 
     window.document.body.appendChild(textarea);
 
