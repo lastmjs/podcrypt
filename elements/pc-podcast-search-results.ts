@@ -68,7 +68,7 @@ StorePromise.then((Store) => {
                 previousTerm: term,
                 searchResultsUI: html`
                     <div style="padding: calc(10px + 1vmin)">
-                        No results
+                        No results. Search for podcasts above
                     </div>
                 `
             });

@@ -112,13 +112,13 @@ StorePromise.then((Store) => {
                     }
                 </div>
 
-                <pc-podcast-search-results .term=${'crypto'} .limit=${10} ?hidden=${tabIndex !== 1}></pc-podcast-search-results>
-                <pc-podcast-search-results .term=${'technology'} .limit=${10} ?hidden=${tabIndex !== 2}></pc-podcast-search-results>
-                <pc-podcast-search-results .term=${'science'} .limit=${10} ?hidden=${tabIndex !== 3}></pc-podcast-search-results>
-                <pc-podcast-search-results .term=${'business'} .limit=${10} ?hidden=${tabIndex !== 4}></pc-podcast-search-results>
-                <pc-podcast-search-results .term=${'travel'} .limit=${10} ?hidden=${tabIndex !== 5}></pc-podcast-search-results>
-                <pc-podcast-search-results .term=${'health'} .limit=${10} ?hidden=${tabIndex !== 6}></pc-podcast-search-results>
-                <pc-podcast-search-results .term=${searchTerm} .limit=${50} ?hidden=${tabIndex !== 7}></pc-podcast-search-results>                
+                ${tabIndex === 1 ? html`<pc-podcast-search-results .term=${'crypto'} .limit=${20}></pc-podcast-search-results>` : ''}
+                ${tabIndex === 2 ? html`<pc-podcast-search-results .term=${'technology'} .limit=${20}></pc-podcast-search-results>` : ''}
+                ${tabIndex === 3 ? html`<pc-podcast-search-results .term=${'science'} .limit=${20}></pc-podcast-search-results>` : ''}
+                ${tabIndex === 4 ? html`<pc-podcast-search-results .term=${'business'} .limit=${20}></pc-podcast-search-results>` : ''}
+                ${tabIndex === 5 ? html`<pc-podcast-search-results .term=${'travel'} .limit=${20}></pc-podcast-search-results>` : ''}
+                ${tabIndex === 6 ? html`<pc-podcast-search-results .term=${'health'} .limit=${20}></pc-podcast-search-results>` : ''}
+                ${tabIndex === 7 ? html`<pc-podcast-search-results .term=${searchTerm} .limit=${50}></pc-podcast-search-results>` : ''}
 
             </div>
         `;
@@ -130,9 +130,8 @@ StorePromise.then((Store) => {
             const term = searchInput.value.split(' ').join('+');
             update({
                 searchTerm: term,
-                tabIndex: 6
+                tabIndex: 7
             });
-            // navigate(Store, `/podcast-search-results?term=${term}`);
         }
     }
 });
