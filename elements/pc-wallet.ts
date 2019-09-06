@@ -118,6 +118,7 @@ StorePromise.then((Store) => {
                         border: none;
                         border-bottom: 1px solid ${color1Medium};
                         background-color: transparent;
+                        min-width: 200px;
                     }
 
                     .pc-wallet-podcrypt-container {
