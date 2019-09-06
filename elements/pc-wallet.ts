@@ -177,7 +177,7 @@ StorePromise.then((Store) => {
                                         class="pc-wallet-input"
                                         min="0"
                                         max="100"
-                                        step="0.01"
+                                        step="1"
                                     >
                                 </div>
                                 <div style="font-size: calc(15px + 1vmin); color: grey">USD</div>
@@ -454,7 +454,13 @@ StorePromise.then((Store) => {
     }
     
     async function payoutTargetInUSDCentsInputChanged(e: any) {
+
+        if (e.target.value === '') {
+            return;
+        }
+
         await loadCurrentETHPriceInUSDCents(Store);
+
         Store.dispatch({
             type: 'SET_PAYOUT_TARGET_IN_USD_CENTS',
             payoutTargetInUSDCents: (parseInt(e.target.value) * 100).toString()
