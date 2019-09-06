@@ -118,7 +118,7 @@ StorePromise.then((Store) => {
                         border: none;
                         border-bottom: 1px solid ${color1Medium};
                         background-color: transparent;
-                        min-width: 200px;
+                        width: 75%;
                     }
 
                     .pc-wallet-podcrypt-container {
@@ -170,17 +170,15 @@ StorePromise.then((Store) => {
                             <div
                                 style="display: flex; flex-direction: column; align-items: center; justify-content: center;"
                             >
-                                <div style="font-size: calc(30px + 1vmin);">
-                                    <input
-                                        type="number"
-                                        value=${payoutTargetInUSD}
-                                        @input=${payoutTargetInUSDCentsInputChanged}
-                                        class="pc-wallet-input"
-                                        min="0"
-                                        max="100"
-                                        step="1"
-                                    >
-                                </div>
+                                <input
+                                    type="number"
+                                    value=${payoutTargetInUSD}
+                                    @input=${payoutTargetInUSDCentsInputChanged}
+                                    class="pc-wallet-input"
+                                    min="0"
+                                    max="100"
+                                    step="1"
+                                >
                                 <div style="font-size: calc(15px + 1vmin); color: grey">USD</div>
                             </div>
 
