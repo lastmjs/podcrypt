@@ -177,6 +177,7 @@ StorePromise.then((Store) => {
                                 <li>Configurable podcast payout weights per unit of time</li>
                                 <li>Encrypted cloud backups/multi-device unified accounts</li>
                                 <li>Robust security with detailed explanations</li>
+                                <li>Release whitepaper</li>
                             </ul>
                         </li>
 
