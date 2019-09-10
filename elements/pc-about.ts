@@ -72,7 +72,7 @@ StorePromise.then((Store) => {
     
                 <br>
     
-                <div class="pc-about-title-text-large">Podcast listeners</div>
+                <div id="podcast-listeners" class="pc-about-title-text-large">Podcast listeners</div>
     
                 <br>
     
@@ -95,7 +95,7 @@ StorePromise.then((Store) => {
     
                 <br>
     
-                <div class="pc-about-title-text-large">Podcasters</div>
+                <div id="podcasters" class="pc-about-title-text-large">Podcasters</div>
     
                 <br>
     
@@ -143,7 +143,58 @@ StorePromise.then((Store) => {
                 <div class="pc-about-secondary-text">
                     &#x3C;podcrypt-button href=&#x22;the-url-to-your-podcast-or-episode&#x22;&#x3E;&#x3C;/podcrypt-button&#x3E;
                 </div>
+
+                <br>
+
+                <div id="roadmap" class="pc-about-title-text-large">Roadmap</div>
     
+                <br>
+
+                <div class="pc-about-secondary-text">
+                    This roadmap is subject to change at any time, but is a good reflection of Podcrypt's current course:
+                </div>
+
+                <br>
+
+                <div class="pc-about-secondary-text">
+                    <ul>
+                        <li>
+                            Q3 2019
+                            <ul>
+                                <li>Enable crypto purchases with debit card or bank account</li>
+                                <li>Start <a href="https://makerdao.com/en/dai" target="_blank">DAI</a> integration</li>
+                            </ul>
+                        </li>
+
+                        <li>
+                            Q4 2019
+                            <ul>
+                                <li>Finish <a href="https://makerdao.com/en/dai" target="_blank">DAI</a> integration</li>
+                                <li><a href="https://www.coinbase.com/usdc" target="_blank">USDC</a> integration</li>
+                                <li>Bitcoin integration</li>
+                                <li>Send funds from wallet</li>
+                                <li>Manual one-off podcast tips</li>
+                                <li>Configurable podcast payout weights per unit of time</li>
+                                <li>Encrypted cloud backups/multi-device unified accounts</li>
+                                <li>Robust security with detailed explanations</li>
+                                <li>Release whitepaper</li>
+                            </ul>
+                        </li>
+
+                        <li>
+                            2020
+                            <ul>
+                                <li>Multi-Collateral DAI integration</li>
+                                <li>Arbitrary custom playlists</li>
+                                <li>Perks for those who donate (exclusive content, early releases, podcast tokens, etc)</li>
+                                <li>Allow users to sell their own data</li>
+                                <li>Podcast crowdfunding</li>
+                                <li>Decentralized podcast directory</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+
             </div>
         `;
     });
