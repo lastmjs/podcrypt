@@ -139,6 +139,9 @@ export async function createPodcast(feedUrl: string, feed?: any): Promise<Readon
 }
 
 function getImageUrl(feed: any): string | 'NOT_FOUND' {
+
+    console.log(feed.image);
+
     if (feed.image) {
         return feed.image.url;
     }

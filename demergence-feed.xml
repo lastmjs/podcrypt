@@ -6,7 +6,7 @@
         <atom:link href="https://podcrypt.app/demergence-feed.xml" rel="self" type="application/rss+xml"/>
         <link><![CDATA[https://podcrypt.app/podcast-overview?feedUrl=https://podcrypt.app/demergence-feed.xml]]></link>
         <image>
-			<url>https://podcrypt.app/podrypt-black-transparent.png</url>
+			<url>https://podcrypt.app/podcrypt-black-transparent.png</url>
 			<title>Demergence - lectures on things</title>
 			<link><![CDATA[https://podcrypt.app/podcast-overview?feedUrl=https://podcrypt.app/demergence-feed.xml]]></link>
 		</image>
