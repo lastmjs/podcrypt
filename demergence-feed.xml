@@ -5,15 +5,20 @@
         <title>Demergence</title>
         <atom:link href="https://podcrypt.app/demergence-feed.xml" rel="self" type="application/rss+xml"/>
         <link><![CDATA[https://podcrypt.app/podcast-overview?feedUrl=https://podcrypt.app/demergence-feed.xml]]></link>
+        <image>
+			<url>https://podcrypt.app/podrypt-black-transparent.png</url>
+			<title>Demergence - lectures on things</title>
+			<link><![CDATA[https://podcrypt.app/podcast-overview?feedUrl=https://podcrypt.app/demergence-feed.xml]]></link>
+		</image>
         <description>
             <![CDATA[
-                    Demergence is a podcast by Jordan Last, the creator of Podcrypt.
-                    He has lots of opinions on open source, cryptocurrency, blockchain, software development, business, government, and technology in general.
-                    He will share those opinions, and you will agree sometimes and disagree other times.
-                    Jordan is okay with that.
+                Demergence is a series of lectures on things by Jordan Last, the creator of Podcrypt.
+                He has lots of opinions on open source, cryptocurrency, blockchain, software development, business, government, and technology in general.
+                He will share those opinions, and you will agree sometimes and disagree other times.
+                Jordan is okay with that.
 
-                    Listen on Podcrypt: https://podcrypt.app/podcast-overview?feedUrl=https://podcrypt.app/demergence-feed.xml
-                    Donations: podcrypt.eth
+                Listen on Podcrypt: https://podcrypt.app/podcast-overview?feedUrl=https://podcrypt.app/demergence-feed.xml
+                Donations: podcrypt.eth
             ]]>
         </description>
         <copyright>CC0 1.0 - https://creativecommons.org/publicdomain/zero/1.0</copyright>
