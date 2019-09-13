@@ -2,22 +2,20 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:cc="http://web.resource.org/cc/" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" xmlns:media="http://search.yahoo.com/mrss/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 
     <channel>
-        <title>Demergence</title>
-        <atom:link href="https://podcrypt.app/demergence-feed.xml" rel="self" type="application/rss+xml"/>
-        <link><![CDATA[https://podcrypt.app/podcast-overview?feedUrl=https://podcrypt.app/demergence-feed.xml]]></link>
+        <title>Podcrypt Lectures</title>
+        <atom:link href="https://podcrypt.app/podcrypt-lectures-feed.xml" rel="self" type="application/rss+xml"/>
+        <link><![CDATA[https://podcrypt.app/podcast-overview?feedUrl=https://podcrypt.app/podcrypt-lectures-feed.xml]]></link>
         <image>
 			<url>https://podcrypt.app/podcrypt-black-transparent.png</url>
 			<title>Demergence - lectures on things</title>
-			<link><![CDATA[https://podcrypt.app/podcast-overview?feedUrl=https://podcrypt.app/demergence-feed.xml]]></link>
+			<link><![CDATA[https://podcrypt.app/podcast-overview?feedUrl=https://podcrypt.app/podcrypt-lectures-feed.xml]]></link>
 		</image>
         <description>
             <![CDATA[
-                Demergence is a series of lectures on things by Jordan Last, the creator of Podcrypt.
+                Podcrypt Lectures is a series of lectures on things by Jordan Last, the creator of Podcrypt.
                 He has lots of opinions on open source, cryptocurrency, blockchain, software development, business, government, and technology in general.
                 He will share those opinions, and you will agree sometimes and disagree other times.
-                Jordan is okay with that.
-
-                Listen on Podcrypt: https://podcrypt.app/podcast-overview?feedUrl=https://podcrypt.app/demergence-feed.xml
+                Listen on Podcrypt: https://podcrypt.app/podcast-overview?feedUrl=https://podcrypt.app/podcrypt-lectures-feed.xml
                 Donations: podcrypt.eth
             ]]>
         </description>
@@ -26,18 +24,18 @@
         <item>
             <pubDate>Fri, 13 Sep 2019 02:00:00 MDT</pubDate>
             <title>The Case for Crypto Consolidation</title>
-            <link><![CDATA[https://podcrypt.app/episode-overview?feedUrl=https://podcrypt.app/demergence-feed.xml&episodeGuid=YEY1uJ7Mp9TlpWNBGSoOwz_SLZlfZvYg]]></link>
+            <link><![CDATA[https://podcrypt.app/episode-overview?feedUrl=https://podcrypt.app/podcrypt-lectures-feed.xml&episodeGuid=YEY1uJ7Mp9TlpWNBGSoOwz_SLZlfZvYg]]></link>
             <description>
                 <![CDATA[
                     <p>
                         Some people think that we will live in a world of many cryptocurrencies and many blockchains.
                         I lay out a case for why that won't happen, based on the present and past of our home called Earth.
-                        Listen on <a href="https://podcrypt.app/episode-overview?feedUrl=https://podcrypt.app/demergence-feed.xml&episodeGuid=YEY1uJ7Mp9TlpWNBGSoOwz_SLZlfZvYg" target="_blank">Podcrypt</a>
+                        Listen on <a href="https://podcrypt.app/episode-overview?feedUrl=https://podcrypt.app/podcrypt-lectures-feed.xml&episodeGuid=YEY1uJ7Mp9TlpWNBGSoOwz_SLZlfZvYg" target="_blank">Podcrypt</a>
                     </p>
                 ]]>
             </description>
             <guid isPermaLink="false">YEY1uJ7Mp9TlpWNBGSoOwz_SLZlfZvYg</guid>
-            <enclosure length="22586081" type="audio/mpeg" url="https://demergence-podcast.s3-us-west-2.amazonaws.com/the-case-for-crypto-consolidation.mp3" />
+            <enclosure length="22586081" type="audio/mpeg" url="https://podcrypt-lectures.s3-us-west-2.amazonaws.com/the-case-for-crypto-consolidation.mp3" />
         </item>
     </channel>
 </rss>
