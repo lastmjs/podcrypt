@@ -22,7 +22,7 @@
         <copyright>CC0 1.0 - https://creativecommons.org/publicdomain/zero/1.0</copyright>
 
         <item>
-            <pubDate>Fri, 13 Sep 2019 02:00:00 MDT</pubDate>
+            <pubDate>Fri, 13 Sep 2019 14:00:00 MDT</pubDate>
             <title>The Case for Crypto Consolidation</title>
             <link><![CDATA[https://podcrypt.app/episode-overview?feedUrl=https://podcrypt.app/podcrypt-lectures-feed.xml&episodeGuid=YEY1uJ7Mp9TlpWNBGSoOwz_SLZlfZvYg]]></link>
             <description>
@@ -36,6 +36,23 @@
             </description>
             <guid isPermaLink="false">YEY1uJ7Mp9TlpWNBGSoOwz_SLZlfZvYg</guid>
             <enclosure length="22586081" type="audio/mpeg" url="https://podcrypt-lectures.s3-us-west-2.amazonaws.com/the-case-for-crypto-consolidation.mp3" />
+        </item>
+
+        <item>
+            <pubDate>Mon, 16 Sep 2019 15:00:00 MDT</pubDate>
+            <title>Bitcoin's Path to Destruction</title>
+            <link><![CDATA[https://podcrypt.app/episode-overview?feedUrl=https://podcrypt.app/podcrypt-lectures-feed.xml&episodeGuid=_bDukmlPIwFPKtBpa1sp7abvxsCfWr8k]]></link>
+            <description>
+                <![CDATA[
+                    <p>
+                        One possible future for Bitcoin is that it's on a path to destruction.
+                        I share my opinion and some simple technical arguments for why I think Bitcoin could end poorly.
+                        Listen on <a href="https://podcrypt.app/episode-overview?feedUrl=https://podcrypt.app/podcrypt-lectures-feed.xml&episodeGuid=_bDukmlPIwFPKtBpa1sp7abvxsCfWr8k" target="_blank">Podcrypt</a>
+                    </p>
+                ]]>
+            </description>
+            <guid isPermaLink="false">_bDukmlPIwFPKtBpa1sp7abvxsCfWr8k</guid>
+            <enclosure length="11155818" type="audio/mpeg" url="https://podcrypt-lectures.s3-us-west-2.amazonaws.com/bitcoin's-path-to-destruction.mp3" />
         </item>
     </channel>
 </rss>
