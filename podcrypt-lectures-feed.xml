@@ -22,20 +22,22 @@
         <copyright>CC0 1.0 - https://creativecommons.org/publicdomain/zero/1.0</copyright>
 
         <item>
-            <pubDate>Fri, 13 Sep 2019 14:00:00 MDT</pubDate>
-            <title>The Case for Crypto Consolidation</title>
-            <link><![CDATA[https://podcrypt.app/episode-overview?feedUrl=https://podcrypt.app/podcrypt-lectures-feed.xml&episodeGuid=YEY1uJ7Mp9TlpWNBGSoOwz_SLZlfZvYg]]></link>
+            <pubDate>Wed, 18 Sep 2019 21:00:00 MDT</pubDate>
+            <title>The Internet Computer Protocol</title>
+            <link><![CDATA[https://podcrypt.app/episode-overview?feedUrl=https://podcrypt.app/podcrypt-lectures-feed.xml&episodeGuid=dHlwCB9lnmKbQiT45x9mZrt5x9cVzfoa]]></link>
             <description>
                 <![CDATA[
                     <p>
-                        Some people think that we will live in a world of many cryptocurrencies and many blockchains.
-                        I lay out a case for why that won't happen, based on the present and past of our home called Earth.
-                        Listen on <a href="https://podcrypt.app/episode-overview?feedUrl=https://podcrypt.app/podcrypt-lectures-feed.xml&episodeGuid=YEY1uJ7Mp9TlpWNBGSoOwz_SLZlfZvYg" target="_blank">Podcrypt</a>
+                        The Internet Computer Protocol spawns from an amazing vision.
+                        But in my opinion, that vision is on somewhat shaky ground.
+                        I really hope it works out, because it is a vision worth fighting for.
+                        I share some thoughts on the current and potential future state of the Internet Computer Protocol.
+                        Listen on <a href="https://podcrypt.app/episode-overview?feedUrl=https://podcrypt.app/podcrypt-lectures-feed.xml&episodeGuid=dHlwCB9lnmKbQiT45x9mZrt5x9cVzfoa" target="_blank">Podcrypt</a>
                     </p>
                 ]]>
             </description>
-            <guid isPermaLink="false">YEY1uJ7Mp9TlpWNBGSoOwz_SLZlfZvYg</guid>
-            <enclosure length="22586081" type="audio/mpeg" url="https://podcrypt-lectures.s3-us-west-2.amazonaws.com/the-case-for-crypto-consolidation.mp3" />
+            <guid isPermaLink="false">dHlwCB9lnmKbQiT45x9mZrt5x9cVzfoa</guid>
+            <enclosure length="13028423" type="audio/mpeg" url="https://podcrypt-lectures.s3-us-west-2.amazonaws.com/the-internet-computer-protocol.mp3" />
         </item>
 
         <item>
@@ -56,22 +58,20 @@
         </item>
 
         <item>
-            <pubDate>Wed, 18 Sep 2019 21:00:00 MDT</pubDate>
-            <title>The Internet Computer Protocol</title>
-            <link><![CDATA[https://podcrypt.app/episode-overview?feedUrl=https://podcrypt.app/podcrypt-lectures-feed.xml&episodeGuid=dHlwCB9lnmKbQiT45x9mZrt5x9cVzfoa]]></link>
+            <pubDate>Fri, 13 Sep 2019 14:00:00 MDT</pubDate>
+            <title>The Case for Crypto Consolidation</title>
+            <link><![CDATA[https://podcrypt.app/episode-overview?feedUrl=https://podcrypt.app/podcrypt-lectures-feed.xml&episodeGuid=YEY1uJ7Mp9TlpWNBGSoOwz_SLZlfZvYg]]></link>
             <description>
                 <![CDATA[
                     <p>
-                        The Internet Computer Protocol spawns from an amazing vision.
-                        But in my opinion, that vision is on somewhat shaky ground.
-                        I really hope it works out, because it is a vision worth fighting for.
-                        I share some thoughts on the current and potential future state of the Internet Computer Protocol.
-                        Listen on <a href="https://podcrypt.app/episode-overview?feedUrl=https://podcrypt.app/podcrypt-lectures-feed.xml&episodeGuid=dHlwCB9lnmKbQiT45x9mZrt5x9cVzfoa" target="_blank">Podcrypt</a>
+                        Some people think that we will live in a world of many cryptocurrencies and many blockchains.
+                        I lay out a case for why that won't happen, based on the present and past of our home called Earth.
+                        Listen on <a href="https://podcrypt.app/episode-overview?feedUrl=https://podcrypt.app/podcrypt-lectures-feed.xml&episodeGuid=YEY1uJ7Mp9TlpWNBGSoOwz_SLZlfZvYg" target="_blank">Podcrypt</a>
                     </p>
                 ]]>
             </description>
-            <guid isPermaLink="false">dHlwCB9lnmKbQiT45x9mZrt5x9cVzfoa</guid>
-            <enclosure length="13028423" type="audio/mpeg" url="https://podcrypt-lectures.s3-us-west-2.amazonaws.com/the-internet-computer-protocol.mp3" />
+            <guid isPermaLink="false">YEY1uJ7Mp9TlpWNBGSoOwz_SLZlfZvYg</guid>
+            <enclosure length="22586081" type="audio/mpeg" url="https://podcrypt-lectures.s3-us-west-2.amazonaws.com/the-case-for-crypto-consolidation.mp3" />
         </item>
     </channel>
 </rss>
