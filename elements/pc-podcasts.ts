@@ -395,7 +395,7 @@ StorePromise.then((Store) => {
             const term = searchInput.value.split(' ').join('+');
             update({
                 searchTerm: term,
-                tabIndex: 7
+                tabIndex: 8
             });
         }
     }
