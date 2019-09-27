@@ -4,15 +4,14 @@ import {
     pcContainerStyles,
     pxMedium,
     color1Medium,
-    pxLarge
+    pxLarge,
+    alertPadding
  } from '../services/css';
-import { 
-    navigate
-} from '../services/utilities';
 import './pc-loading';
 import './pc-podcast-row';
 import '@vaadin/vaadin-tabs';
 import './pc-podcast-search-results';
+import './pc-podcast-row';
 
 StorePromise.then((Store) => {
     customElement('pc-podcasts', ({ 
@@ -85,13 +84,14 @@ StorePromise.then((Store) => {
 
                 <vaadin-tabs .selected=${tabIndex}>
                     <vaadin-tab @click=${() => update({ tabIndex: 0 })}>My Podcasts</vaadin-tab>
-                    <vaadin-tab @click=${() => update({ tabIndex: 1 })}>Crypto</vaadin-tab>
-                    <vaadin-tab @click=${() => update({ tabIndex: 2 })}>Technology</vaadin-tab>
-                    <vaadin-tab @click=${() => update({ tabIndex: 3 })}>Science</vaadin-tab>
-                    <vaadin-tab @click=${() => update({ tabIndex: 4 })}>Business</vaadin-tab>
-                    <vaadin-tab @click=${() => update({ tabIndex: 5 })}>Travel</vaadin-tab>
-                    <vaadin-tab @click=${() => update({ tabIndex: 6 })}>Health</vaadin-tab>
-                    <vaadin-tab @click=${() => update({ tabIndex: 7 })}>Search Results</vaadin-tab>
+                    <vaadin-tab @click=${() => update({ tabIndex: 1 })}>Featured</vaadin-tab>
+                    <vaadin-tab @click=${() => update({ tabIndex: 2 })}>Crypto</vaadin-tab>
+                    <vaadin-tab @click=${() => update({ tabIndex: 3 })}>Technology</vaadin-tab>
+                    <vaadin-tab @click=${() => update({ tabIndex: 4 })}>Science</vaadin-tab>
+                    <vaadin-tab @click=${() => update({ tabIndex: 5 })}>Business</vaadin-tab>
+                    <vaadin-tab @click=${() => update({ tabIndex: 6 })}>Travel</vaadin-tab>
+                    <vaadin-tab @click=${() => update({ tabIndex: 7 })}>Health</vaadin-tab>
+                    <vaadin-tab @click=${() => update({ tabIndex: 8 })}>Search Results</vaadin-tab>
                 </vaadin-tabs>
 
                 <div ?hidden=${tabIndex !== 0}>
@@ -112,13 +112,282 @@ StorePromise.then((Store) => {
                     }
                 </div>
 
-                ${tabIndex === 1 ? html`<pc-podcast-search-results .term=${'crypto'} .limit=${20}></pc-podcast-search-results>` : ''}
-                ${tabIndex === 2 ? html`<pc-podcast-search-results .term=${'technology'} .limit=${20}></pc-podcast-search-results>` : ''}
-                ${tabIndex === 3 ? html`<pc-podcast-search-results .term=${'science'} .limit=${20}></pc-podcast-search-results>` : ''}
-                ${tabIndex === 4 ? html`<pc-podcast-search-results .term=${'business'} .limit=${20}></pc-podcast-search-results>` : ''}
-                ${tabIndex === 5 ? html`<pc-podcast-search-results .term=${'travel'} .limit=${20}></pc-podcast-search-results>` : ''}
-                ${tabIndex === 6 ? html`<pc-podcast-search-results .term=${'health'} .limit=${20}></pc-podcast-search-results>` : ''}
-                ${tabIndex === 7 ? html`<pc-podcast-search-results .term=${searchTerm} .limit=${50}></pc-podcast-search-results>` : ''}
+                <div ?hidden=${tabIndex !== 1}>
+                    <div style="color: grey; padding-top: calc(10px + 1vmin)">Featured podcasts are sponsors of Podcrypt</div>
+                    <pc-podcast-row
+                        .podcast=${{
+                            feedUrl: 'http://feeds.soundcloud.com/users/soundcloud:users:440547243/sounds.rss',
+                            artistName: 'Health Unchained Podcast',
+                            title: 'Health Unchained Podcast',
+                            description: '',
+                            imageUrl: 'http://i1.sndcdn.com/avatars-000444462669-s38tlv-original.jpg',
+                            episodeGuids: [],
+                            previousPayoutDate: 'NEVER',
+                            latestTransactionHash: 'NOT_SET',
+                            ethereumAddress: 'NOT_FOUND',
+                            ensName: 'NOT_FOUND',
+                            email: 'NOT_SET',
+                            timeListenedTotal: 0,
+                            timeListenedSincePreviousPayoutDate: 0,
+                            lastStartDate: 'NEVER',
+                            paymentsEnabled: false
+                        }}
+                        .controls=${true}
+                        .options=${true}
+                    >
+                    </pc-podcast-row>
+
+                    <pc-podcast-row
+                        .podcast=${{
+                            feedUrl: '',
+                            artistName: 'Podcrypt',
+                            title: 'Are you a podcaster interested in this spot? Click to claim it',
+                            description: '',
+                            imageUrl: '../podcrypt-black-transparent.png',
+                            episodeGuids: [],
+                            previousPayoutDate: 'NEVER',
+                            latestTransactionHash: 'NOT_SET',
+                            ethereumAddress: 'NOT_FOUND',
+                            ensName: 'NOT_FOUND',
+                            email: 'NOT_SET',
+                            timeListenedTotal: 0,
+                            timeListenedSincePreviousPayoutDate: 0,
+                            lastStartDate: 'NEVER',
+                            paymentsEnabled: false
+                        }}
+                        .clickTemplate=${html`
+                            <div style="${alertPadding}">
+                                <p>This spot costs 225 DAI or USDC per month.</p>
+                                <p>If you want it, send an email with the name of your podcast to <a href="mailto:jordanlast@podcrypt.app?subject=${encodeURIComponent('Interested in featured podcasts spot 2')}">jordanlast@podcrypt.app</a> with the subject "Interested in featured podcasts spot 2".</p>
+                            </div>
+                        `}
+                    >
+                    </pc-podcast-row>
+
+                    <pc-podcast-row
+                        .podcast=${{
+                            feedUrl: '',
+                            artistName: 'Podcrypt',
+                            title: 'Are you a podcaster interested in this spot? Click to claim it',
+                            description: '',
+                            imageUrl: '../podcrypt-black-transparent.png',
+                            episodeGuids: [],
+                            previousPayoutDate: 'NEVER',
+                            latestTransactionHash: 'NOT_SET',
+                            ethereumAddress: 'NOT_FOUND',
+                            ensName: 'NOT_FOUND',
+                            email: 'NOT_SET',
+                            timeListenedTotal: 0,
+                            timeListenedSincePreviousPayoutDate: 0,
+                            lastStartDate: 'NEVER',
+                            paymentsEnabled: false
+                        }}
+                        .clickTemplate=${html`
+                            <div style="${alertPadding}">
+                                <p>This spot costs 200 DAI or USDC per month.</p>
+                                <p>If you want it, send an email with the name of your podcast to <a href="mailto:jordanlast@podcrypt.app?subject=${encodeURIComponent('Interested in featured podcasts spot 3')}">jordanlast@podcrypt.app</a> with the subject "Interested in featured podcasts spot 3".</p>
+                            </div>
+                        `}
+                    >
+                    </pc-podcast-row>
+
+                    <pc-podcast-row
+                        .podcast=${{
+                            feedUrl: '',
+                            artistName: 'Podcrypt',
+                            title: 'Are you a podcaster interested in this spot? Click to claim it',
+                            description: '',
+                            imageUrl: '../podcrypt-black-transparent.png',
+                            episodeGuids: [],
+                            previousPayoutDate: 'NEVER',
+                            latestTransactionHash: 'NOT_SET',
+                            ethereumAddress: 'NOT_FOUND',
+                            ensName: 'NOT_FOUND',
+                            email: 'NOT_SET',
+                            timeListenedTotal: 0,
+                            timeListenedSincePreviousPayoutDate: 0,
+                            lastStartDate: 'NEVER',
+                            paymentsEnabled: false
+                        }}
+                        .clickTemplate=${html`
+                            <div style="${alertPadding}">
+                                <p>This spot costs 175 DAI or USDC per month.</p>
+                                <p>If you want it, send an email with the name of your podcast to <a href="mailto:jordanlast@podcrypt.app?subject=${encodeURIComponent('Interested in featured podcasts spot 4')}">jordanlast@podcrypt.app</a> with the subject "Interested in featured podcasts spot 4".</p>
+                            </div>
+                        `}
+                    >
+                    </pc-podcast-row>
+
+                    <pc-podcast-row
+                        .podcast=${{
+                            feedUrl: '',
+                            artistName: 'Podcrypt',
+                            title: 'Are you a podcaster interested in this spot? Click to claim it',
+                            description: '',
+                            imageUrl: '../podcrypt-black-transparent.png',
+                            episodeGuids: [],
+                            previousPayoutDate: 'NEVER',
+                            latestTransactionHash: 'NOT_SET',
+                            ethereumAddress: 'NOT_FOUND',
+                            ensName: 'NOT_FOUND',
+                            email: 'NOT_SET',
+                            timeListenedTotal: 0,
+                            timeListenedSincePreviousPayoutDate: 0,
+                            lastStartDate: 'NEVER',
+                            paymentsEnabled: false
+                        }}
+                        .clickTemplate=${html`
+                            <div style="${alertPadding}">
+                                <p>This spot costs 150 DAI or USDC per month.</p>
+                                <p>If you want it, send an email with the name of your podcast to <a href="mailto:jordanlast@podcrypt.app?subject=${encodeURIComponent('Interested in featured podcasts spot 5')}">jordanlast@podcrypt.app</a> with the subject "Interested in featured podcasts spot 5".</p>
+                            </div>
+                        `}
+                    >
+                    </pc-podcast-row>
+
+                    <pc-podcast-row
+                        .podcast=${{
+                            feedUrl: '',
+                            artistName: 'Podcrypt',
+                            title: 'Are you a podcaster interested in this spot? Click to claim it',
+                            description: '',
+                            imageUrl: '../podcrypt-black-transparent.png',
+                            episodeGuids: [],
+                            previousPayoutDate: 'NEVER',
+                            latestTransactionHash: 'NOT_SET',
+                            ethereumAddress: 'NOT_FOUND',
+                            ensName: 'NOT_FOUND',
+                            email: 'NOT_SET',
+                            timeListenedTotal: 0,
+                            timeListenedSincePreviousPayoutDate: 0,
+                            lastStartDate: 'NEVER',
+                            paymentsEnabled: false
+                        }}
+                        .clickTemplate=${html`
+                            <div style="${alertPadding}">
+                                <p>This spot costs 125 DAI or USDC per month.</p>
+                                <p>If you want it, send an email with the name of your podcast to <a href="mailto:jordanlast@podcrypt.app?subject=${encodeURIComponent('Interested in featured podcasts spot 6')}">jordanlast@podcrypt.app</a> with the subject "Interested in featured podcasts spot 6".</p>
+                            </div>
+                        `}
+                    >
+                    </pc-podcast-row>
+
+                    <pc-podcast-row
+                        .podcast=${{
+                            feedUrl: '',
+                            artistName: 'Podcrypt',
+                            title: 'Are you a podcaster interested in this spot? Click to claim it',
+                            description: '',
+                            imageUrl: '../podcrypt-black-transparent.png',
+                            episodeGuids: [],
+                            previousPayoutDate: 'NEVER',
+                            latestTransactionHash: 'NOT_SET',
+                            ethereumAddress: 'NOT_FOUND',
+                            ensName: 'NOT_FOUND',
+                            email: 'NOT_SET',
+                            timeListenedTotal: 0,
+                            timeListenedSincePreviousPayoutDate: 0,
+                            lastStartDate: 'NEVER',
+                            paymentsEnabled: false
+                        }}
+                        .clickTemplate=${html`
+                            <div style="${alertPadding}">
+                                <p>This spot costs 100 DAI or USDC per month.</p>
+                                <p>If you want it, send an email with the name of your podcast to <a href="mailto:jordanlast@podcrypt.app?subject=${encodeURIComponent('Interested in featured podcasts spot 7')}">jordanlast@podcrypt.app</a> with the subject "Interested in featured podcasts spot 7".</p>
+                            </div>
+                        `}
+                    >
+                    </pc-podcast-row>
+
+                    <pc-podcast-row
+                        .podcast=${{
+                            feedUrl: '',
+                            artistName: 'Podcrypt',
+                            title: 'Are you a podcaster interested in this spot? Click to claim it',
+                            description: '',
+                            imageUrl: '../podcrypt-black-transparent.png',
+                            episodeGuids: [],
+                            previousPayoutDate: 'NEVER',
+                            latestTransactionHash: 'NOT_SET',
+                            ethereumAddress: 'NOT_FOUND',
+                            ensName: 'NOT_FOUND',
+                            email: 'NOT_SET',
+                            timeListenedTotal: 0,
+                            timeListenedSincePreviousPayoutDate: 0,
+                            lastStartDate: 'NEVER',
+                            paymentsEnabled: false
+                        }}
+                        .clickTemplate=${html`
+                            <div style="${alertPadding}">
+                                <p>This spot costs 75 DAI or USDC per month.</p>
+                                <p>If you want it, send an email with the name of your podcast to <a href="mailto:jordanlast@podcrypt.app?subject=${encodeURIComponent('Interested in featured podcasts spot 8')}">jordanlast@podcrypt.app</a> with the subject "Interested in featured podcasts spot 8".</p>
+                            </div>
+                        `}
+                    >
+                    </pc-podcast-row>
+
+                    <pc-podcast-row
+                        .podcast=${{
+                            feedUrl: '',
+                            artistName: 'Podcrypt',
+                            title: 'Are you a podcaster interested in this spot? Click to claim it',
+                            description: '',
+                            imageUrl: '../podcrypt-black-transparent.png',
+                            episodeGuids: [],
+                            previousPayoutDate: 'NEVER',
+                            latestTransactionHash: 'NOT_SET',
+                            ethereumAddress: 'NOT_FOUND',
+                            ensName: 'NOT_FOUND',
+                            email: 'NOT_SET',
+                            timeListenedTotal: 0,
+                            timeListenedSincePreviousPayoutDate: 0,
+                            lastStartDate: 'NEVER',
+                            paymentsEnabled: false
+                        }}
+                        .clickTemplate=${html`
+                            <div style="${alertPadding}">
+                                <p>This spot costs 50 DAI or USDC per month.</p>
+                                <p>If you want it, send an email with the name of your podcast to <a href="mailto:jordanlast@podcrypt.app?subject=${encodeURIComponent('Interested in featured podcasts spot 9')}">jordanlast@podcrypt.app</a> with the subject "Interested in featured podcasts spot 9".</p>
+                            </div>
+                        `}
+                    >
+                    </pc-podcast-row>
+
+                    <pc-podcast-row
+                        .podcast=${{
+                            feedUrl: '',
+                            artistName: 'Podcrypt',
+                            title: 'Are you a podcaster interested in this spot? Click to claim it',
+                            description: '',
+                            imageUrl: '../podcrypt-black-transparent.png',
+                            episodeGuids: [],
+                            previousPayoutDate: 'NEVER',
+                            latestTransactionHash: 'NOT_SET',
+                            ethereumAddress: 'NOT_FOUND',
+                            ensName: 'NOT_FOUND',
+                            email: 'NOT_SET',
+                            timeListenedTotal: 0,
+                            timeListenedSincePreviousPayoutDate: 0,
+                            lastStartDate: 'NEVER',
+                            paymentsEnabled: false
+                        }}
+                        .clickTemplate=${html`
+                            <div style="${alertPadding}">
+                                <p>This spot costs 25 DAI or USDC per month.</p>
+                                <p>If you want it, send an email with the name of your podcast to <a href="mailto:jordanlast@podcrypt.app?subject=${encodeURIComponent('Interested in featured podcasts spot 10')}">jordanlast@podcrypt.app</a> with the subject "Interested in featured podcasts spot 10".</p>
+                            </div>
+                        `}
+                    >
+                    </pc-podcast-row>
+                </div>
+
+                ${tabIndex === 2 ? html`<pc-podcast-search-results .term=${'crypto'} .limit=${20}></pc-podcast-search-results>` : ''}
+                ${tabIndex === 3 ? html`<pc-podcast-search-results .term=${'technology'} .limit=${20}></pc-podcast-search-results>` : ''}
+                ${tabIndex === 4 ? html`<pc-podcast-search-results .term=${'science'} .limit=${20}></pc-podcast-search-results>` : ''}
+                ${tabIndex === 5 ? html`<pc-podcast-search-results .term=${'business'} .limit=${20}></pc-podcast-search-results>` : ''}
+                ${tabIndex === 6 ? html`<pc-podcast-search-results .term=${'travel'} .limit=${20}></pc-podcast-search-results>` : ''}
+                ${tabIndex === 7 ? html`<pc-podcast-search-results .term=${'health'} .limit=${20}></pc-podcast-search-results>` : ''}
+                ${tabIndex === 8 ? html`<pc-podcast-search-results .term=${searchTerm} .limit=${50}></pc-podcast-search-results>` : ''}
 
             </div>
         `;

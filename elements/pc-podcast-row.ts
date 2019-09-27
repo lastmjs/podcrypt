@@ -1,4 +1,5 @@
 import { customElement, html } from 'functional-element';
+import { TemplateResult } from 'lit-html';
 import { StorePromise } from '../state/store';
 import { 
     pxXSmall,
@@ -38,7 +39,8 @@ StorePromise.then((Store) => {
         percentageOfTotalTimeForPodcastDuringInterval,
         totalTimeForPodcastDuringIntervalInMinutes,
         secondsRemainingForPodcastDuringInterval,
-        nextPayoutLocaleDateString
+        nextPayoutLocaleDateString,
+        clickTemplate
     }) => {
 
         if (constructing) {
@@ -53,7 +55,8 @@ StorePromise.then((Store) => {
                 percentageOfTotalTimeForPodcastDuringInterval: null,
                 totalTimeForPodcastDuringIntervalInMinutes: null,
                 secondsRemainingForPodcastDuringInterval: null,
-                nextPayoutLocaleDateString: null
+                nextPayoutLocaleDateString: null,
+                clickTemplate: 'NOT_SET'
             };
         }
 
@@ -148,7 +151,7 @@ StorePromise.then((Store) => {
 
                 <div 
                     class="pc-podcast-row-text-container"
-                    @click=${() => podcastClick(podcast)}
+                    @click=${() => podcastClick(podcast, clickTemplate)}
                 >
                     ${
                         podcast !== null ? html`
@@ -280,8 +283,14 @@ StorePromise.then((Store) => {
         `;
     });
 
-    function podcastClick(podcast: any) {
-        navigate(Store, `podcast-overview?feedUrl=${podcast.feedUrl}`);
+    function podcastClick(podcast: any, clickTemplate: Readonly<TemplateResult> | 'NOT_SET') {
+
+        if (clickTemplate !== 'NOT_SET') {
+            pcAlert(clickTemplate, Store.getState().screenType);
+        }
+        else {
+            navigate(Store, `podcast-overview?feedUrl=${podcast.feedUrl}`);
+        }
     }
 
     async function subscribeToPodcast(feedUrl: FeedUrl) {
