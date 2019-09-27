@@ -139,11 +139,11 @@ StorePromise.then((Store) => {
 
                     <pc-podcast-row
                         .podcast=${{
-                            feedUrl: 'https://podcrypt.app/podcrypt-lectures-feed.xml',
-                            artistName: 'Jordan Last',
-                            title: 'Podcrypt Lectures',
+                            feedUrl: 'https://www.spreaker.com/show/2886866/episodes/feed',
+                            artistName: 'Vocast',
+                            title: 'Des Ondes Vocast',
                             description: '',
-                            imageUrl: '../podcrypt-black-transparent.png',
+                            imageUrl: 'https://d3wo5wojvuv7l.cloudfront.net/t_rss_itunes_square_1400/images.spreaker.com/original/4ac55801c6267ea462fd591a136ced4f.jpg',
                             episodeGuids: [],
                             previousPayoutDate: 'NEVER',
                             latestTransactionHash: 'NOT_SET',
@@ -162,9 +162,9 @@ StorePromise.then((Store) => {
 
                     <pc-podcast-row
                         .podcast=${{
-                            feedUrl: '',
-                            artistName: 'Podcrypt',
-                            title: 'Are you a podcaster interested in this spot? Click to claim it',
+                            feedUrl: 'https://podcrypt.app/podcrypt-lectures-feed.xml',
+                            artistName: 'Jordan Last',
+                            title: 'Podcrypt Lectures',
                             description: '',
                             imageUrl: '../podcrypt-black-transparent.png',
                             episodeGuids: [],
@@ -178,12 +178,8 @@ StorePromise.then((Store) => {
                             lastStartDate: 'NEVER',
                             paymentsEnabled: false
                         }}
-                        .clickTemplate=${html`
-                            <div style="${alertPadding}">
-                                <p>This spot costs 200 DAI or USDC per month.</p>
-                                <p>If you want it, send an email with the name of your podcast to <a href="mailto:jordanlast@podcrypt.app?subject=${encodeURIComponent('Interested in featured podcasts spot 3')}">jordanlast@podcrypt.app</a> with the subject "Interested in featured podcasts spot 3".</p>
-                            </div>
-                        `}
+                        .controls=${true}
+                        .options=${true}
                     >
                     </pc-podcast-row>
 
