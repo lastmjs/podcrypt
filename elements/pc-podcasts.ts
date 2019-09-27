@@ -139,9 +139,9 @@ StorePromise.then((Store) => {
 
                     <pc-podcast-row
                         .podcast=${{
-                            feedUrl: '',
-                            artistName: 'Podcrypt',
-                            title: 'Are you a podcaster interested in this spot? Click to claim it',
+                            feedUrl: 'https://podcrypt.app/podcrypt-lectures-feed.xml',
+                            artistName: 'Jordan Last',
+                            title: 'Podcrypt Lectures',
                             description: '',
                             imageUrl: '../podcrypt-black-transparent.png',
                             episodeGuids: [],
@@ -155,12 +155,8 @@ StorePromise.then((Store) => {
                             lastStartDate: 'NEVER',
                             paymentsEnabled: false
                         }}
-                        .clickTemplate=${html`
-                            <div style="${alertPadding}">
-                                <p>This spot costs 225 DAI or USDC per month.</p>
-                                <p>If you want it, send an email with the name of your podcast to <a href="mailto:jordanlast@podcrypt.app?subject=${encodeURIComponent('Interested in featured podcasts spot 2')}">jordanlast@podcrypt.app</a> with the subject "Interested in featured podcasts spot 2".</p>
-                            </div>
-                        `}
+                        .controls=${true}
+                        .options=${true}
                     >
                     </pc-podcast-row>
 
