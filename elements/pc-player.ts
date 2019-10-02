@@ -429,6 +429,7 @@ StorePromise.then((Store) => {
                         }
                     }}
                     .playbackRate=${parseFloat(state.playbackRate)}
+                    .defaultPlaybackRate=${parseFloat(state.playbackRate)}
                 ></audio>
             `;
         }
