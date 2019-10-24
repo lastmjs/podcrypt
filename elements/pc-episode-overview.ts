@@ -73,7 +73,7 @@ StorePromise.then((Store) => {
 
             <div class="pc-episode-overview-container">
                 <pc-loading
-                    .hidden=${loaded}
+                    .hidden=${true}
                     .prename=${"pc-episode-overview-"}
                 ></pc-loading>
 

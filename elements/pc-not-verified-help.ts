@@ -69,7 +69,7 @@ Thanks!
     
             <div class="pc-not-verified-help-container">
                 <pc-loading
-                    .hidden=${loaded}
+                    .hidden=${true}
                     .prename=${"pc-not-verified-help-"}
                 ></pc-loading>
 

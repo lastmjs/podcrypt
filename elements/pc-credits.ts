@@ -45,7 +45,7 @@ customElement('pc-credits', async ({ constructing, connecting, update, loaded, a
 
         <div class="pc-credits-container">
             <pc-loading
-                .hidden=${loaded}
+                .hidden=${true}
                 .prename=${"pc-credits-"}
             ></pc-loading>
 

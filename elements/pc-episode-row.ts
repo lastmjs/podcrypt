@@ -160,11 +160,7 @@ StorePromise.then((Store) => {
 
             <div class="pc-episode-row-main-container${podcast && episode && currentlyPlaying ? ' pc-episode-row-currently-playing' : ''}">
                 <pc-loading
-                    .hidden=${
-                        !episode ||
-                        !Store.getState().episodes[episode.guid] ||
-                        Store.getState().episodes[episode.guid].downloadState !== 'DOWNLOADING'
-                    }
+                    .hidden=${true}
                     .prename=${`pc-episode-row-${episode ? episode.guid : ''}`}
                     .message=${'Downloading'}
                     .spinnerWidth=${'25px'}
