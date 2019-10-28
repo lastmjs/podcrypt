@@ -125,7 +125,7 @@ StorePromise.then((Store) => {
                         html`<div>Failed to load</div>` : 
                         html`
                             <pc-podcast-row
-                                .podcast=${true}
+                                .podcast=${podcast}
                                 .controls=${true}
                                 .verification=${true}
                                 .options=${true}
