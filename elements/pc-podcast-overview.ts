@@ -116,7 +116,7 @@ StorePromise.then((Store) => {
 
             <div class="pc-podcast-overview-container">
                 <pc-loading
-                    .hidden=${loaded}
+                    .hidden=${true}
                     .prename=${"pc-podcast-overview-"}
                 ></pc-loading>
 
@@ -125,7 +125,7 @@ StorePromise.then((Store) => {
                         html`<div>Failed to load</div>` : 
                         html`
                             <pc-podcast-row
-                                .podcast=${true}
+                                .podcast=${podcast}
                                 .controls=${true}
                                 .verification=${true}
                                 .options=${true}
