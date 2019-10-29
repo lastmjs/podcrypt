@@ -51,8 +51,12 @@ customElement('pc-loading', ({
                 background-color: ${hidden ? 'rgba(255, 255, 255, 0)' : 'rgba(255, 255, 255, 1)'};
                 z-index: ${one};
                 ${hidden ? 'transition: background-color 1s linear;' : ''}
-                pointer-events: none;
+                /* pointer-events: none; */
                 text-align: center;
+            }
+
+            .${prename}loading-container {
+                /* display: none; */
             }
 
             .${prename}loading-spinner {
