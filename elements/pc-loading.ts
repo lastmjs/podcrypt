@@ -1,7 +1,8 @@
 import { customElement, html } from 'functional-element';
 import { 
     color1Full,
-    one
+    one,
+    zero
  } from '../services/css';
 
 // TODO all of this prename nonsense can be fixed by implementing shadow dom in functional-element
@@ -49,14 +50,10 @@ customElement('pc-loading', ({
                 top: 0;
                 right: 0;
                 background-color: ${hidden ? 'rgba(255, 255, 255, 0)' : 'rgba(255, 255, 255, 1)'};
-                z-index: ${one};
+                z-index: ${hidden ? zero : one};
                 ${hidden ? 'transition: background-color 1s linear;' : ''}
-                /* pointer-events: none; */
+                pointer-events: none;
                 text-align: center;
-            }
-
-            .${prename}loading-container {
-                /* display: none; */
             }
 
             .${prename}loading-spinner {
