@@ -2,7 +2,7 @@ import { customElement, html } from 'functional-element';
 import { 
     color1Full,
     one,
-    zero
+    negativeOne
  } from '../services/css';
 
 // TODO all of this prename nonsense can be fixed by implementing shadow dom in functional-element
@@ -50,7 +50,7 @@ customElement('pc-loading', ({
                 top: 0;
                 right: 0;
                 background-color: ${hidden ? 'rgba(255, 255, 255, 0)' : 'rgba(255, 255, 255, 1)'};
-                z-index: ${hidden ? zero : one};
+                z-index: ${hidden ? negativeOne : one}; /* Consider if this is the best strategy...negative z-index? */
                 ${hidden ? 'transition: background-color 1s linear;' : ''}
                 pointer-events: none;
                 text-align: center;
