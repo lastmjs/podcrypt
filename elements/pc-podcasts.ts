@@ -69,7 +69,7 @@ StorePromise.then((Store) => {
     
             <div class="pc-podcasts-container">
                 <pc-loading
-                    .hidden=${true}
+                    .hidden=${loaded}
                     .prename=${"pc-podcasts-"}
                 >
                 </pc-loading>
