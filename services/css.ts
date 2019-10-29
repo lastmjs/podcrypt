@@ -15,6 +15,7 @@ export const colorBlackFaint = `rgba(0, 0, 0, .01)`;
 export const bottomShadow = `-5px 5px 5px -5px grey`;
 export const normalShadow = `0px 0px 1px grey`;
 
+export const negativeOne = `-1`;
 export const zero = `0`;
 export const one = `1`;
 export const two = `2`;
