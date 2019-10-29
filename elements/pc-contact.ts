@@ -44,7 +44,7 @@ customElement('pc-contact', ({ constructing, connecting, update, loaded }) => {
 
         <div class="pc-contact-container">
             <pc-loading
-                .hidden=${true}
+                .hidden=${loaded}
                 .prename=${"pc-contact-"}
             ></pc-loading>
 

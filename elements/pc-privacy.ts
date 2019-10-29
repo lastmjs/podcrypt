@@ -40,7 +40,7 @@ customElement('pc-privacy', ({ constructing, connecting, update, loaded }) => {
 
         <div class="pc-privacy-container">
             <pc-loading
-                .hidden=${true}
+                .hidden=${loaded}
                 .prename=${"pc-privacy-"}
             ></pc-loading>
 
