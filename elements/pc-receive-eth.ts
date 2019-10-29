@@ -31,7 +31,7 @@ StorePromise.then((Store) => {
     
             <div class="pc-receive-eth-container">
                 <pc-loading
-                    .hidden=${true}
+                    .hidden=${loaded}
                     .prename=${"pc-receive-eth-"}
                 ></pc-loading>
 

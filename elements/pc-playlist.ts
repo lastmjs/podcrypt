@@ -56,7 +56,7 @@ StorePromise.then((Store) => {
 
             <div class="pc-playlist-container">
                 <pc-loading
-                    .hidden=${true}
+                    .hidden=${loaded}
                     .prename=${"pc-playlist-"}
                 ></pc-loading>
                 ${true ? loadedUI() : loadingUI()}
