@@ -55,6 +55,10 @@ customElement('pc-loading', ({
                 text-align: center;
             }
 
+            .${prename}loading-container {
+                display: none;
+            }
+
             .${prename}loading-spinner {
                 display: inline-block;
                 width: ${spinnerWidth};
