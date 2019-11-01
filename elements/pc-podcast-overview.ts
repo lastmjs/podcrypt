@@ -18,7 +18,6 @@ import {
 import {
     getRSSFeed,
     createPodcast,
-    addEpisodeToPlaylist,
     createEpisodeFromPodcastAndItem
 } from '../services/utilities';
 import './pc-loading';
@@ -27,7 +26,7 @@ import './pc-episode-row';
 import dompurify from 'dompurify';
 
 StorePromise.then((Store) => {
-    customElement('pc-podcast-overview', ({ 
+    customElement('pc-podcast-overview', async ({ 
         constructing,
         update,
         feedUrl,
@@ -54,7 +53,10 @@ StorePromise.then((Store) => {
                 previousFeedUrl: feedUrl,
                 loaded: false
             });
-            getFeed(feedUrl, update);
+            await getFeed(feedUrl, update);
+            update({
+                loaded: true
+            });
         }
     
         return html`
@@ -177,46 +179,9 @@ StorePromise.then((Store) => {
         const podcast: Readonly<Podcast | null> = await createPodcast(feedUrl, feed);
 
         update({
-            loaded: true,
             previousFeedUrl: feedUrl,
             feed,
             podcast
-        });
-    }
-    
-    // TODO really this should add to the playlist and start the playlist
-    // function playEpisode(item) {
-    //     Store.dispatch({
-    //         type: 'PLAY_EPISODE',
-    //         episode: {
-    //             guid: item.guid,
-    //             title: item.title,
-    //             src: item.enclosure.url,
-    //             finishedListening: false,
-    //             playing: false,
-    //             progress: 0,
-    //             isoDate: item.isoDate
-    //         }
-    //     });
-    // }
-
-    function playEpisode(podcast: Readonly<Podcast>, item: any) {
-        addEpisodeToPlaylist(Store, podcast, item);
-       
-        const episodeGuid: EpisodeGuid = item.guid;
-
-        // TODO this action type should be changed, same as in the playlist
-        Store.dispatch({
-            type: 'PLAY_EPISODE_FROM_PLAYLIST',
-            episodeGuid
-        });
-    }
-
-    function pauseEpisode(episodeGuid: EpisodeGuid) {
-        // TODO this action type should be changed, same as in the playlist
-        Store.dispatch({
-            type: 'PAUSE_EPISODE_FROM_PLAYLIST',
-            episodeGuid
         });
     }
 });

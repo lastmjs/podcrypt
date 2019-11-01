@@ -3,7 +3,7 @@ import {
     color1Full,
     one,
     negativeOne
- } from '../services/css';
+} from '../services/css';
 
 // TODO all of this prename nonsense can be fixed by implementing shadow dom in functional-element
 customElement('pc-loading', ({ 
