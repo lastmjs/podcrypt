@@ -15,7 +15,7 @@ import dompurify from 'dompurify';
 import { unsafeHTML } from 'lit-html/directives/unsafe-html';
 
 StorePromise.then((Store) => {
-    customElement('pc-episode-overview', ({ 
+    customElement('pc-episode-overview', async ({ 
         constructing,
         update,
         episode,
@@ -55,7 +55,10 @@ StorePromise.then((Store) => {
             };
 
             update(newProps);
-            loadEpisode(feedUrl, episodeGuid, update, newProps);
+            await loadEpisode(feedUrl, episodeGuid, update, newProps);
+            update({
+                loaded: true
+            });
         }
 
         const theEpisode: Readonly<Episode> = episode ? Store.getState().episodes[episode.guid] || episode : episode;
@@ -122,7 +125,6 @@ StorePromise.then((Store) => {
             podcast === null
         ) {
             update({
-                loaded: true,
                 feed,
                 podcast
             });
@@ -137,7 +139,6 @@ StorePromise.then((Store) => {
 
         if (episode === undefined) {
             update({
-                loaded: true,
                 feed,
                 podcast,
                 episode: null
@@ -146,7 +147,6 @@ StorePromise.then((Store) => {
         }
 
         update({
-            loaded: true,
             feed,
             podcast,
             episode

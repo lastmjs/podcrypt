@@ -60,7 +60,7 @@ customElement('pc-privacy', ({ constructing, connecting, update, loaded }) => {
             
             <br>
             
-            <div class="pc-privacy-secondary-text">You can see a list of most of Podcrypt's third-party APIs in the <a href="credits">Credits</a> section.</div>
+            <div class="pc-privacy-secondary-text">You can see a list of most of Podcrypt's third-party APIs in the <a href="credit">Credits</a> section.</div>
             
             <br>
             

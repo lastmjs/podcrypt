@@ -48,6 +48,9 @@ import {
 } from './pc-modal';
 import './pc-wallet-warnings';
 import './pc-show-mnemonic-phrase';
+import {
+    ephemeralState
+} from '../services/listeners';
 
 StorePromise.then((Store) => {
 
@@ -446,9 +449,9 @@ StorePromise.then((Store) => {
         `, Store.getState().screenType);
 
         if (result === true) {
-            payoutInProgress = true;
+            ephemeralState.payoutInProgress = true;
             await payout(Store, 500);
-            payoutInProgress = false;
+            ephemeralState.payoutInProgress = false;
         }
     }
 
@@ -487,27 +490,4 @@ StorePromise.then((Store) => {
 
         await loadEthereumAccountBalance(Store);
     }
-
-    // TODO figure out a place to store ephemeral state...we might need to just modify the Redux store persistance and remove certain properties
-    // TODO this needs to stay in memory only and not be persisted because we want the payout process to continue on a refresh
-    let payoutInProgress = false;
-
-    setInterval(async () => {
-        if (
-            Store.getState().nextPayoutDate !== 'NEVER' &&
-            payoutInProgress === false &&
-            new Date().getTime() >= Store.getState().nextPayoutDate
-        ) {
-            payoutInProgress = true;
-            await payout(Store, 500);
-            payoutInProgress = false;
-        }
-    }, 30000);
-
-    setInterval(async () => {
-        if (Store.getState().currentRoute.pathname === '/wallet') {
-            await loadCurrentETHPriceInUSDCents(Store);
-            await loadEthereumAccountBalance(Store);
-        }
-    }, 30000);
 });

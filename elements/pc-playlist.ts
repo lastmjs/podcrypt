@@ -9,6 +9,7 @@ import {
     addEpisodeToPlaylist
 } from '../services/utilities';
 import './pc-loading';
+import './pc-episode-row';
 
 StorePromise.then((Store) => {
     customElement('pc-playlist', ({ 

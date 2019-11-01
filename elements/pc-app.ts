@@ -26,7 +26,6 @@ import './pc-router';
 import './pc-main-menu';
 import './pc-player';
 import {
-    bottomShadow,
     normalShadow,
     one,
     two,
@@ -40,6 +39,7 @@ import {
 import '../services/listeners';
 import { pcAlert } from './pc-modal';
 import { createWallet } from '../services/balance-calculations';
+import '../services/listeners';
 
 // TODO I do not like how we have to do this to get the store...top level await would be really nice
 StorePromise.then((Store) => {

@@ -4,6 +4,7 @@
         "target": "es2015",
         "lib": ["es2017", "dom"],
         "allowJs": true,
-        "moduleResolution": "node"
+        "moduleResolution": "node",
+        "module": "esnext"
     }
 }
