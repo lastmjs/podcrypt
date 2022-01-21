@@ -1,8 +1,8 @@
 import { 
     customElement, 
-    html 
+    html,
+    unsafeHTML
 } from 'functional-element';
-import { unsafeHTML } from 'lit-html/directives/unsafe-html';
 import { StorePromise } from '../state/store';
 import { 
     pcContainerStyles,

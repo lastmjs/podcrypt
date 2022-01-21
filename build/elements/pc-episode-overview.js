@@ -1,4 +1,4 @@
-import {customElement, html} from "../_snowpack/pkg/functional-element.js";
+import {customElement, html, unsafeHTML} from "../_snowpack/pkg/functional-element.js";
 import {
   pcContainerStyles,
   standardTextContainer
@@ -12,7 +12,6 @@ import {
 import "./pc-loading.js";
 import "./pc-episode-row.js";
 import dompurify from "../_snowpack/pkg/dompurify.js";
-import {unsafeHTML} from "../_snowpack/pkg/lit-html/directives/unsafe-html.js";
 StorePromise.then((Store) => {
   customElement("pc-episode-overview", async ({
     constructing,

@@ -1,4 +1,5 @@
 import {customElement, html} from "../_snowpack/pkg/functional-element.js";
+import {html as htmlLit} from "../_snowpack/pkg/lit-html.js";
 import {StorePromise} from "../state/store.js";
 import {
   pcContainerStyles,
@@ -35,7 +36,7 @@ StorePromise.then((Store) => {
     const pcRestoreWithPhraseInput = element.querySelector("#pc-restore-with-phrase-input");
     const mnemonicPhrase = pcRestoreWithPhraseInput.value;
     if (mnemonicPhrase.split(" ").length !== 12) {
-      pcAlert(html`
+      pcAlert(htmlLit`
                 <div style="${alertPadding}">Your secret phrase must have exactly 12 words</div>
             `, Store.getState().screenType);
       return;

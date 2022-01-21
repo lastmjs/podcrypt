@@ -1,4 +1,5 @@
 import {customElement, html} from "../_snowpack/pkg/functional-element.js";
+import {html as htmlLit} from "../_snowpack/pkg/lit-html.js";
 import {StorePromise} from "../state/store.js";
 import {
   pxXSmall,
@@ -149,6 +150,21 @@ StorePromise.then((Store) => {
                 .pc-episode-row-currently-playing {
                     background-color: ${colorBlackVeryLight};
                 }
+
+                .pc-podcast-row-options-icon {
+                    cursor: pointer;
+                }
+
+                .pc-podcast-row-options-item {
+                    font-weight: bold;
+                    cursor: pointer;
+                    padding: calc(15px + 1vmin);
+                    border-bottom: 1px solid grey;
+                    text-align: center; 
+                    font-size: calc(15px + 1vmin);  
+                    width: 100%;   
+                    box-sizing: border-box;              
+                }
             </style>
 
             <div class="pc-episode-row-main-container${podcast && episode && currentlyPlaying ? " pc-episode-row-currently-playing" : ""}">
@@ -218,7 +234,7 @@ StorePromise.then((Store) => {
                             ${options ? html`
                                     <i
                                         class="material-icons pc-podcast-row-options-icon"
-                                        @click=${() => pcAlert(html`
+                                        @click=${() => pcAlert(htmlLit`
                                             <div style="display: flex; flex-direction: column; align-items: center">
                                                 <div 
                                                     class="pc-podcast-row-options-item"
@@ -350,7 +366,7 @@ StorePromise.then((Store) => {
     } catch (error) {
       await deleteDownloadedEpisode(Store, episode);
       if (error.toString().includes("QuotaExceededError")) {
-        pcAlert(html`
+        pcAlert(htmlLit`
                     <div style="${alertPadding}">
                         <div>You have run out of storage space.</div>
                         <br>
@@ -358,7 +374,7 @@ StorePromise.then((Store) => {
                     </div>
                 `, Store.getState().screenType);
       } else {
-        pcAlert(html`
+        pcAlert(htmlLit`
                     <div style="${alertPadding}">${error}</div>
                 `, Store.getState().screenType);
       }
@@ -393,7 +409,7 @@ StorePromise.then((Store) => {
     try {
       await deleteDownloadedEpisode(Store, episode);
     } catch (error) {
-      pcAlert(html`
+      pcAlert(htmlLit`
                 <div style="${alertPadding}">${error}</div>
             `, Store.getState().screenType);
     }

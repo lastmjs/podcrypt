@@ -1,8 +1,8 @@
 import {
   customElement,
-  html
+  html,
+  unsafeHTML
 } from "../_snowpack/pkg/functional-element.js";
-import {unsafeHTML} from "../_snowpack/pkg/lit-html/directives/unsafe-html.js";
 import {StorePromise} from "../state/store.js";
 import {
   pcContainerStyles,

@@ -1,4 +1,5 @@
 import {customElement, html} from "../_snowpack/pkg/functional-element.js";
+import {html as htmlLit} from "../_snowpack/pkg/lit-html.js";
 import {StorePromise} from "../state/store.js";
 import {
   pxXSmall,
@@ -196,7 +197,7 @@ StorePromise.then((Store) => {
                 ${options ? html`
                         <i
                             class="material-icons pc-podcast-row-options-icon"
-                            @click=${() => pcAlert(html`
+                            @click=${() => pcAlert(htmlLit`
                                 <div style="display: flex; flex-direction: column; align-items: center">
                                     <div 
                                         class="pc-podcast-row-options-item"
@@ -262,7 +263,7 @@ StorePromise.then((Store) => {
   async function subscribeToPodcast(feedUrl) {
     const podcast = await createPodcast(feedUrl);
     if (podcast === null) {
-      pcAlert(html`
+      pcAlert(htmlLit`
                 <div style="${alertPadding}">Could not subscribe to podcast</div>
             `, Store.getState().screenType);
       return;
@@ -309,7 +310,7 @@ StorePromise.then((Store) => {
   async function addAllEpisodesOldestToNewestOption(podcast) {
     const feed = await getFeed(podcast.feedUrl);
     if (feed === null) {
-      pcAlert(html`<div style="${alertPadding}">The feed could not be loaded</div>`, Store.getState().screenType);
+      pcAlert(htmlLit`<div style="${alertPadding}">The feed could not be loaded</div>`, Store.getState().screenType);
       return;
     }
     const sortedItems = [...feed.items].sort((a, b) => {
@@ -322,7 +323,7 @@ StorePromise.then((Store) => {
   async function addAllEpisodesNewestToOldestOption(podcast) {
     const feed = await getFeed(podcast.feedUrl);
     if (feed === null) {
-      pcAlert(html`<div style="${alertPadding}">The feed could not be loaded</div>`, Store.getState().screenType);
+      pcAlert(htmlLit`<div style="${alertPadding}">The feed could not be loaded</div>`, Store.getState().screenType);
       return;
     }
     feed.items.forEach((item) => {

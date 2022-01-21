@@ -1,5 +1,5 @@
-import { m as marker, T as Template, r as removeNodes, N as NodePart } from './common/lit-html-5c75be31.js';
-export { h as html } from './common/lit-html-5c75be31.js';
+import { m as marker, T as Template, r as removeNodes, N as NodePart } from './common/lit-html-6ef825ea.js';
+export { h as html } from './common/lit-html-6ef825ea.js';
 
 /**
  * @license

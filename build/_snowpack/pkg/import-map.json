@@ -36,7 +36,6 @@
     "idb-keyval": "./idb-keyval.js",
     "lit-html": "./lit-html.js",
     "lit-html/directives/cache": "./lit-html/directives/cache.js",
-    "lit-html/directives/unsafe-html": "./lit-html/directives/unsafe-html.js",
     "pure-rand": "./pure-rand.js",
     "redux": "./redux.js",
     "symbol-observable": "./symbol-observable.js"

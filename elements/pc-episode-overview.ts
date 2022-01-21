@@ -1,4 +1,4 @@
-import { customElement, html } from 'functional-element';
+import { customElement, html, unsafeHTML } from 'functional-element';
 import { 
     pcContainerStyles,
     standardTextContainer
@@ -12,7 +12,6 @@ import {
 import './pc-loading';
 import './pc-episode-row';
 import dompurify from 'dompurify';
-import { unsafeHTML } from 'lit-html/directives/unsafe-html';
 
 StorePromise.then((Store) => {
     customElement('pc-episode-overview', async ({ 
