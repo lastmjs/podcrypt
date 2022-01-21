@@ -15,28 +15,18 @@
 
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
-
-        <!-- Global site tag (gtag.js) - Google Analytics -->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-61431139-2"></script>
-        <script>
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', 'UA-61431139-2', { 'anonymize_ip': true });
-        </script>        
+        <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">   
 
         <script src="services/process-polyfill.js"></script>
 
         <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-        <script type="module" src="elements/pc-app.ts"></script>
+        <script type="module">import './elements/pc-app.ts';</script>
     </head>
 
     
     <body>
         <pc-app></pc-app>
 
-        <script src="https://verify.sendwyre.com/js/widget-loader.js"></script>
         <!-- <script type="module" src="tests.ts"></script> -->
     </body>
 </html>

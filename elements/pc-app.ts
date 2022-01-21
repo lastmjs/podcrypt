@@ -5,7 +5,7 @@ if ('serviceWorker' in window.navigator) {
     // window.addEventListener('load', async () => {
     (async () => {
         try {     
-            await window.navigator.serviceWorker.register('/service-worker.ts', {
+            await window.navigator.serviceWorker.register('/service-worker.js', {
                 // type: 'module' // TODO The module type is not supported yet...so we cannot use modules in the service worker, which is a crying shame
             });
             console.log('service worker registration successful');
