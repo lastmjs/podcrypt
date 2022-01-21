@@ -53,9 +53,13 @@ StorePromise.then((Store) => {
                 previousFeedUrl: feedUrl,
                 loaded: false
             });
+
             await getFeed(feedUrl, update);
-            update({
-                loaded: true
+            
+            setTimeout(() => {
+                update({
+                    loaded: true
+                });
             });
         }
     
