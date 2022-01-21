@@ -35,8 +35,8 @@ import {
 } from '../services/balance-calculations';
 import { 
     navigate,
-    copyTextToClipboard,
-    getAndSaveWyrePrivateKey
+    copyTextToClipboard
+    // getAndSaveWyrePrivateKey
 } from '../services/utilities';
 import BigNumber from "../node_modules/bignumber.js/bignumber";
 import './pc-loading';
@@ -219,9 +219,9 @@ StorePromise.then((Store) => {
                     <br>
 
                     <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: center">
-                        <div style="display: flex; justify-content: center; align-items: center; margin: calc(5px + 1vmin)">
-                            <pc-button @click=${buyETHClick} .text=${'Buy ETH'}></pc-button>
-                        </div>
+                        <!-- <div style="display: flex; justify-content: center; align-items: center; margin: calc(5px + 1vmin)">
+                            <pc-button @click=${() => buyETHClick()} .text=${'Buy ETH'}></pc-button>
+                        </div> -->
                         <div style="display: flex; justify-content: center; align-items: center; margin: calc(5px + 1vmin)">
                             <pc-button @click=${receiveETHClick} .text=${'Receive ETH'}></pc-button>
                         </div>
@@ -285,70 +285,70 @@ StorePromise.then((Store) => {
 
     window.customElements.define('pc-wallet', PCWallet);
 
-    async function buyETHClick() {
+    // async function buyETHClick() {
         
-        const state: Readonly<State> = Store.getState();
+    //     const state: Readonly<State> = Store.getState();
 
-        if (
-            state.warningCheckbox1Checked === false ||
-            state.warningCheckbox2Checked === false ||
-            state.warningCheckbox3Checked === false
-        ) {
-            const confirmation = await pcConfirm(html`
-                <div style="padding: calc(5px + 1vmin)">
-                    <pc-wallet-warnings></pc-wallet-warnings>
-                </div>
-            `, state.screenType);
+    //     if (
+    //         state.warningCheckbox1Checked === false ||
+    //         state.warningCheckbox2Checked === false ||
+    //         state.warningCheckbox3Checked === false
+    //     ) {
+    //         const confirmation = await pcConfirm(html`
+    //             <div style="padding: calc(5px + 1vmin)">
+    //                 <pc-wallet-warnings></pc-wallet-warnings>
+    //             </div>
+    //         `, state.screenType);
             
-            if (confirmation === true) {
-                buyETHClick();
-            }
+    //         if (confirmation === true) {
+    //             buyETHClick();
+    //         }
             
-            return;
-        }
+    //         return;
+    //     }
 
-        if (
-            state.mnemonicPhraseWarningCheckboxChecked === false
-        ) {
-            const confirmation = await pcConfirm(html`
-                <div style="padding: calc(5px + 1vmin)">
-                    <pc-show-mnemonic-phrase></pc-show-mnemonic-phrase>
-                </div>
-            `, state.screenType);
+    //     if (
+    //         state.mnemonicPhraseWarningCheckboxChecked === false
+    //     ) {
+    //         const confirmation = await pcConfirm(html`
+    //             <div style="padding: calc(5px + 1vmin)">
+    //                 <pc-show-mnemonic-phrase></pc-show-mnemonic-phrase>
+    //             </div>
+    //         `, state.screenType);
             
-            if (confirmation === true) {
-                buyETHClick();
-            }
+    //         if (confirmation === true) {
+    //             buyETHClick();
+    //         }
             
-            return;
-        }
+    //         return;
+    //     }
 
-        // pcAlert(html`
-        //     <div style="${alertPadding}">
-        //         This feature is pending and should be available in the US within a few days
-        //     </div>
-        // `, Store.getState().screenType);
+    //     // pcAlert(html`
+    //     //     <div style="${alertPadding}">
+    //     //         This feature is pending and should be available in the US within a few days
+    //     //     </div>
+    //     // `, Store.getState().screenType);
         
-        const widget = new Wyre.Widget({
-            env: process.env.NODE_ENV === 'production' ? 'prod' : 'test',
-            accountId: process.env.NODE_ENV === 'production' ? 'AC_LUQ6NQC4MQZ' : 'AC_RTQ46VYP4U3',
-            auth: {
-                type: 'secretKey',
-                secretKey: await getAndSaveWyrePrivateKey()
-            },
-            operation: {
-                type: 'debitcard',
-                dest: `ethereum:${Store.getState().ethereumAddress}`,
-                sourceCurrency: 'USD',
-                destCurrency: 'ETH'
-            },
-            style: {
-                primaryColor: color1Full
-            }
-        });
+    //     const widget = new Wyre.Widget({
+    //         env: process.env.NODE_ENV === 'production' ? 'prod' : 'test',
+    //         accountId: process.env.NODE_ENV === 'production' ? 'AC_LUQ6NQC4MQZ' : 'AC_RTQ46VYP4U3',
+    //         auth: {
+    //             type: 'secretKey',
+    //             secretKey: await getAndSaveWyrePrivateKey()
+    //         },
+    //         operation: {
+    //             type: 'debitcard',
+    //             dest: `ethereum:${Store.getState().ethereumAddress}`,
+    //             sourceCurrency: 'USD',
+    //             destCurrency: 'ETH'
+    //         },
+    //         style: {
+    //             primaryColor: color1Full
+    //         }
+    //     });
 
-        widget.open();
-    }
+    //     widget.open();
+    // }
 
     async function receiveETHClick() {
         const state: Readonly<State> = Store.getState();

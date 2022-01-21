@@ -345,20 +345,20 @@ export function bytesToMegabytes(bytes: number | string): number {
     return Math.floor(+bytes / (1024 ** 2));
 }
 
-export async function getAndSaveWyrePrivateKey(): Promise<string> {
-    const wyrePrivateKey: string | undefined = await get('wyrePrivateKey');
+// export async function getAndSaveWyrePrivateKey(): Promise<string> {
+//     const wyrePrivateKey: string | undefined = await get('wyrePrivateKey');
     
-    if (wyrePrivateKey === undefined) {
-        // TODO I'm not sure how this will behave across multiple devices...we might want to derive the wyre private key from the ethereum private key...I'm not sure how to do that in a way that we don't leak the ethereum private key to wyre though...I'll have to study it
-        const emptyArray: Uint8Array = new Uint8Array(25);
-        window.crypto.getRandomValues(emptyArray);
-        const wyrePrivateKey: string = Array.from(emptyArray).map((int: number) => int.toString(16).padStart(2, '0')).join('');
+//     if (wyrePrivateKey === undefined) {
+//         // TODO I'm not sure how this will behave across multiple devices...we might want to derive the wyre private key from the ethereum private key...I'm not sure how to do that in a way that we don't leak the ethereum private key to wyre though...I'll have to study it
+//         const emptyArray: Uint8Array = new Uint8Array(25);
+//         window.crypto.getRandomValues(emptyArray);
+//         const wyrePrivateKey: string = Array.from(emptyArray).map((int: number) => int.toString(16).padStart(2, '0')).join('');
 
-        await set('wyrePrivateKey', wyrePrivateKey);
+//         await set('wyrePrivateKey', wyrePrivateKey);
 
-        return wyrePrivateKey;
-    }
-    else {
-        return wyrePrivateKey;
-    }
-}
+//         return wyrePrivateKey;
+//     }
+//     else {
+//         return wyrePrivateKey;
+//     }
+// }

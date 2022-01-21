@@ -3,9 +3,7 @@ import BigNumber from "../_snowpack/pkg/bignumberjs.js";
 import {ethersProvider} from "./ethers-provider.js";
 import "../node_modules/ethers/dist/ethers.min.js";
 import {
-  del,
-  get,
-  set
+  del
 } from "../_snowpack/pkg/idb-keyval.js";
 export const fiveMegabytesInBytes = 5242880;
 export const podcryptProxy = "https://proxy.podcrypt.app/";
@@ -269,16 +267,4 @@ export async function deleteDownloadedEpisode(Store, episode) {
 }
 export function bytesToMegabytes(bytes) {
   return Math.floor(+bytes / 1024 ** 2);
-}
-export async function getAndSaveWyrePrivateKey() {
-  const wyrePrivateKey = await get("wyrePrivateKey");
-  if (wyrePrivateKey === void 0) {
-    const emptyArray = new Uint8Array(25);
-    window.crypto.getRandomValues(emptyArray);
-    const wyrePrivateKey2 = Array.from(emptyArray).map((int) => int.toString(16).padStart(2, "0")).join("");
-    await set("wyrePrivateKey", wyrePrivateKey2);
-    return wyrePrivateKey2;
-  } else {
-    return wyrePrivateKey;
-  }
 }
