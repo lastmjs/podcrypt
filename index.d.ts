@@ -2,7 +2,6 @@ declare var RSSParser: any;
 declare var MediaMetadata: any;
 declare var ethers: any;
 declare module 'dompurify';
-declare var Wyre: any;
 
 type ScreenType = 'DESKTOP' | 'MOBILE';
 type ModalType = 'ALERT' | 'CONFIRM' | 'CUSTOM';

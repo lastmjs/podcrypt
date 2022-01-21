@@ -317,7 +317,7 @@ StorePromise.then((Store) => {
     }
 
     async function deleteOption(podcast: Readonly<Podcast>) {
-        const confirmation = await pcConfirm(html`
+        const confirmation = await pcConfirm(htmlLit`
                 <div style="${alertPadding}">Are you sure you want to delete this podcast and all of its data?</div>
             `, Store.getState().screenType);
 
