@@ -84,7 +84,21 @@ StorePromise.then((Store) => {
                 <br>
 
                 <br>
+
+                <div id="podcast-listeners" class="pc-about-title-text-large">Developers</div>
+
+                <br>
     
+                <div class="pc-about-secondary-text">
+                    I (Jordan Last @lastmjs) am the original creator of Podcrypt, but I would love to pass the project off to competent developers who share the Podcrypt vision.
+                    If you can see the vision that I see and want to take ownership of Podcrypt, then please reach out.
+                    My contact info can be found <a href="javascript:void" @click=${() => navigate(Store, "/contact")}>here</a>.
+                </div>
+
+                <br>
+
+                <br>
+
                 <div id="podcast-listeners" class="pc-about-title-text-large">Podcast listeners</div>
     
                 <br>

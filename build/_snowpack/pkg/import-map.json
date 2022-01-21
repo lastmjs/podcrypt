@@ -1,6 +1,8 @@
 {
   "imports": {
     "@dfinity/agent": "./@dfinity/agent.js",
+    "@dfinity/candid": "./@dfinity/candid.js",
+    "@dfinity/principal": "./@dfinity/principal.js",
     "@polymer/iron-resizable-behavior/iron-resizable-behavior.js": "./@polymer/iron-resizable-behavior/iron-resizable-behavior.js",
     "@polymer/polymer/lib/elements/custom-style.js": "./@polymer/polymer/lib/elements/custom-style.js",
     "@polymer/polymer/lib/elements/dom-module.js": "./@polymer/polymer/lib/elements/dom-module.js",
@@ -30,15 +32,23 @@
     "@vaadin/vaadin-usage-statistics/vaadin-usage-statistics.js": "./@vaadin/vaadin-usage-statistics/vaadin-usage-statistics.js",
     "@webcomponents/shadycss/entrypoints/apply-shim.js": "./@webcomponents/shadycss/entrypoints/apply-shim.js",
     "@webcomponents/shadycss/entrypoints/custom-style-interface.js": "./@webcomponents/shadycss/entrypoints/custom-style-interface.js",
+    "base64-arraybuffer": "./base64-arraybuffer.js",
+    "base64-js": "./base64-js.js",
     "bignumber.js": "./bignumberjs.js",
+    "borc": "./borc.js",
+    "buffer": "./buffer.js",
     "dompurify": "./dompurify.js",
     "fast-check": "./fast-check.js",
     "functional-element": "./functional-element.js",
     "idb-keyval": "./idb-keyval.js",
+    "ieee754": "./ieee754.js",
+    "iso-url": "./iso-url.js",
+    "js-sha256": "./js-sha256.js",
     "lit-html": "./lit-html.js",
     "lit-html/directives/cache": "./lit-html/directives/cache.js",
     "pure-rand": "./pure-rand.js",
     "redux": "./redux.js",
+    "simple-cbor": "./simple-cbor.js",
     "symbol-observable": "./symbol-observable.js"
   }
 }
