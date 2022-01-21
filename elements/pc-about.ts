@@ -147,7 +147,7 @@ StorePromise.then((Store) => {
                 <br>
     
                 <div class="pc-about-secondary-text">
-                    &#x3C;script type=&#x22;module&#x22; src=&#x22;https://podcrypt.app/podcrypt-button.js&#x22;&#x3E;&#x3C;/script&#x3E;
+                    &#x3C;script type=&#x22;module&#x22; src=&#x22;https://ovwc5-5yaaa-aaaae-qaa5a-cai.ic0.app/podcrypt-button.js&#x22;&#x3E;&#x3C;/script&#x3E;
                 </div>
     
                 <br>
