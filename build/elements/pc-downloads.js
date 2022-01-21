@@ -65,7 +65,10 @@ StorePromise.then((Store) => {
                             <br>
                         ` : ""}
 
-                    ${downloadedEpisodes.length === 0 ? html`<div style="display: flex; align-items: center; justify-content: center; margin-top: 25%; font-size: calc(20px + 1vmin); color: grey">No downloaded episodes</div>` : ""}
+                    <!-- ${downloadedEpisodes.length === 0 ? html`<div style="display: flex; align-items: center; justify-content: center; margin-top: 25%; font-size: calc(20px + 1vmin); color: grey; text-align: center">No downloaded episodes</div>` : ""} -->
+                    <div style="display: flex; align-items: center; justify-content: center; margin-top: 25%; font-size: calc(20px + 1vmin); color: grey; text-align: center">
+                        Downloads disabled until further Internet Computer integration
+                    </div>
 
                     ${downloadedEpisodes.map((episode) => {
         const podcast = state.podcasts[episode.feedUrl];

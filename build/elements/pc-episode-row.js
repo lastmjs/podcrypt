@@ -245,7 +245,7 @@ StorePromise.then((Store) => {
                                                 >
                                                     Copy episode URL
                                                 </div>
-                                                <div
+                                                <!--<div
                                                     class="pc-podcast-row-options-item"
                                                     @click=${() => {
       downloadOption(podcast, episode);
@@ -253,7 +253,7 @@ StorePromise.then((Store) => {
     }}
                                                 >
                                                     Download
-                                                </div>
+                                                </div>-->
                                                 <div 
                                                     class="pc-podcast-row-options-item"
                                                     @click=${() => {

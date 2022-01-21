@@ -76,7 +76,10 @@ StorePromise.then((Store) => {
                         ` : ''
                     }
 
-                    ${downloadedEpisodes.length === 0 ? html`<div style="display: flex; align-items: center; justify-content: center; margin-top: 25%; font-size: calc(20px + 1vmin); color: grey">No downloaded episodes</div>` : ''}
+                    <!-- ${downloadedEpisodes.length === 0 ? html`<div style="display: flex; align-items: center; justify-content: center; margin-top: 25%; font-size: calc(20px + 1vmin); color: grey; text-align: center">No downloaded episodes</div>` : ''} -->
+                    <div style="display: flex; align-items: center; justify-content: center; margin-top: 25%; font-size: calc(20px + 1vmin); color: grey; text-align: center">
+                        Downloads disabled until further Internet Computer integration
+                    </div>
 
                     ${downloadedEpisodes.map((episode: Readonly<Episode>) => {
                         // TODO why do we have to pass the podcast into the pc-episode-row?
