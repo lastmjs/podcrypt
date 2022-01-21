@@ -61,18 +61,6 @@ customElement('pc-privacy', ({ constructing, connecting, update, loaded }) => {
             <br>
             
             <div class="pc-privacy-secondary-text">You can see a list of most of Podcrypt's third-party APIs in the <a href="credit">Credits</a> section.</div>
-            
-            <br>
-            
-            <div class="pc-privacy-secondary-text">Cookies are used to collect data in conjunction with Google Analytics, with the anonymize_ip option set to true.</div>
-            
-            <br>
-            
-            <div class="pc-privacy-secondary-text">Click <a href="https://policies.google.com/technologies/partner-sites" target="_blank">here</a> to see how Google Analytics collects and processes data.</div>
-            
-            <br>
-            
-            <div class="pc-privacy-secondary-text">Podcrypt may eventually stop using Google Analytics, to increase privacy while using the app.</div>
         </div>
     `;
 });
