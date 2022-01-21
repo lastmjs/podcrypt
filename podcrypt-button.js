@@ -2,7 +2,7 @@ class PodcryptButton extends HTMLElement {
 
     connectedCallback() {
 
-        const href = this.getAttribute('href') || 'https://podcrypt.app';
+        const href = this.getAttribute('href') || 'https://ovwc5-5yaaa-aaaae-qaa5a-cai.ic0.app/';
         const logoColor = this.getAttribute('logo-color') || 'black';
         const logoHeight = this.getAttribute('logo-height') || '50px';
 
@@ -43,7 +43,7 @@ class PodcryptButton extends HTMLElement {
                 <div class="podcrypt-button-container">
                     <img
                         class="podcrypt-button-image"
-                        src="https://podcrypt.app/podcrypt-${logoColor}-transparent.png"
+                        src="https://ovwc5-5yaaa-aaaae-qaa5a-cai.ic0.app/podcrypt-${logoColor}-transparent.png"
                     >
                     <div>
                         <div class="podcrypt-button-top-text">Donate with</div>
