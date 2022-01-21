@@ -1,4 +1,5 @@
 import { customElement, html } from 'functional-element';
+import { html as htmlLit } from 'lit-html';
 import { TemplateResult } from 'lit-html';
 import { StorePromise } from '../state/store';
 import { 
@@ -224,7 +225,7 @@ StorePromise.then((Store) => {
                     html`
                         <i
                             class="material-icons pc-podcast-row-options-icon"
-                            @click=${() => pcAlert(html`
+                            @click=${() => pcAlert(htmlLit`
                                 <div style="display: flex; flex-direction: column; align-items: center">
                                     <div 
                                         class="pc-podcast-row-options-item"
@@ -297,7 +298,7 @@ StorePromise.then((Store) => {
         const podcast: Readonly<Podcast> | null = await createPodcast(feedUrl);
 
         if (podcast === null) {
-            pcAlert(html`
+            pcAlert(htmlLit`
                 <div style="${alertPadding}">Could not subscribe to podcast</div>
             `, Store.getState().screenType);
             return;
@@ -356,7 +357,7 @@ StorePromise.then((Store) => {
         const feed: Readonly<Feed> | null = await getFeed(podcast.feedUrl);
 
             if (feed === null) {
-                pcAlert(html`<div style="${alertPadding}">The feed could not be loaded</div>`, Store.getState().screenType);
+                pcAlert(htmlLit`<div style="${alertPadding}">The feed could not be loaded</div>`, Store.getState().screenType);
                 return;
             }
 
@@ -373,7 +374,7 @@ StorePromise.then((Store) => {
         const feed: Readonly<Feed> | null = await getFeed(podcast.feedUrl);
 
         if (feed === null) {
-            pcAlert(html`<div style="${alertPadding}">The feed could not be loaded</div>`, Store.getState().screenType);
+            pcAlert(htmlLit`<div style="${alertPadding}">The feed could not be loaded</div>`, Store.getState().screenType);
             return;
         }
 

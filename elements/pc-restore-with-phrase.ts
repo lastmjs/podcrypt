@@ -1,4 +1,5 @@
 import { customElement, html } from 'functional-element';
+import { html as htmlLit } from 'lit-html';
 import { StorePromise } from '../state/store';
 import { 
     pcContainerStyles,
@@ -39,7 +40,7 @@ StorePromise.then((Store) => {
         const mnemonicPhrase: string = pcRestoreWithPhraseInput.value;
 
         if (mnemonicPhrase.split(' ').length !== 12) {
-            pcAlert(html`
+            pcAlert(htmlLit`
                 <div style="${alertPadding}">Your secret phrase must have exactly 12 words</div>
             `, Store.getState().screenType);
             return;

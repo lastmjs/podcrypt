@@ -21,6 +21,7 @@ import {
     customElement,
     html 
 } from 'functional-element';
+import { html as htmlLit } from 'lit-html';
 import { StorePromise } from '../state/store';
 import './pc-router';
 import './pc-main-menu';
@@ -156,7 +157,7 @@ StorePromise.then((Store) => {
                         <div style="color: grey; font-weight: bold; margin-left: auto; margin-right: calc(10px + 1vmin); font-size: calc(15px + 1vmin)">Podcrypt Beta</div>
                     `}
 
-                    <div
+                    <!-- <div
                         ?hidden=${Store.getState().payoutProblem === 'NO_PROBLEM'}
                         class="pc-app-payout-problem-icon-container"
                     >
@@ -168,7 +169,7 @@ StorePromise.then((Store) => {
                         >
                             error_outline
                         </i>  
-                    </div>
+                    </div> -->
                 </div>
         
                 <pc-main-menu></pc-main-menu>
@@ -189,7 +190,7 @@ StorePromise.then((Store) => {
 
     function getPayoutProblemMessage(payoutProblem: PayoutProblem) {
         if (payoutProblem === 'BALANCE_0') {
-            return html`
+            return htmlLit`
                 <div style="${alertPadding}">
                     <div>There is a problem with your next payout:</div>
                     <br>
@@ -199,7 +200,7 @@ StorePromise.then((Store) => {
         }
 
         if (payoutProblem === 'PAYOUT_TARGET_0') {
-            return html`
+            return htmlLit`
                 <div style="${alertPadding}">
                     <div>There is a problem with your next payout:</div>
                     <br>
@@ -209,7 +210,7 @@ StorePromise.then((Store) => {
         }
 
         if (payoutProblem === 'BALANCE_LESS_THAN_PAYOUT_TARGET') {
-            return html`
+            return htmlLit`
                 <div style="${alertPadding}">
                     <div>There is a problem with your next payout:</div>
                     <br>
@@ -218,6 +219,6 @@ StorePromise.then((Store) => {
             `;
         }
 
-        return html`<div style="${alertPadding}">There is no problem with your next payout</div>`;
+        return htmlLit`<div style="${alertPadding}">There is no problem with your next payout</div>`;
     }
 });
