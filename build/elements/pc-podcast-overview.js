@@ -50,8 +50,10 @@ StorePromise.then((Store) => {
         loaded: false
       });
       await getFeed(feedUrl, update);
-      update({
-        loaded: true
+      setTimeout(() => {
+        update({
+          loaded: true
+        });
       });
     }
     return html`

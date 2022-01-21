@@ -32,13 +32,24 @@ import "../services/listeners.js";
 import {pcAlert} from "./pc-modal.js";
 import {createWallet} from "../services/balance-calculations.js";
 import "../services/listeners.js";
+import "./pc-loading.js";
 StorePromise.then((Store) => {
-  customElement("pc-app", ({constructing, update}) => {
+  customElement("pc-app", ({constructing, connecting, update, loaded}) => {
     if (constructing) {
       Store.subscribe(update);
       if (Store.getState().walletCreationState === "NOT_CREATED") {
         createWallet(Store);
       }
+      return {
+        loaded: false
+      };
+    }
+    if (connecting) {
+      setTimeout(() => {
+        update({
+          loaded: true
+        });
+      }, 1e3);
     }
     const state = Store.getState();
     const currentEpisode = state.episodes[state.currentEpisodeGuid] || "NOT_FOUND";
@@ -124,6 +135,11 @@ StorePromise.then((Store) => {
             </style>
 
             <div class="pc-app-container">
+                <pc-loading
+                    .prename=${"pc-app-"}
+                    .hidden=${loaded}
+                ></pc-loading>
+
                 <div class="pc-app-top-bar">
 
                     <i 

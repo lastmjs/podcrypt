@@ -1,3 +1,5 @@
+import { g as global } from './common/_polyfill-node:global-acbc543a.js';
+
 function symbolObservablePonyfill(root) {
 	var result;
 	var Symbol = root.Symbol;
@@ -15,8 +17,6 @@ function symbolObservablePonyfill(root) {
 
 	return result;
 }
-
-/* global window */
 
 var root;
 

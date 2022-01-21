@@ -14,6 +14,7 @@ import {
 import {
   StorePromise
 } from "../state/store.js";
+import "./pc-loading.js";
 StorePromise.then((Store) => {
   customElement("pc-about", ({constructing, connecting, update, loaded}) => {
     if (constructing) {
@@ -60,11 +61,28 @@ StorePromise.then((Store) => {
                 <div class="pc-about-title-text-x-large">About Podcrypt</div>
     
                 <br>
+
+                <div class="pc-about-secondary-text">
+                    Podcrypt is designed to be an integral part of the most open, fair, private, and community-owned podcast ecosystem ever to exist.
+                </div>
+
+                <br>
     
                 <div class="pc-about-secondary-text">
-                    Podcrypt allows you to listen to and optionally donate back to podcasts automatically, fairly, and peer-to-peer.
+                    Podcrypt is a podcast player running principally off of the Internet Computer. In the past the idea was to allow you to listen to and optionally donate back to podcasts automatically, fairly, and peer-to-peer.
+                    The intent of Podcrypt has changed since it was originally launched in 2019. The Internet Computer and other innovations now open new possibilities for Podcrypt.
+                    DAOs, NFTs, governance tokens, and more may open the door to new sustainability models for podcast creators and listeners.
                 </div>
     
+                <br>
+
+                <div class="pc-about-secondary-text">
+                    Most of Podcrypt's original Ethereum functionality and documentation is still present in the app (use at your own risk).
+                    Podcrypt will be upgrading itself as the Internet Computer continues to become more capable.
+                </div>
+
+                <br>
+
                 <br>
     
                 <div id="podcast-listeners" class="pc-about-title-text-large">Podcast listeners</div>
@@ -146,7 +164,7 @@ StorePromise.then((Store) => {
                 <br>
 
                 <div class="pc-about-secondary-text">
-                    This roadmap is subject to change at any time, but is a good reflection of Podcrypt's current course:
+                    Most of this was Podcrypt's roadmap in the past. The 2022 roadmap reflects some new possibilities and timelines enabled by the Internet Computer:
                 </div>
 
                 <br>
@@ -185,6 +203,17 @@ StorePromise.then((Store) => {
                                 <li>Allow users to sell their own data</li>
                                 <li>Podcast crowdfunding</li>
                                 <li>Decentralized podcast directory</li>
+                            </ul>
+                        </li>
+
+                        <li>
+                            2022 (tentative/subject to change)
+                            <ul>
+                                <li>Open source</li>
+                                <li>Host source code in decentralized git repository</li>
+                                <li>SNS integration</li>
+                                <li>Fair governance token distribution</li>
+                                <li>Podcast-specific NFTs</li>
                             </ul>
                         </li>
                     </ul>

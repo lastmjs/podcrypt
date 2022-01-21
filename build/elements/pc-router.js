@@ -7,6 +7,7 @@ import {
 } from "../_snowpack/pkg/lit-html/directives/cache.js";
 import {StorePromise} from "../state/store.js";
 import {parseQueryString} from "../services/utilities.js";
+import "./pc-loading.js";
 StorePromise.then((Store) => {
   window.addEventListener("popstate", (e) => {
     if (window.location.pathname === "/playlist") {
@@ -58,11 +59,27 @@ StorePromise.then((Store) => {
   class PCRouter extends HTMLElement {
     constructor() {
       super();
+      this.loadedPathnames = [];
       Store.subscribe(async () => render(await this.render(Store.getState()), this));
     }
     async render(state) {
+      if (!this.loadedPathnames.includes(state.currentRoute.pathname)) {
+        showLoading(true);
+        this.loadedPathnames = [
+          ...this.loadedPathnames,
+          state.currentRoute.pathname
+        ];
+      }
       const templateResult = await getTemplateResultForRoute(state.currentRoute.pathname, state.currentRoute.search);
-      return html`${cache(templateResult)}`;
+      showLoading(false);
+      return html`
+                ${cache(templateResult)}
+                <pc-loading
+                    id="pc-router-loading"
+                    .prename=${"pc-router-"}
+                    .hidden=${false}
+                ></pc-loading>
+            `;
     }
   }
   async function getTemplateResultForRoute(pathname, search) {
@@ -135,5 +152,15 @@ StorePromise.then((Store) => {
   function getSearchParam(search, paramName) {
     const paramValue = new URLSearchParams(search).get(paramName) || void 0;
     return paramValue;
+  }
+  function showLoading(show) {
+    const pcRouterLoading = document.getElementById("pc-router-loading");
+    if (pcRouterLoading) {
+      if (show === true) {
+        pcRouterLoading.hidden = false;
+      } else {
+        pcRouterLoading.hidden = true;
+      }
+    }
   }
 });

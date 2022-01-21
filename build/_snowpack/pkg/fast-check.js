@@ -1,4 +1,6 @@
 import { p as prand, u as uniformIntDistribution, a as uniformBigIntDistribution, s as skipN } from './common/pure-rand-default-ca59a611.js';
+import { B as Buffer } from './common/_polyfill-node:buffer-b13b85fc.js';
+import './common/_polyfill-node:global-acbc543a.js';
 
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {

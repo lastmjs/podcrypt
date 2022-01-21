@@ -8,7 +8,7 @@
   "scripts": {
     "start": "snowpack dev",
     "generate-attribution": "generate-attribution",
-    "build": "snowpack build",
+    "build": "snowpack build --polyfill-node",
     "test": ""
   },
   "repository": {
@@ -31,6 +31,7 @@
     "snowpack": "3.8.8"
   },
   "dependencies": {
+    "@dfinity/agent": "0.10.2",
     "@vaadin/vaadin-tabs": "3.0.4",
     "bignumber.js": "8.1.1",
     "dompurify": "1.0.11",

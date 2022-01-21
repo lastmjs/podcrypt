@@ -278,7 +278,7 @@ StorePromise.then((Store) => {
     navigate(Store, `/not-verified-help?feedUrl=${podcast.feedUrl}&podcastEmail=${podcast.email}`);
   }
   async function deleteOption(podcast) {
-    const confirmation = await pcConfirm(html`
+    const confirmation = await pcConfirm(htmlLit`
                 <div style="${alertPadding}">Are you sure you want to delete this podcast and all of its data?</div>
             `, Store.getState().screenType);
     if (confirmation === true) {

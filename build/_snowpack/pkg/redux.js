@@ -1,4 +1,5 @@
 import result from './symbol-observable.js';
+import './common/_polyfill-node:global-acbc543a.js';
 
 /**
  * These are private action types reserved by Redux.

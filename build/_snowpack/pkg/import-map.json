@@ -1,5 +1,6 @@
 {
   "imports": {
+    "@dfinity/agent": "./@dfinity/agent.js",
     "@polymer/iron-resizable-behavior/iron-resizable-behavior.js": "./@polymer/iron-resizable-behavior/iron-resizable-behavior.js",
     "@polymer/polymer/lib/elements/custom-style.js": "./@polymer/polymer/lib/elements/custom-style.js",
     "@polymer/polymer/lib/elements/dom-module.js": "./@polymer/polymer/lib/elements/dom-module.js",
