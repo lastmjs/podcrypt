@@ -14,6 +14,7 @@ import {
 import {
     StorePromise
 } from '../state/store';
+import './pc-loading';
 
 StorePromise.then((Store) => {
 

@@ -41,11 +41,12 @@ import '../services/listeners';
 import { pcAlert } from './pc-modal';
 import { createWallet } from '../services/balance-calculations';
 import '../services/listeners';
+import './pc-loading';
 
 // TODO I do not like how we have to do this to get the store...top level await would be really nice
 StorePromise.then((Store) => {
     
-    customElement('pc-app', ({ constructing, update }) => {
+    customElement('pc-app', ({ constructing, connecting, update, loaded }) => {
 
         if (constructing) {
             Store.subscribe(update);
@@ -53,6 +54,18 @@ StorePromise.then((Store) => {
             if (Store.getState().walletCreationState === 'NOT_CREATED') {
                 createWallet(Store);
             }
+
+            return {
+                loaded: false
+            };
+        }
+
+        if (connecting) {
+            setTimeout(() => {
+                update({
+                    loaded: true
+                });
+            }, 1000);
         }
 
         const state: Readonly<State> = Store.getState();
@@ -140,6 +153,11 @@ StorePromise.then((Store) => {
             </style>
 
             <div class="pc-app-container">
+                <pc-loading
+                    .prename=${"pc-app-"}
+                    .hidden=${loaded}
+                ></pc-loading>
+
                 <div class="pc-app-top-bar">
 
                     <i 

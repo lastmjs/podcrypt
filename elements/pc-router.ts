@@ -8,6 +8,7 @@ import {
 } from 'lit-html/directives/cache';
 import { StorePromise } from '../state/store';
 import { parseQueryString } from '../services/utilities';
+import './pc-loading';
 
 // TODO we can use URLSearchParams instead of parseQueryString...native and seems to handle nested query parameters
 // TODO I would love to use the route /credits instead of /credit, but there is a strange issues with /credits: https://github.com/lastmjs/podcrypt/issues/169
@@ -85,14 +86,36 @@ StorePromise.then((Store) => {
     });
 
     class PCRouter extends HTMLElement {
+        loadedPathnames: ReadonlyArray<string>;
+
         constructor() {
             super();
+
+            this.loadedPathnames = [];
             Store.subscribe(async () => render(await this.render(Store.getState()), this));
         }
 
         async render(state: Readonly<State>): Promise<Readonly<TemplateResult>> {
+            if (!this.loadedPathnames.includes(state.currentRoute.pathname)) {
+                showLoading(true);
+                this.loadedPathnames = [
+                    ...this.loadedPathnames,
+                    state.currentRoute.pathname
+                ];
+            }
+            
             const templateResult: Readonly<TemplateResult> = await getTemplateResultForRoute(state.currentRoute.pathname, state.currentRoute.search);
-            return html`${cache(templateResult)}`;
+            
+            showLoading(false);
+
+            return html`
+                ${cache(templateResult)}
+                <pc-loading
+                    id="pc-router-loading"
+                    .prename=${"pc-router-"}
+                    .hidden=${false}
+                ></pc-loading>
+            `;
         }
     }
 
@@ -194,5 +217,19 @@ StorePromise.then((Store) => {
         // TODO i was having with the playlist never loading because of null versus undefined checks
         const paramValue: FeedUrl | undefined = new URLSearchParams(search).get(paramName) || undefined;
         return paramValue;
+    }
+
+    // TODO do not mutate here, just getting this done quickly
+    function showLoading(show: boolean) {
+        const pcRouterLoading = document.getElementById('pc-router-loading');
+
+        if (pcRouterLoading) {
+            if (show === true) {
+                pcRouterLoading.hidden = false;
+            }
+            else {
+                pcRouterLoading.hidden = true;
+            }
+        }
     }
 });
