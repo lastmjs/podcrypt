@@ -1,21 +1,24 @@
 // TODO figure out service workers...nothing I am doing is working
 // TODO put the service worker back in once we figure out caching, 206, Range header, and playback issues
 // This must come first because some dependencies might depend on dependencies imported in index.html,which is cached
-if ('serviceWorker' in window.navigator) {
-    // window.addEventListener('load', async () => {
-    (async () => {
-        try {     
-            await window.navigator.serviceWorker.register('/service-worker.js', {
-                // type: 'module' // TODO The module type is not supported yet...so we cannot use modules in the service worker, which is a crying shame
-            });
-            console.log('service worker registration successful');
-        }
-        catch(error) {
-            console.log(error);
-        }
-    })();
-    // });
-}
+// if ('serviceWorker' in window.navigator) {
+//     // window.addEventListener('load', async () => {
+//     (async () => {
+//         try {     
+//             await window.navigator.serviceWorker.register('/service-worker.js', {
+//                 // type: 'module' // TODO The module type is not supported yet...so we cannot use modules in the service worker, which is a crying shame
+//             });
+//             console.log('service worker registration successful');
+//         }
+//         catch(error) {
+//             console.log(error);
+//         }
+//     })();
+//     // });
+// }
+// TODO disabled service worker for now, we are not even doing downloads
+// TODO need to figure out how to get service workers to work with the IC service worker
+// TODO and snowpack bundling...or the asset canister, seems to be giving it the wrong mime type (text/html)
 
 import { 
     customElement,
@@ -65,7 +68,7 @@ StorePromise.then((Store) => {
                 update({
                     loaded: true
                 });
-            }, 1000);
+            });
         }
 
         const state: Readonly<State> = Store.getState();

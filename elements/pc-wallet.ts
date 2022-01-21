@@ -273,7 +273,7 @@ StorePromise.then((Store) => {
                             <br>
                             <div>$${new BigNumber(Store.getState().payoutTargetInUSDCents).multipliedBy(Store.getState().podcryptPayoutPercentage).dividedBy(10000).toFixed(2)}, ${Store.getState().podcryptPayoutPercentage}%</div>
                             <br>
-                            <div>Last payout: ${Store.getState().previousPayoutDate === 'NEVER' ? 'never' : html`<a href="https://${process.env.NODE_ENV !== 'production' ? 'ropsten.' : ''}etherscan.io/tx/${Store.getState().podcryptLatestTransactionHash}" target="_blank">${new Date(Store.getState().podcryptPreviousPayoutDate).toLocaleString()}</a>`}</div>
+                            <div>Last payout: ${Store.getState().previousPayoutDate === 'NEVER' ? 'never' : html`<a href="https://${window.process.env.NODE_ENV !== 'production' ? 'ropsten.' : ''}etherscan.io/tx/${Store.getState().podcryptLatestTransactionHash}" target="_blank">${new Date(Store.getState().podcryptPreviousPayoutDate).toLocaleString()}</a>`}</div>
                             <br>
                             <div>Next payout: ${nextPayoutLocaleDateString}</div>
                         </div>
@@ -330,8 +330,8 @@ StorePromise.then((Store) => {
     //     // `, Store.getState().screenType);
         
     //     const widget = new Wyre.Widget({
-    //         env: process.env.NODE_ENV === 'production' ? 'prod' : 'test',
-    //         accountId: process.env.NODE_ENV === 'production' ? 'AC_LUQ6NQC4MQZ' : 'AC_RTQ46VYP4U3',
+    //         env: window.process.env.NODE_ENV === 'production' ? 'prod' : 'test',
+    //         accountId: window.process.env.NODE_ENV === 'production' ? 'AC_LUQ6NQC4MQZ' : 'AC_RTQ46VYP4U3',
     //         auth: {
     //             type: 'secretKey',
     //             secretKey: await getAndSaveWyrePrivateKey()

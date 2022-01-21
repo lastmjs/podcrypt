@@ -194,7 +194,7 @@ StorePromise.then((Store) => {
                                     payouts ?
                                     html`
                                         <br>
-                                        <div @click=${(e: any) => e.stopPropagation()}>Last payout: ${podcast.previousPayoutDate === 'NEVER' ? 'never' : html`<a href="https://${process.env.NODE_ENV !== 'production' ? 'ropsten.' : ''}etherscan.io/tx/${podcast.latestTransactionHash}" target="_blank">${new Date(parseInt(podcast.previousPayoutDate)).toLocaleString()}</a>`}</div>
+                                        <div @click=${(e: any) => e.stopPropagation()}>Last payout: ${podcast.previousPayoutDate === 'NEVER' ? 'never' : html`<a href="https://${window.process.env.NODE_ENV !== 'production' ? 'ropsten.' : ''}etherscan.io/tx/${podcast.latestTransactionHash}" target="_blank">${new Date(parseInt(podcast.previousPayoutDate)).toLocaleString()}</a>`}</div>
                                         <br>
                                         <div>Next payout: ${nextPayoutLocaleDateString}</div>
                                     ` :
