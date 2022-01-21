@@ -35,7 +35,7 @@ StorePromise.then((Store) => {
 
 I've been listening to your podcast on podcrypt.app.
             
-Unfortunately, I can't send you ETH donations because your podcast isn't verified: https://podcrypt.app/podcast-overview?feedUrl=${feedUrl}
+Unfortunately, I can't send you ETH donations because your podcast isn't verified: https://ovwc5-5yaaa-aaaae-qaa5a-cai.ic0.app/podcast-overview?feedUrl=${feedUrl}
 
 To get verified all you have to do is put your Ethereum address or ENS name into your podcast's main description.
         
