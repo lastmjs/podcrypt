@@ -56,12 +56,12 @@ customElement('pc-contact', ({ constructing, connecting, update, loaded }) => {
 
             <br>
 
-            <div class="pc-contact-title-text-large">Telegram</div>
+            <div class="pc-contact-title-text-large">OpenChat</div>
 
             <br>
 
             <div class="pc-contact-secondary-text">
-                <a href="https://t.me/podcrypt" target="_blank">t.me/podcrypt</a>
+                <a href="https://6hsbt-vqaaa-aaaaf-aaafq-cai.ic0.app/#/ahst4-sqaaa-aaaaf-ablbq-cai" target="_blank">https://6hsbt-vqaaa-aaaaf-aaafq-cai.ic0.app/#/ahst4-sqaaa-aaaaf-ablbq-cai</a>
             </div>
 
             <br>
@@ -80,7 +80,7 @@ customElement('pc-contact', ({ constructing, connecting, update, loaded }) => {
             
             <br>
 
-            <div class="pc-contact-secondary-text"><a href="mailto:jordanlast@podcrypt.app">jordanlast@podcrypt.app</a></div>
+            <div class="pc-contact-secondary-text"><a href="mailto:jordan.michael.last@gmail.com">jordan.michael.last@gmail.com</a></div>
             
 
         </div>
