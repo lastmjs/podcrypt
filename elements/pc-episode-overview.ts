@@ -54,9 +54,13 @@ StorePromise.then((Store) => {
             };
 
             update(newProps);
+
             await loadEpisode(feedUrl, episodeGuid, update, newProps);
-            update({
-                loaded: true
+
+            setTimeout(() => {
+                update({
+                    loaded: true
+                });
             });
         }
 
