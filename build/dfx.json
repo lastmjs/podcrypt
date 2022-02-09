@@ -1,8 +1,0 @@
-{
-    "canisters": {
-        "frontend": {
-            "type": "assets",
-            "source": ["build"]
-        }
-    }
-}
