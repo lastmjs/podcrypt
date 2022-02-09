@@ -1,4 +1,3 @@
-import { customElement, html } from 'functional-element';
 import {
     normalShadow,
     pxXSmall,
@@ -7,15 +6,37 @@ import {
     color1Medium
 } from '../services/css';
 
-customElement('pc-button', ({ constructing, text }) => {
+import {
+    html,
+    render as litRender,
+} from 'lit-html'
 
-    if (constructing) {
-        return {
-            text: null
-        };
+import {
+    createObjectStore
+} from 'reduxular'
+
+type State = Readonly<{
+    text:string;
+}>;
+
+const InitialState: State = {
+    text: ''
+};
+
+class PCButton extends HTMLElement {
+    
+
+    readonly shadow = this.attachShadow({
+        mode: 'open'
+    })
+    readonly store = createObjectStore(InitialState, (state) => litRender(this.render(state), this.shadowRoot), this);
+
+    constructor() {
+        super();
     }
 
-    return html`
+    render(state:State) {
+        return html`
         <style>
             .pc-button {
                 font-size: ${pxSmall};
@@ -34,6 +55,9 @@ customElement('pc-button', ({ constructing, text }) => {
             }
         </style>
 
-        <button class="pc-button">${text || 'Text not set'}</button>
+        <button class="pc-button">${state.text || 'Text not set'}</button>
     `;
-});
+    }
+}
+
+customElements.define('pc-button', PCButton);
